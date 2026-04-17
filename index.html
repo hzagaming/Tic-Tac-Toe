@@ -16,32 +16,32 @@
                 <span class="divider">/</span>
                 <span class="o-mark">O</span>
             </h1>
-            <p class="subtitle" id="subtitle">不可战胜的 AI 对手</p>
+            <p class="subtitle" id="subtitle" data-i18n="subtitle-pve">不可战胜的 AI 对手</p>
         </header>
 
         <div class="mode-switch" id="mode-switch">
-            <button class="mode-btn active" data-mode="pve">人机</button>
-            <button class="mode-btn" data-mode="pvp">双人</button>
-            <button class="mode-btn" data-mode="aivsai">AI 对战</button>
+            <button class="mode-btn active" data-mode="pve" data-i18n="mode-pve">人机</button>
+            <button class="mode-btn" data-mode="pvp" data-i18n="mode-pvp">双人</button>
+            <button class="mode-btn" data-mode="aivsai" data-i18n="mode-aivsai">AI 对战</button>
         </div>
 
         <div class="scoreboard">
             <div class="score-card player-x">
-                <span class="label">玩家 (X)</span>
+                <span class="label" data-i18n="label-player-x">玩家 (X)</span>
                 <span class="score" id="score-x">0</span>
             </div>
             <div class="score-card draws">
-                <span class="label">平局</span>
+                <span class="label" data-i18n="label-draw">平局</span>
                 <span class="score" id="score-draw">0</span>
             </div>
             <div class="score-card player-o">
-                <span class="label">AI (O)</span>
+                <span class="label" data-i18n="label-player-o">AI (O)</span>
                 <span class="score" id="score-o">0</span>
             </div>
         </div>
 
         <div class="status-bar">
-            <span id="status-text">你的回合</span>
+            <span id="status-text" data-i18n="status-your-turn">你的回合</span>
         </div>
 
         <div class="board" id="board">
@@ -66,19 +66,88 @@
                     <polyline points="23 4 23 10 17 10"></polyline>
                     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                 </svg>
-                再来一局
+                <span data-i18n="btn-restart">再来一局</span>
+            </button>
+            <button class="btn btn-settings" id="settings-btn" aria-label="Settings">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
             </button>
         </div>
     </main>
 
+    <!-- Result Modal -->
     <div class="modal" id="result-modal">
         <div class="modal-content">
             <div class="modal-icon" id="modal-icon"></div>
-            <h2 id="modal-title">游戏结束</h2>
-            <p id="modal-message">恭喜获胜！</p>
-            <button class="btn btn-primary" id="modal-btn">再来一局</button>
+            <h2 id="modal-title" data-i18n="modal-game-over">游戏结束</h2>
+            <p id="modal-message" data-i18n="modal-win">恭喜获胜！</p>
+            <button class="btn btn-primary" id="modal-btn" data-i18n="btn-play-again">再来一局</button>
         </div>
     </div>
+
+    <!-- Settings Drawer -->
+    <div class="drawer-overlay" id="drawer-overlay"></div>
+    <aside class="settings-drawer" id="settings-drawer">
+        <div class="drawer-header">
+            <h2 data-i18n="settings-title">设置</h2>
+            <button class="drawer-close" id="drawer-close" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="drawer-body">
+            <!-- Language -->
+            <div class="setting-group">
+                <label class="setting-label" data-i18n="setting-language">语言</label>
+                <div class="segmented" id="lang-segmented">
+                    <button class="seg-btn active" data-lang="zh">中文</button>
+                    <button class="seg-btn" data-lang="en">English</button>
+                </div>
+            </div>
+
+            <!-- Theme -->
+            <div class="setting-group">
+                <label class="setting-label" data-i18n="setting-theme">主题</label>
+                <div class="segmented" id="theme-segmented">
+                    <button class="seg-btn active" data-theme="dark" data-i18n="theme-dark">深色</button>
+                    <button class="seg-btn" data-theme="light" data-i18n="theme-light">浅色</button>
+                    <button class="seg-btn" data-theme="auto" data-i18n="theme-auto">自动</button>
+                </div>
+            </div>
+
+            <!-- Animations -->
+            <div class="setting-row">
+                <span class="setting-label" data-i18n="setting-animations">动画效果</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-animations" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Sound -->
+            <div class="setting-row">
+                <span class="setting-label" data-i18n="setting-sound">音效</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-sound" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- AI Difficulty -->
+            <div class="setting-group" id="ai-difficulty-group">
+                <label class="setting-label" data-i18n="setting-difficulty">AI 难度</label>
+                <div class="segmented" id="difficulty-segmented">
+                    <button class="seg-btn" data-diff="easy" data-i18n="diff-easy">简单</button>
+                    <button class="seg-btn" data-diff="medium" data-i18n="diff-medium">中等</button>
+                    <button class="seg-btn active" data-diff="hard" data-i18n="diff-hard">困难</button>
+                </div>
+            </div>
+        </div>
+    </aside>
 
     <script src="script.js"></script>
 </body>
