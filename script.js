@@ -3,6 +3,8 @@
     const boardEl = document.getElementById('board');
     const connect4Board = document.getElementById('connect4-board');
     const c4CellsContainer = document.getElementById('c4-cells');
+    const gomokuBoard = document.getElementById('gomoku-board');
+    const gomokuCellsContainer = document.getElementById('gomoku-cells');
     const cells = Array.from(document.querySelectorAll('.cell'));
     const statusText = document.getElementById('status-text');
     const statusBar = document.querySelector('.status-bar');
@@ -10,6 +12,8 @@
     const winLineSvg = winLine.querySelector('line');
     const c4WinLine = document.getElementById('c4-win-line');
     const c4WinLineSvg = c4WinLine.querySelector('line');
+    const gomokuWinLine = document.getElementById('gomoku-win-line');
+    const gomokuWinLineSvg = gomokuWinLine.querySelector('line');
     const restartBtn = document.getElementById('restart-btn');
     const settingsBtn = document.getElementById('settings-btn');
     const drawer = document.getElementById('settings-drawer');
@@ -27,6 +31,7 @@
     const modeBtns = Array.from(document.querySelectorAll('.mode-btn'));
     const subtitle = document.getElementById('subtitle');
     const aiDifficultyGroup = document.getElementById('ai-difficulty-group');
+    const customGameGroup = document.getElementById('custom-game-group');
 
     const animToggle = document.getElementById('toggle-animations');
     const soundToggle = document.getElementById('toggle-sound');
@@ -42,6 +47,10 @@
     const volumeValue = document.getElementById('volume-value');
     const testSoundBtn = document.getElementById('test-sound-btn');
 
+    const customWinLenInput = document.getElementById('custom-win-len');
+    const customBoardWInput = document.getElementById('custom-board-w');
+    const customBoardHInput = document.getElementById('custom-board-h');
+
     const changelogBtn = document.getElementById('changelog-btn');
     const changelogModal = document.getElementById('changelog-modal');
     const changelogClose = document.getElementById('changelog-close');
@@ -53,12 +62,17 @@
     /* ===== State ===== */
     let gameBoard = Array(9).fill('');
     let c4Board = Array(6).fill(null).map(() => Array(7).fill(''));
+    let gmkBoard = Array(15).fill(null).map(() => Array(15).fill(''));
+    let customBoard = [];
     let gameActive = true;
     let currentPlayer = PLAYER_X;
     let currentMode = 'pve';
     let scores = { X: 0, O: 0, draw: 0 };
     let aiTimer = null;
     let audioCtx = null;
+
+    // Custom game config
+    let customConfig = { w: 15, h: 15, winLen: 5 };
 
     const settings = {
         lang: 'zh',
@@ -75,7 +89,8 @@
         soundPitch: 0,
         soundDuration: 100,
         soundVolume: 80,
-        difficulty: 'hard'
+        difficulty: 'hard',
+        customBoardSize: 'custom'
     };
 
     const langMap = {
@@ -105,10 +120,14 @@
             'subtitle-pvp': { zh:'好友本地对战', en:'Local Two-Player Battle', ja:'ローカル対戦', ko:'로컬 2인 대전', fr:'Duel local', de:'Lokaler Zweikampf', es:'Batalla local', ru:'Локальная игра', it:'Sfida locale', pt:'Batalha local' },
             'subtitle-aivsai': { zh:'最强 AI 巅峰对决', en:'Ultimate AI Showdown', ja:'AI 頂上決戦', ko:'최강 AI 대결', fr:'Duel ultime IA', de:'Ultimativer Showdown', es:'Enfrentamiento IA', ru:'Битва ИИ', it:'Scontro finale AI', pt:'Confronto IA supremo' },
             'subtitle-connect4': { zh:'四子连珠 重力对决', en:'Connect Four Gravity Battle', ja:'四目並べ', ko:'사목 대결', fr:'Puissance 4', de:'Vier gewinnt', es:'Conecta 4', ru:'Четыре в ряд', it:'Forza 4', pt:'Ligue 4' },
+            'subtitle-gomoku': { zh:'五子连珠 运筹帷幄', en:'Gomoku Strategy Battle', ja:'五目並べ', ko:'오목 대결', fr:'Gomoku', de:'Gomoku', es:'Gomoku', ru:'Гомоку', it:'Gomoku', pt:'Gomoku' },
+            'subtitle-custom': { zh:'自定义规则 无限可能', en:'Custom Rules Unlimited', ja:'カスタムルール', ko:'사용자 지정 규칙', fr:'Règles perso', de:'Benutzerdef. Regeln', es:'Reglas personalizadas', ru:'Пользовательские правила', it:'Regole personalizzate', pt:'Regras personalizadas' },
             'mode-pve': { zh:'人机', en:'PvE', ja:'CPU戦', ko:'AI전', fr:'PvE', de:'PvE', es:'PvE', ru:'PvE', it:'PvE', pt:'PvE' },
             'mode-pvp': { zh:'双人', en:'PvP', ja:'対戦', ko:'2인전', fr:'PvP', de:'PvP', es:'PvP', ru:'PvP', it:'PvP', pt:'PvP' },
             'mode-aivsai': { zh:'AI 对战', en:'AI vs AI', ja:'AI対AI', ko:'AI vs AI', fr:'IA vs IA', de:'KI vs KI', es:'IA vs IA', ru:'ИИ vs ИИ', it:'AI vs AI', pt:'IA vs IA' },
             'mode-connect4': { zh:'四子棋', en:'Connect 4', ja:'四目', ko:'사목', fr:'Puissance 4', de:'Vier', es:'Conecta 4', ru:'4 в ряд', it:'Forza 4', pt:'Ligue 4' },
+            'mode-gomoku': { zh:'五子棋', en:'Gomoku', ja:'五目', ko:'오목', fr:'Gomoku', de:'Gomoku', es:'Gomoku', ru:'Гомоку', it:'Gomoku', pt:'Gomoku' },
+            'mode-custom': { zh:'自定义', en:'Custom', ja:'カスタム', ko:'사용자 지정', fr:'Perso', de:'Benutzerdef.', es:'Personalizado', ru:'Свой', it:'Personalizzato', pt:'Personalizado' },
             'label-player-x': { zh:'玩家 (X)', en:'Player (X)', ja:'プレイヤー (X)', ko:'플레이어 (X)', fr:'Joueur (X)', de:'Spieler (X)', es:'Jugador (X)', ru:'Игрок (X)', it:'Giocatore (X)', pt:'Jogador (X)' },
             'label-player-o': { zh:'AI (O)', en:'AI (O)', ja:'AI (O)', ko:'AI (O)', fr:'IA (O)', de:'KI (O)', es:'IA (O)', ru:'ИИ (O)', it:'AI (O)', pt:'IA (O)' },
             'label-player-x-pvp': { zh:'玩家 1 (X)', en:'Player 1 (X)', ja:'プレイヤー1 (X)', ko:'플레이어 1 (X)', fr:'Joueur 1 (X)', de:'Spieler 1 (X)', es:'Jugador 1 (X)', ru:'Игрок 1 (X)', it:'Giocatore 1 (X)', pt:'Jogador 1 (X)' },
@@ -148,6 +167,12 @@
             'setting-sound': { zh:'音效', en:'Sound', ja:'効果音', ko:'효과음', fr:'Son', de:'Ton', es:'Sonido', ru:'Звук', it:'Audio', pt:'Som' },
             'setting-sound-style': { zh:'音效风格', en:'Sound Style', ja:'効果音スタイル', ko:'효과음 스타일', fr:'Style sonore', de:'Tonstil', es:'Estilo de sonido', ru:'Стиль звука', it:'Stile audio', pt:'Estilo de som' },
             'setting-difficulty': { zh:'AI 难度', en:'AI Difficulty', ja:'AI 難易度', ko:'AI 난이도', fr:'Difficulté IA', de:'KI-Schwierigk.', es:'Dificultad IA', ru:'Сложность ИИ', it:'Difficoltà AI', pt:'Dificuldade IA' },
+            'setting-custom-game': { zh:'自定义游戏', en:'Custom Game', ja:'カスタムゲーム', ko:'사용자 지정 게임', fr:'Jeu perso', de:'Benutzerdef. Spiel', es:'Juego personalizado', ru:'Своя игра', it:'Gioco personalizzato', pt:'Jogo personalizado' },
+            'custom-board-size': { zh:'棋盘大小', en:'Board Size', ja:'ボードサイズ', ko:'보드 크기', fr:'Taille plateau', de:'Brettgröße', es:'Tamaño tablero', ru:'Размер доски', it:'Dimensione', pt:'Tamanho' },
+            'custom-win-len': { zh:'连珠数', en:'Win Length', ja:'勝利連続数', ko:'승리 연속 수', fr:'Longueur victoire', de:'Sieg-Länge', es:'Longitud victoria', ru:'Длина победы', it:'Lunghezza vittoria', pt:'Comprimento vitória' },
+            'custom-board-w': { zh:'棋盘宽', en:'Board Width', ja:'ボード幅', ko:'보드 너비', fr:'Largeur', de:'Breite', es:'Ancho', ru:'Ширина', it:'Larghezza', pt:'Largura' },
+            'custom-board-h': { zh:'棋盘高', en:'Board Height', ja:'ボード高さ', ko:'보드 높이', fr:'Hauteur', de:'Höhe', es:'Alto', ru:'Высота', it:'Altezza', pt:'Altura' },
+            'custom-size': { zh:'自定', en:'Custom', ja:'カスタム', ko:'사용자 지정', fr:'Perso', de:'Benutzerdef.', es:'Perso', ru:'Свой', it:'Perso', pt:'Perso' },
             'theme-dark': { zh:'深色', en:'Dark', ja:'ダーク', ko:'다크', fr:'Sombre', de:'Dunkel', es:'Oscuro', ru:'Тёмная', it:'Scuro', pt:'Escuro' },
             'theme-light': { zh:'浅色', en:'Light', ja:'ライト', ko:'라이트', fr:'Clair', de:'Hell', es:'Claro', ru:'Светлая', it:'Chiaro', pt:'Claro' },
             'theme-auto': { zh:'自动', en:'Auto', ja:'自動', ko:'자동', fr:'Auto', de:'Auto', es:'Auto', ru:'Авто', it:'Auto', pt:'Auto' },
@@ -194,32 +219,50 @@
     const C4_ROWS = 6;
     const C4_COLS = 7;
 
+    const GMK_SIZE = 15;
+
     const xSvg = `<svg class="mark mark-x" viewBox="0 0 100 100"><path d="M25 25 L75 75 M75 25 L25 75" /></svg>`;
     const oSvg = `<svg class="mark mark-o" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" /></svg>`;
 
     /* ===== Changelog Data ===== */
     const changelogData = [
         {
+            version: '0.3.0',
+            date: { zh:'2026-04-17', en:'Apr 17, 2026', ja:'2026年4月17日', ko:'2026년 4월 17일', fr:'17 avr. 2026', de:'17. Apr. 2026', es:'17 abr. 2026', ru:'17 апр. 2026', it:'17 apr. 2026', pt:'17 de abr. de 2026' },
+            items: {
+                zh: ['新增五子棋（Gomoku）15×15 模式，含启发式 AI', '新增自定义游戏模式：可自由设置棋盘大小（3~20）和连珠数', '自定义模式支持 PvE / PvP / AI 对战', '五子棋 AI 采用威胁检测 + 局部搜索 + 启发式评估', '所有新模式 UI/UX 与 10 种语言同步'],
+                en: ['Added Gomoku 15×15 mode with heuristic AI', 'Added Custom Game mode: free board size (3~20) and win length', 'Custom mode supports PvE / PvP / AI vs AI', 'Gomoku AI uses threat detection + local search + heuristic eval', 'All new modes synced with 10 languages'],
+                ja: ['五目並べ 15×15 モード追加','カスタムゲームモード追加：ボードサイズ自由設定','カスタムモードは PvE/PvP/AI対AI 対応','五目並べ AI は脅威検出 + 局所探索','10言語対応'],
+                ko: ['오목 15×15 모드 추가','사용자 지정 게임 모드 추가: 보드 크기 자유 설정','사용자 지정 모드는 PvE/PvP/AI 대 AI 지원','오목 AI 는 위협 탐지 + 국부 탐색','10개 언어 동기화'],
+                fr: ['Gomoku 15×15 avec IA heuristique','Mode personnalisé : taille libre et longueur victoire','Perso supporte PvE/PvP/IA vs IA','IA Gomoku : détection menaces + recherche locale','10 langues synchronisées'],
+                de: ['Gomoku 15×15 mit heuristischer KI','Benutzerdef. Spiel: freie Brettgröße','Benutzerdef. unterstützt PvE/PvP/KI vs KI','Gomoku-KI: Bedrohungserkennung + lokale Suche','10 Sprachen synchronisiert'],
+                es: ['Gomoku 15×15 con IA heurística','Juego personalizado: tamaño libre','Personalizado soporta PvE/PvP/IA vs IA','IA Gomoku: detección de amenazas + búsqueda local','10 idiomas sincronizados'],
+                ru: ['Гомоку 15×15 с эвристическим ИИ','Своя игра: свободный размер доски','Своя игра поддерживает PvE/PvP/ИИ vs ИИ','ИИ Гомоку: обнаружение угроз + локальный поиск','10 языков синхронизированы'],
+                it: ['Gomoku 15×15 con IA euristica','Gioco personalizzato: dimensione libera','Personalizzato supporta PvE/PvP/AI vs AI','IA Gomoku: rilevamento minacce + ricerca locale','10 lingue sincronizzate'],
+                pt: ['Gomoku 15×15 com IA heurística','Jogo personalizado: tamanho livre','Personalizado suporta PvE/PvP/IA vs IA','IA Gomoku: detecção de ameaças + busca local','10 idiomas sincronizados'],
+            }
+        },
+        {
             version: '0.2.0',
             date: { zh:'2026-04-17', en:'Apr 17, 2026', ja:'2026年4月17日', ko:'2026년 4월 17일', fr:'17 avr. 2026', de:'17. Apr. 2026', es:'17 abr. 2026', ru:'17 апр. 2026', it:'17 apr. 2026', pt:'17 de abr. de 2026' },
             items: {
-                zh: ['新增四子棋（Connect Four）游戏模式', '新增 3D 棋盘视觉效果（透视旋转）', '音效系统全面升级：支持音高/音长/音量自定义调节', '新增 4 种音效风格（铃铛/太空/鼓点/钢琴）', '音效支持实时试听功能'],
-                en: ['Added Connect Four game mode', 'Added 3D board visual effect (perspective rotation)', 'Upgraded sound system: customizable pitch/duration/volume', 'Added 4 sound styles (Bell/Space/Drum/Piano)', 'Added real-time sound test button'],
-                ja: ['四目並べモード追加','3D ボード視覚効果追加','効果音カスタマイズ機能追加','4種類の効果音スタイル追加','効果音試聴機能追加'],
-                ko: ['사목 게임 모드 추가','3D 보드 시각 효과 추가','효과음 커스터마이징 추가','4가지 효과음 스타일 추가','효과음 시청 기능 추가'],
-                fr: ['Mode Puissance 4 ajouté','Effet visuel 3D ajouté','Personnalisation sonore','4 styles sonores ajoutés','Test sonore en direct'],
-                de: ['Vier-gewinnt-Modus hinzugefügt','3D-Brett-Effekt hinzugefügt','Klang-Anpassung','4 Tonstile hinzugefügt','Klang-Test'],
-                es: ['Modo Conecta 4 añadido','Efecto visual 3D añadido','Personalización de sonido','4 estilos de sonido añadidos','Prueba de sonido'],
-                ru: ['Режим 4 в ряд','3D-эффект доски','Настройка звука','4 новых стиля звука','Тест звука'],
-                it: ['Modalità Forza 4','Effetto 3D','Personalizzazione audio','4 stili audio','Test audio'],
-                pt: ['Modo Ligue 4','Efeito 3D','Personalização de som','4 estilos de som','Teste de som'],
+                zh: ['新增四子棋（Connect Four）游戏模式', '新增 3D 棋盘视觉效果', '音效系统全面升级：支持音高/音长/音量自定义', '新增 4 种音效风格（铃铛/太空/鼓点/钢琴）', '音效支持实时试听'],
+                en: ['Added Connect Four mode', 'Added 3D board effect', 'Upgraded sound: customizable pitch/duration/volume', 'Added 4 sound styles (Bell/Space/Drum/Piano)', 'Real-time sound test'],
+                ja: ['四目並べモード追加','3D ボード追加','効果音カスタマイズ追加','4種類の効果音スタイル追加','効果音試聴機能追加'],
+                ko: ['사목 모드 추가','3D 보드 추가','효과음 커스터마이징 추가','4가지 효과음 스타일 추가','효과음 시청 기능 추가'],
+                fr: ['Mode Puissance 4','Plateau 3D','Personnalisation sonore','4 styles sonores','Test sonore'],
+                de: ['Vier-gewinnt-Modus','3D-Brett','Klang-Anpassung','4 Tonstile','Klang-Test'],
+                es: ['Modo Conecta 4','Tablero 3D','Personalización de sonido','4 estilos de sonido','Prueba de sonido'],
+                ru: ['Режим 4 в ряд','3D доска','Настройка звука','4 стиля звука','Тест звука'],
+                it: ['Modalità Forza 4','Scacchiera 3D','Personalizzazione audio','4 stili audio','Test audio'],
+                pt: ['Modo Ligue 4','Tabuleiro 3D','Personalização de som','4 estilos de som','Teste de som'],
             }
         },
         {
             version: '0.1.2',
             date: { zh:'2026-04-17', en:'Apr 17, 2026', ja:'2026年4月17日', ko:'2026년 4월 17일', fr:'17 avr. 2026', de:'17. Apr. 2026', es:'17 abr. 2026', ru:'17 апр. 2026', it:'17 apr. 2026', pt:'17 de abr. de 2026' },
             items: {
-                zh: ['扩展至 10 种语言支持', '新增 10 种主题色 + 自定义颜色选择器', '新增对比度调节滑块', '新增 4 种字体切换', '新增动画速度调节（慢/中/快）', '新增 4 种音效风格（经典/电子/复古/木琴）', '新增公告 / 更新日志弹窗系统'],
+                zh: ['扩展至 10 种语言支持', '新增 10 种主题色 + 自定义颜色选择器', '新增对比度调节滑块', '新增 4 种字体切换', '新增动画速度调节', '新增 4 种音效风格', '新增公告 / 更新日志弹窗系统'],
                 en: ['Extended to 10 languages', 'Added 10 accent colors + custom color picker', 'Added contrast slider', 'Added 4 font options', 'Added animation speed control', 'Added 4 sound styles', 'Added changelog modal'],
                 ja: ['10言語対応拡張','10色アクセント+カスタムカラー','コントラスト調整','4フォント切替','アニメ速度調整','4効果音スタイル','更新履歴ポップアップ'],
                 ko: ['10개 언어 지원 확장','10가지 테마색 + 사용자 지정 색상','대비 조절 슬라이더','4가지 글꼴 전환','애니메이션 속도 조절','4가지 효과음 스타일','업데이트 공지 팝업'],
@@ -298,7 +341,9 @@
         if (currentMode === 'pve') subtitle.textContent = t('subtitle-pve');
         else if (currentMode === 'pvp') subtitle.textContent = t('subtitle-pvp');
         else if (currentMode === 'aivsai') subtitle.textContent = t('subtitle-aivsai');
-        else subtitle.textContent = t('subtitle-connect4');
+        else if (currentMode === 'connect4') subtitle.textContent = t('subtitle-connect4');
+        else if (currentMode === 'gomoku') subtitle.textContent = t('subtitle-gomoku');
+        else subtitle.textContent = t('subtitle-custom');
         renderChangelog();
     }
 
@@ -332,6 +377,7 @@
         buildLangGrid();
         buildColorPicker();
         buildC4Cells();
+        buildGomokuCells();
         cells.forEach(cell => cell.addEventListener('click', handleCellClick));
         restartBtn.addEventListener('click', resetGame);
         modalBtn.addEventListener('click', resetGame);
@@ -352,6 +398,8 @@
             btn.addEventListener('click', () => setSoundStyle(btn.dataset.sound)));
         document.querySelectorAll('#difficulty-segmented .seg-btn').forEach(btn =>
             btn.addEventListener('click', () => setDifficulty(btn.dataset.diff)));
+        document.querySelectorAll('#board-size-segmented .seg-btn').forEach(btn =>
+            btn.addEventListener('click', () => setCustomBoardSize(btn.dataset.size)));
 
         animToggle.addEventListener('change', e => setAnimations(e.target.checked));
         soundToggle.addEventListener('change', e => setSound(e.target.checked));
@@ -363,6 +411,10 @@
         durationSlider.addEventListener('input', e => { settings.soundDuration = parseInt(e.target.value); durationValue.textContent = settings.soundDuration + '%'; });
         volumeSlider.addEventListener('input', e => { settings.soundVolume = parseInt(e.target.value); volumeValue.textContent = settings.soundVolume + '%'; });
         testSoundBtn.addEventListener('click', () => { initAudio(); playMoveSound(PLAYER_X); });
+
+        customWinLenInput.addEventListener('change', e => { customConfig.winLen = clamp(parseInt(e.target.value) || 5, 3, 20); customWinLenInput.value = customConfig.winLen; if (currentMode === 'custom') resetGame(); });
+        customBoardWInput.addEventListener('change', e => { customConfig.w = clamp(parseInt(e.target.value) || 15, 3, 20); customBoardWInput.value = customConfig.w; if (currentMode === 'custom') resetGame(); });
+        customBoardHInput.addEventListener('change', e => { customConfig.h = clamp(parseInt(e.target.value) || 15, 3, 20); customBoardHInput.value = customConfig.h; if (currentMode === 'custom') resetGame(); });
 
         changelogBtn.addEventListener('click', openChangelog);
         changelogClose.addEventListener('click', closeChangelog);
@@ -382,6 +434,38 @@
                 cell.dataset.col = c;
                 cell.addEventListener('click', handleC4CellClick);
                 c4CellsContainer.appendChild(cell);
+            }
+        }
+    }
+
+    function buildGomokuCells() {
+        gomokuCellsContainer.innerHTML = '';
+        gomokuCellsContainer.style.gridTemplateColumns = `repeat(${GMK_SIZE}, 1fr)`;
+        gomokuCellsContainer.style.gridTemplateRows = `repeat(${GMK_SIZE}, 1fr)`;
+        for (let r = 0; r < GMK_SIZE; r++) {
+            for (let c = 0; c < GMK_SIZE; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'gomoku-cell';
+                cell.dataset.row = r;
+                cell.dataset.col = c;
+                cell.addEventListener('click', handleGmkCellClick);
+                gomokuCellsContainer.appendChild(cell);
+            }
+        }
+    }
+
+    function rebuildCustomBoard() {
+        gomokuCellsContainer.innerHTML = '';
+        gomokuCellsContainer.style.gridTemplateColumns = `repeat(${customConfig.w}, 1fr)`;
+        gomokuCellsContainer.style.gridTemplateRows = `repeat(${customConfig.h}, 1fr)`;
+        for (let r = 0; r < customConfig.h; r++) {
+            for (let c = 0; c < customConfig.w; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'gomoku-cell';
+                cell.dataset.row = r;
+                cell.dataset.col = c;
+                cell.addEventListener('click', handleGmkCellClick);
+                gomokuCellsContainer.appendChild(cell);
             }
         }
     }
@@ -460,13 +544,28 @@
         applySettingsUI();
         boardEl.classList.toggle('is-3d', on);
         connect4Board.classList.toggle('is-3d', on);
+        gomokuBoard.classList.toggle('is-3d', on);
     }
 
     function setDifficulty(diff) {
         if (settings.difficulty === diff) return;
         settings.difficulty = diff;
         applySettingsUI();
-        if (currentMode === 'pve') resetGame();
+        if (currentMode === 'pve' || currentMode === 'connect4' || currentMode === 'gomoku' || currentMode === 'custom') resetGame();
+    }
+
+    function setCustomBoardSize(size) {
+        settings.customBoardSize = size;
+        if (size === '3') { customConfig = { w: 3, h: 3, winLen: 3 }; }
+        else if (size === '5') { customConfig = { w: 5, h: 5, winLen: 4 }; }
+        else if (size === '7') { customConfig = { w: 7, h: 7, winLen: 4 }; }
+        else if (size === '10') { customConfig = { w: 10, h: 10, winLen: 5 }; }
+        else if (size === '15') { customConfig = { w: 15, h: 15, winLen: 5 }; }
+        applySettingsUI();
+        customWinLenInput.value = customConfig.winLen;
+        customBoardWInput.value = customConfig.w;
+        customBoardHInput.value = customConfig.h;
+        if (currentMode === 'custom') resetGame();
     }
 
     function applySettingsUI() {
@@ -475,6 +574,7 @@
         document.querySelectorAll('#anim-speed-segmented .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.speed === settings.animSpeed));
         document.querySelectorAll('#sound-style-segmented .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.sound === settings.soundStyle));
         document.querySelectorAll('#difficulty-segmented .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.diff === settings.difficulty));
+        document.querySelectorAll('#board-size-segmented .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.size === settings.customBoardSize));
         animToggle.checked = settings.animations;
         soundToggle.checked = settings.sound;
         toggle3d.checked = settings.board3d;
@@ -492,6 +592,7 @@
         document.body.classList.toggle('animations-off', !settings.animations);
         boardEl.classList.toggle('is-3d', settings.board3d);
         connect4Board.classList.toggle('is-3d', settings.board3d);
+        gomokuBoard.classList.toggle('is-3d', settings.board3d);
         const scale = settings.animSpeed === 'slow' ? 1.8 : settings.animSpeed === 'fast' ? 0.4 : 1;
         document.documentElement.style.setProperty('--anim-scale', scale);
         document.documentElement.style.setProperty('--contrast', settings.contrast / 100);
@@ -538,6 +639,10 @@
 
     function volMul() {
         return settings.soundVolume / 100;
+    }
+
+    function clamp(v, min, max) {
+        return Math.max(min, Math.min(max, v));
     }
 
     /* ===== Audio ===== */
@@ -623,7 +728,6 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration));
-        // harmonic
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
         osc2.type = 'sine';
@@ -675,9 +779,7 @@
     function playPiano(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        // fundamental
         playOsc(freq, 'sine', duration, vol * 0.6);
-        // harmonics for piano-like richness
         setTimeout(() => playOsc(freq * 2, 'sine', duration * 0.5, vol * 0.2), 10);
         setTimeout(() => playOsc(freq * 3, 'sine', duration * 0.3, vol * 0.1), 20);
     }
@@ -733,8 +835,12 @@
         if (currentMode === 'pve') subtitle.textContent = t('subtitle-pve');
         else if (currentMode === 'pvp') subtitle.textContent = t('subtitle-pvp');
         else if (currentMode === 'aivsai') subtitle.textContent = t('subtitle-aivsai');
-        else subtitle.textContent = t('subtitle-connect4');
-        aiDifficultyGroup.style.display = (currentMode === 'pve' || currentMode === 'connect4') ? 'flex' : 'none';
+        else if (currentMode === 'connect4') subtitle.textContent = t('subtitle-connect4');
+        else if (currentMode === 'gomoku') subtitle.textContent = t('subtitle-gomoku');
+        else subtitle.textContent = t('subtitle-custom');
+        const aiModes = ['pve', 'connect4', 'gomoku', 'custom'];
+        aiDifficultyGroup.style.display = aiModes.includes(currentMode) ? 'flex' : 'none';
+        customGameGroup.style.display = currentMode === 'custom' ? 'flex' : 'none';
         updateScoreLabels();
         resetGame();
     }
@@ -742,17 +848,14 @@
     function updateScoreLabels() {
         const labelX = document.querySelector('.score-card.player-x .label');
         const labelO = document.querySelector('.score-card.player-o .label');
-        if (currentMode === 'connect4') {
-            labelX.textContent = t('label-player-x');
-            labelO.textContent = currentMode === 'connect4' && (currentMode === 'pvp' ? t('label-player-o-pvp') : t('label-player-o'));
-        } else if (currentMode === 'pve') { labelX.textContent = t('label-player-x'); labelO.textContent = t('label-player-o'); }
+        if (currentMode === 'pve' || currentMode === 'connect4' || currentMode === 'gomoku' || currentMode === 'custom') { labelX.textContent = t('label-player-x'); labelO.textContent = t('label-player-o'); }
         else if (currentMode === 'pvp') { labelX.textContent = t('label-player-x-pvp'); labelO.textContent = t('label-player-o-pvp'); }
         else { labelX.textContent = t('label-player-x-ai'); labelO.textContent = t('label-player-o-ai'); }
     }
 
     function getTurnText() {
         if (currentMode === 'aivsai') return currentPlayer === PLAYER_X ? t('status-ai-x-thinking') : t('status-ai-o-thinking');
-        if (currentMode === 'pvp' || currentMode === 'connect4') return currentPlayer === PLAYER_X ? t('status-player1-turn') : t('status-player2-turn');
+        if (currentMode === 'pvp' || currentMode === 'connect4' || currentMode === 'gomoku' || currentMode === 'custom') return currentPlayer === PLAYER_X ? t('status-player1-turn') : t('status-player2-turn');
         return currentPlayer === PLAYER_X ? t('status-your-turn') : t('status-ai-thinking');
     }
 
@@ -851,12 +954,7 @@
     }
 
     function checkWinC4(row, col, player) {
-        const directions = [
-            [0, 1],  // horizontal
-            [1, 0],  // vertical
-            [1, 1],  // diag down-right
-            [1, -1], // diag down-left
-        ];
+        const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
         for (const [dr, dc] of directions) {
             const cells = [[row, col]];
             for (let step = 1; step < 4; step++) {
@@ -896,11 +994,11 @@
             let icon = '🎉', title, msg;
             if (winner === PLAYER_X) {
                 title = currentMode === 'pvp' || currentMode === 'connect4' ? t('modal-player1-wins') : t('modal-you-win');
-                msg = currentMode === 'pvp' || currentMode === 'connect4' ? t('modal-player1-wins') : t('modal-you-win');
+                msg = title;
                 updateStatus(title, 'x');
             } else {
                 title = currentMode === 'pvp' || currentMode === 'connect4' ? t('modal-player2-wins') : t('modal-ai-wins');
-                msg = currentMode === 'pvp' || currentMode === 'connect4' ? t('modal-player2-wins') : t('modal-ai-wins');
+                msg = title;
                 icon = currentMode === 'pvp' || currentMode === 'connect4' ? '🔥' : '🤖';
                 updateStatus(title, 'o');
             }
@@ -948,7 +1046,6 @@
     }
 
     function getC4EasyMove() {
-        // Win if possible
         for (let c = 0; c < C4_COLS; c++) {
             const r = getC4NextOpenRow(c);
             if (r === -1) continue;
@@ -957,7 +1054,6 @@
             c4Board[r][c] = '';
             if (win) return c;
         }
-        // Block if opponent can win
         for (let c = 0; c < C4_COLS; c++) {
             const r = getC4NextOpenRow(c);
             if (r === -1) continue;
@@ -966,7 +1062,6 @@
             c4Board[r][c] = '';
             if (win) return c;
         }
-        // Prefer center
         const prefs = [3, 2, 4, 1, 5, 0, 6];
         for (const c of prefs) {
             if (getC4NextOpenRow(c) !== -1) return c;
@@ -989,7 +1084,6 @@
     }
 
     function minimaxC4(depth, isMaximizing, aiPlayer, humanPlayer, alpha, beta) {
-        // Terminal checks
         for (let r = 0; r < C4_ROWS; r++) {
             for (let c = 0; c < C4_COLS; c++) {
                 if (c4Board[r][c] !== '') {
@@ -1030,12 +1124,10 @@
 
     function evaluateC4Board(aiPlayer, humanPlayer) {
         let score = 0;
-        // Center column preference
         for (let r = 0; r < C4_ROWS; r++) {
             if (c4Board[r][3] === aiPlayer) score += 3;
             else if (c4Board[r][3] === humanPlayer) score -= 3;
         }
-        // Check all windows of 4
         const directions = [[0,1],[1,0],[1,1],[1,-1]];
         for (let r = 0; r < C4_ROWS; r++) {
             for (let c = 0; c < C4_COLS; c++) {
@@ -1052,6 +1144,273 @@
                         if (humanCount > 0 && aiCount === 0) score -= humanCount * humanCount;
                     }
                 }
+            }
+        }
+        return score;
+    }
+
+    /* ===== Gomoku & Custom ===== */
+    function handleGmkCellClick(e) {
+        if (!gameActive || currentMode === 'aivsai') return;
+        if ((currentMode === 'pve' || currentMode === 'gomoku' || currentMode === 'custom') && currentPlayer !== PLAYER_X) return;
+
+        const row = parseInt(e.currentTarget.dataset.row);
+        const col = parseInt(e.currentTarget.dataset.col);
+        const board = getActiveGmkBoard();
+        if (board[row][col] !== '') return;
+
+        makeGmkMove(row, col, currentPlayer);
+
+        if (gameActive && (currentMode === 'pve' || currentMode === 'gomoku' || currentMode === 'custom')) {
+            updateStatus(getTurnText(), 'o');
+            lockGmkBoard(true);
+            const delay = settings.animations ? 800 : 100;
+            aiTimer = setTimeout(() => {
+                if (!gameActive) return;
+                const aiMove = getGmkAiMove();
+                if (aiMove) makeGmkMove(aiMove.r, aiMove.c, PLAYER_O);
+                lockGmkBoard(false);
+            }, delay);
+        }
+    }
+
+    function getActiveGmkBoard() {
+        if (currentMode === 'custom') return customBoard;
+        return gmkBoard;
+    }
+
+    function makeGmkMove(row, col, player) {
+        const board = getActiveGmkBoard();
+        const cfg = getActiveGmkConfig();
+        board[row][col] = player;
+        const cell = gomokuCellsContainer.children[row * cfg.w + col];
+        const piece = document.createElement('div');
+        piece.className = 'gomoku-piece ' + (player === PLAYER_X ? 'x-piece' : 'o-piece');
+        cell.appendChild(piece);
+        cell.classList.add('disabled');
+        playMoveSound(player);
+
+        const winCells = checkWinGmk(row, col, player, cfg.w, cfg.h, cfg.winLen, board);
+        if (winCells) {
+            endGmkGame(false, player, winCells);
+        } else if (checkDrawGmk(cfg.w, cfg.h, board)) {
+            endGmkGame(true);
+        } else {
+            currentPlayer = player === PLAYER_X ? PLAYER_O : PLAYER_X;
+            const activeClass = currentPlayer === PLAYER_X ? 'x' : 'o';
+            updateStatus(getTurnText(), activeClass);
+        }
+    }
+
+    function getActiveGmkConfig() {
+        if (currentMode === 'custom') return customConfig;
+        return { w: GMK_SIZE, h: GMK_SIZE, winLen: 5 };
+    }
+
+    function checkWinGmk(row, col, player, w, h, winLen, board) {
+        const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+        for (const [dr, dc] of directions) {
+            const cells = [[row, col]];
+            for (let step = 1; step < winLen; step++) {
+                const r = row + dr * step, c = col + dc * step;
+                if (r >= 0 && r < h && c >= 0 && c < w && board[r][c] === player) cells.push([r, c]);
+                else break;
+            }
+            for (let step = 1; step < winLen; step++) {
+                const r = row - dr * step, c = col - dc * step;
+                if (r >= 0 && r < h && c >= 0 && c < w && board[r][c] === player) cells.push([r, c]);
+                else break;
+            }
+            if (cells.length >= winLen) return cells;
+        }
+        return null;
+    }
+
+    function checkDrawGmk(w, h, board) {
+        for (let r = 0; r < h; r++) {
+            for (let c = 0; c < w; c++) {
+                if (board[r][c] === '') return false;
+            }
+        }
+        return true;
+    }
+
+    function endGmkGame(draw, winner, winCells) {
+        gameActive = false;
+        lockGmkBoard(true);
+
+        if (draw) {
+            scores.draw++;
+            animateScore(scoreDrawEl);
+            playDrawSound();
+            showModal('🤝', t('status-draw'), t('modal-draw-pvp'));
+            updateStatus(t('status-draw'), null);
+        } else {
+            scores[winner]++;
+            animateScore(winner === PLAYER_X ? scoreXEl : scoreOEl);
+            drawGmkWinLine(winCells);
+            playWinSound();
+            let icon = '🎉', title, msg;
+            if (winner === PLAYER_X) {
+                title = currentMode === 'pvp' || currentMode === 'gomoku' || currentMode === 'custom' ? t('modal-player1-wins') : t('modal-you-win');
+                msg = title;
+                updateStatus(title, 'x');
+            } else {
+                title = currentMode === 'pvp' || currentMode === 'gomoku' || currentMode === 'custom' ? t('modal-player2-wins') : t('modal-ai-wins');
+                msg = title;
+                icon = currentMode === 'pvp' || currentMode === 'gomoku' || currentMode === 'custom' ? '🔥' : '🤖';
+                updateStatus(title, 'o');
+            }
+            showModal(icon, title, msg);
+        }
+    }
+
+    function drawGmkWinLine(winCells) {
+        if (!winCells || winCells.length < 2) return;
+        const cfg = getActiveGmkConfig();
+        const [r1, c1] = winCells[0];
+        const [r2, c2] = winCells[winCells.length - 1];
+        const cell1 = gomokuCellsContainer.children[r1 * cfg.w + c1];
+        const cell2 = gomokuCellsContainer.children[r2 * cfg.w + c2];
+        const rect1 = cell1.getBoundingClientRect();
+        const rect2 = cell2.getBoundingClientRect();
+        const boardRect = gomokuBoard.getBoundingClientRect();
+        const padding = 6;
+        const innerW = boardRect.width - padding * 2;
+        const innerH = boardRect.height - padding * 2;
+        const scaleX = 1500 / innerW;
+        const scaleY = 1500 / innerH;
+
+        gomokuWinLineSvg.setAttribute('x1', (rect1.left + rect1.width / 2 - boardRect.left - padding) * scaleX);
+        gomokuWinLineSvg.setAttribute('y1', (rect1.top + rect1.height / 2 - boardRect.top - padding) * scaleY);
+        gomokuWinLineSvg.setAttribute('x2', (rect2.left + rect2.width / 2 - boardRect.left - padding) * scaleX);
+        gomokuWinLineSvg.setAttribute('y2', (rect2.top + rect2.height / 2 - boardRect.top - padding) * scaleY);
+        gomokuWinLineSvg.setAttribute('stroke', currentPlayer === PLAYER_X ? 'var(--x-color)' : 'var(--o-color)');
+        gomokuWinLine.classList.add('show');
+    }
+
+    function lockGmkBoard(lock) {
+        document.querySelectorAll('.gomoku-cell').forEach(cell => {
+            if (!cell.querySelector('.gomoku-piece')) cell.classList.toggle('disabled', lock);
+        });
+    }
+
+    /* ===== Gomoku AI ===== */
+    function getGmkAiMove() {
+        const diff = settings.difficulty;
+        const board = getActiveGmkBoard();
+        const cfg = getActiveGmkConfig();
+        if (diff === 'easy') return getGmkEasyMove(board, cfg);
+        if (diff === 'medium') return Math.random() < 0.5 ? getGmkBestMove(board, cfg) : getGmkEasyMove(board, cfg);
+        return getGmkBestMove(board, cfg);
+    }
+
+    function getGmkEasyMove(board, cfg) {
+        // Immediate win
+        for (let r = 0; r < cfg.h; r++) {
+            for (let c = 0; c < cfg.w; c++) {
+                if (board[r][c] !== '') continue;
+                board[r][c] = PLAYER_O;
+                const win = checkWinGmk(r, c, PLAYER_O, cfg.w, cfg.h, cfg.winLen, board);
+                board[r][c] = '';
+                if (win) return { r, c };
+            }
+        }
+        // Block immediate loss
+        for (let r = 0; r < cfg.h; r++) {
+            for (let c = 0; c < cfg.w; c++) {
+                if (board[r][c] !== '') continue;
+                board[r][c] = PLAYER_X;
+                const win = checkWinGmk(r, c, PLAYER_X, cfg.w, cfg.h, cfg.winLen, board);
+                board[r][c] = '';
+                if (win) return { r, c };
+            }
+        }
+        // Random near center
+        const candidates = [];
+        const centerR = Math.floor(cfg.h / 2);
+        const centerC = Math.floor(cfg.w / 2);
+        for (let r = 0; r < cfg.h; r++) {
+            for (let c = 0; c < cfg.w; c++) {
+                if (board[r][c] === '') {
+                    const dist = Math.abs(r - centerR) + Math.abs(c - centerC);
+                    candidates.push({ r, c, dist });
+                }
+            }
+        }
+        candidates.sort((a, b) => a.dist - b.dist);
+        const top = candidates.slice(0, Math.min(candidates.length, 20));
+        return top[Math.floor(Math.random() * top.length)];
+    }
+
+    function getGmkBestMove(board, cfg) {
+        let bestScore = -Infinity, bestMove = null;
+        const moves = generateGmkCandidates(board, cfg);
+        for (const move of moves) {
+            board[move.r][move.c] = PLAYER_O;
+            const score = evaluateGmkPosition(board, cfg, PLAYER_O, PLAYER_X);
+            board[move.r][move.c] = '';
+            if (score > bestScore) { bestScore = score; bestMove = move; }
+        }
+        return bestMove || getGmkEasyMove(board, cfg);
+    }
+
+    function generateGmkCandidates(board, cfg) {
+        const candidates = [];
+        const hasMoves = board.some(row => row.some(cell => cell !== ''));
+        if (!hasMoves) {
+            return [{ r: Math.floor(cfg.h / 2), c: Math.floor(cfg.w / 2) }];
+        }
+        for (let r = 0; r < cfg.h; r++) {
+            for (let c = 0; c < cfg.w; c++) {
+                if (board[r][c] !== '') continue;
+                let near = false;
+                for (let dr = -2; dr <= 2; dr++) {
+                    for (let dc = -2; dc <= 2; dc++) {
+                        const nr = r + dr, nc = c + dc;
+                        if (nr >= 0 && nr < cfg.h && nc >= 0 && nc < cfg.w && board[nr][nc] !== '') {
+                            near = true; break;
+                        }
+                    }
+                    if (near) break;
+                }
+                if (near) candidates.push({ r, c });
+            }
+        }
+        return candidates.length > 0 ? candidates : [{ r: Math.floor(cfg.h / 2), c: Math.floor(cfg.w / 2) }];
+    }
+
+    function evaluateGmkPosition(board, cfg, aiPlayer, humanPlayer) {
+        let score = 0;
+        const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+        for (let r = 0; r < cfg.h; r++) {
+            for (let c = 0; c < cfg.w; c++) {
+                for (const [dr, dc] of directions) {
+                    const window = [];
+                    for (let i = 0; i < cfg.winLen; i++) {
+                        const rr = r + dr * i, cc = c + dc * i;
+                        if (rr >= 0 && rr < cfg.h && cc >= 0 && cc < cfg.w) window.push(board[rr][cc]);
+                    }
+                    if (window.length === cfg.winLen) {
+                        const aiCount = window.filter(v => v === aiPlayer).length;
+                        const humanCount = window.filter(v => v === humanPlayer).length;
+                        if (aiCount === cfg.winLen) score += 100000;
+                        else if (humanCount === cfg.winLen) score -= 100000;
+                        else if (aiCount > 0 && humanCount === 0) score += Math.pow(10, aiCount);
+                        else if (humanCount > 0 && aiCount === 0) score -= Math.pow(10, humanCount);
+                    }
+                }
+            }
+        }
+        // Center control bonus
+        const centerR = Math.floor(cfg.h / 2);
+        const centerC = Math.floor(cfg.w / 2);
+        for (let r = 0; r < cfg.h; r++) {
+            for (let c = 0; c < cfg.w; c++) {
+                const dist = Math.abs(r - centerR) + Math.abs(c - centerC);
+                const bonus = Math.max(0, 10 - dist);
+                if (board[r][c] === aiPlayer) score += bonus;
+                else if (board[r][c] === humanPlayer) score -= bonus;
             }
         }
         return score;
@@ -1124,6 +1483,10 @@
         clearTimeout(aiTimer); aiTimer = null;
         gameActive = true;
         currentPlayer = PLAYER_X;
+        hideModal();
+        hideWinLine();
+        c4WinLine.classList.remove('show');
+        gomokuWinLine.classList.remove('show');
 
         if (isC4Mode()) {
             c4Board = Array(C4_ROWS).fill(null).map(() => Array(C4_COLS).fill(''));
@@ -1131,10 +1494,9 @@
                 cell.innerHTML = '';
                 cell.classList.remove('disabled');
             });
-            c4WinLine.classList.remove('show');
             connect4Board.style.display = 'block';
             boardEl.style.display = 'none';
-            hideModal();
+            gomokuBoard.style.display = 'none';
             updateStatus(getTurnText(), 'x');
             if (currentMode === 'connect4') {
                 lockC4Board(true);
@@ -1149,13 +1511,39 @@
                     lockC4Board(false);
                 }, delay);
             }
+        } else if (isGmkMode()) {
+            if (currentMode === 'custom') {
+                customBoard = Array(customConfig.h).fill(null).map(() => Array(customConfig.w).fill(''));
+                rebuildCustomBoard();
+            } else {
+                gmkBoard = Array(GMK_SIZE).fill(null).map(() => Array(GMK_SIZE).fill(''));
+                gomokuCellsContainer.style.gridTemplateColumns = `repeat(${GMK_SIZE}, 1fr)`;
+                gomokuCellsContainer.style.gridTemplateRows = `repeat(${GMK_SIZE}, 1fr)`;
+                document.querySelectorAll('.gomoku-cell').forEach(cell => {
+                    cell.innerHTML = '';
+                    cell.classList.remove('disabled');
+                });
+            }
+            gomokuBoard.style.display = 'block';
+            boardEl.style.display = 'none';
+            connect4Board.style.display = 'none';
+            updateStatus(getTurnText(), 'x');
+            if (currentMode === 'gomoku' || currentMode === 'custom') {
+                lockGmkBoard(true);
+                const delay = settings.animations ? 800 : 100;
+                aiTimer = setTimeout(() => {
+                    if (!gameActive) return;
+                    const aiMove = getGmkAiMove();
+                    if (aiMove) makeGmkMove(aiMove.r, aiMove.c, PLAYER_O);
+                    lockGmkBoard(false);
+                }, delay);
+            }
         } else {
             gameBoard = Array(9).fill('');
             cells.forEach(cell => { cell.innerHTML = ''; cell.classList.remove('disabled'); });
-            hideWinLine();
-            connect4Board.style.display = 'none';
             boardEl.style.display = 'grid';
-            hideModal();
+            connect4Board.style.display = 'none';
+            gomokuBoard.style.display = 'none';
             updateStatus(getTurnText(), 'x');
             if (currentMode === 'aivsai') startAiVsAi();
         }
@@ -1163,6 +1551,10 @@
 
     function isC4Mode() {
         return currentMode === 'connect4';
+    }
+
+    function isGmkMode() {
+        return currentMode === 'gomoku' || currentMode === 'custom';
     }
 
     /* ===== Modal ===== */

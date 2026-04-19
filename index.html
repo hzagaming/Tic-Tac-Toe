@@ -27,6 +27,8 @@
             <button class="mode-btn" data-mode="pvp" data-i18n="mode-pvp">双人</button>
             <button class="mode-btn" data-mode="aivsai" data-i18n="mode-aivsai">AI 对战</button>
             <button class="mode-btn" data-mode="connect4" data-i18n="mode-connect4">四子棋</button>
+            <button class="mode-btn" data-mode="gomoku" data-i18n="mode-gomoku">五子棋</button>
+            <button class="mode-btn" data-mode="custom" data-i18n="mode-custom">自定义</button>
         </div>
 
         <div class="scoreboard" id="scoreboard">
@@ -69,6 +71,14 @@
             <div class="c4-cells" id="c4-cells"></div>
             <svg class="c4-win-line" id="c4-win-line" viewBox="0 0 700 600" preserveAspectRatio="none">
                 <line x1="0" y1="0" x2="0" y2="0" stroke-width="8" stroke-linecap="round" />
+            </svg>
+        </div>
+
+        <!-- Gomoku Board -->
+        <div class="gomoku-board" id="gomoku-board">
+            <div class="gomoku-cells" id="gomoku-cells"></div>
+            <svg class="gomoku-win-line" id="gomoku-win-line" viewBox="0 0 1500 1500" preserveAspectRatio="none">
+                <line x1="0" y1="0" x2="0" y2="0" stroke-width="6" stroke-linecap="round" />
             </svg>
         </div>
 
@@ -240,6 +250,34 @@
                     <input type="range" class="range-slider" id="volume-slider" min="0" max="100" value="80">
                 </div>
                 <button class="btn btn-test-sound" id="test-sound-btn" data-i18n="sound-test">试听</button>
+            </div>
+
+            <!-- Custom Game Settings -->
+            <div class="setting-group" id="custom-game-group">
+                <label class="setting-label" data-i18n="setting-custom-game">自定义游戏</label>
+                <div class="custom-game-row">
+                    <label class="setting-label sub" data-i18n="custom-board-size">棋盘大小</label>
+                    <div class="segmented" id="board-size-segmented">
+                        <button class="seg-btn" data-size="3">3×3</button>
+                        <button class="seg-btn" data-size="5">5×5</button>
+                        <button class="seg-btn" data-size="7">7×7</button>
+                        <button class="seg-btn" data-size="10">10×10</button>
+                        <button class="seg-btn" data-size="15">15×15</button>
+                        <button class="seg-btn active" data-size="custom" data-i18n="custom-size">自定</button>
+                    </div>
+                </div>
+                <div class="custom-game-row">
+                    <label class="setting-label sub" data-i18n="custom-win-len">连珠数</label>
+                    <input type="number" class="custom-input" id="custom-win-len" min="3" max="15" value="5">
+                </div>
+                <div class="custom-game-row">
+                    <label class="setting-label sub" data-i18n="custom-board-w">棋盘宽</label>
+                    <input type="number" class="custom-input" id="custom-board-w" min="3" max="20" value="15">
+                </div>
+                <div class="custom-game-row">
+                    <label class="setting-label sub" data-i18n="custom-board-h">棋盘高</label>
+                    <input type="number" class="custom-input" id="custom-board-h" min="3" max="20" value="15">
+                </div>
             </div>
 
             <!-- AI Difficulty -->
