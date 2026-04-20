@@ -137,7 +137,8 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 
 /* ===== Mode Switch ===== */
-.mode-switch {
+.mode-switch,
+.battle-switch {
     display: flex;
     background: var(--surface);
     border-radius: 14px;
@@ -148,7 +149,13 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     flex-wrap: wrap;
 }
 
-.mode-btn {
+.battle-switch {
+    margin-top: -0.5rem;
+    animation: fade-in-up calc(0.4s * var(--anim-scale)) ease-out both;
+}
+
+.mode-btn,
+.battle-btn {
     flex: 1;
     min-width: 52px;
     border: none;
@@ -164,12 +171,20 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     white-space: nowrap;
 }
 
-.mode-btn:hover { color: var(--text); }
+.mode-btn:hover,
+.battle-btn:hover { color: var(--text); }
 
-.mode-btn.active {
+.mode-btn.active,
+.battle-btn.active {
     background: var(--surface-light);
     color: var(--text);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.battle-btn.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 8px hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.4);
 }
 
 /* ===== Scoreboard ===== */
@@ -1050,6 +1065,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     .game-wrapper { gap: 1rem; }
     .lang-grid { grid-template-columns: repeat(5, 1fr); }
     .color-picker { grid-template-columns: repeat(5, 1fr); }
-    .mode-btn { font-size: 0.6rem; padding: 0.45rem 0.05rem; }
+    .mode-btn,
+    .battle-btn { font-size: 0.6rem; padding: 0.45rem 0.05rem; }
     .gomoku-piece { width: 65%; height: 65%; }
 }

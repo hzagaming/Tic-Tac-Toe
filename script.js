@@ -29,6 +29,8 @@
     const scoreDrawEl = document.getElementById('score-draw');
     const modeSwitch = document.getElementById('mode-switch');
     const modeBtns = Array.from(document.querySelectorAll('.mode-btn'));
+    const battleSwitch = document.getElementById('battle-switch');
+    const battleBtns = Array.from(document.querySelectorAll('.battle-btn'));
     const subtitle = document.getElementById('subtitle');
     const aiDifficultyGroup = document.getElementById('ai-difficulty-group');
     const customGameGroup = document.getElementById('custom-game-group');
@@ -67,6 +69,7 @@
     let gameActive = true;
     let currentPlayer = PLAYER_X;
     let currentMode = 'pve';
+    let battleMode = 'pve';
     let scores = { X: 0, O: 0, draw: 0 };
     let aiTimer = null;
     let audioCtx = null;
@@ -227,6 +230,22 @@
     /* ===== Changelog Data ===== */
     const changelogData = [
         {
+            version: '0.4.0',
+            date: { zh:'2026-04-20', en:'Apr 20, 2026', ja:'2026年4月20日', ko:'2026년 4월 20일', fr:'20 avr. 2026', de:'20. Apr. 2026', es:'20 abr. 2026', ru:'20 апр. 2026', it:'20 apr. 2026', pt:'20 de abr. de 2026' },
+            items: {
+                zh: ['五子棋、四子棋、自定义模式新增 PvP 和 AI 对战方式', '新增 battle-switch 对战方式切换栏', 'AI 算法适配 AI vs AI 模式（支持 X/O 双方自动对弈）', '所有对战模式支持 10 种语言同步'],
+                en: ['Added PvP and AI vs AI modes to Gomoku, Connect Four and Custom', 'Added battle-switch sub-mode toggle bar', 'AI algorithms adapted for AI vs AI (both X and O sides)', 'All battle modes synced with 10 languages'],
+                ja: ['五目/四目/カスタムにPvP・AI対AIモード追加','battle-switch サブモード切替追加','AI対AIに対応（X/O双方自動対戦）','10言語対応'],
+                ko: ['오목/사목/사용자 지정에 PvP 및 AI 대 AI 추가','battle-switch 서브 모드 전환 추가','AI 대 AI 지원 (X/O 양측 자동 대전)','10개 언어 동기화'],
+                fr: ['Ajout PvP et IA vs IA pour Gomoku, Puissance 4 et Perso','Ajout barre battle-switch','IA adaptée pour IA vs IA (X et O)','10 langues synchronisées'],
+                de: ['PvP und KI vs KI für Gomoku, Vier gewinnt und Benutzerdef.','battle-switch Untermodus hinzugefügt','KI angepasst für KI vs KI (X und O)','10 Sprachen synchronisiert'],
+                es: ['PvP e IA vs IA para Gomoku, Conecta 4 y Personalizado','Barra battle-switch añadida','IA adaptada para IA vs IA (X y O)','10 idiomas sincronizados'],
+                ru: ['PvP и ИИ vs ИИ для Гомоку, 4 в ряд и Своя игра','Добавлена панель battle-switch','ИИ адаптирован для ИИ vs ИИ (X и O)','10 языков синхронизированы'],
+                it: ['PvP e AI vs AI per Gomoku, Forza 4 e Personalizzato','Aggiunta barra battle-switch','IA adattata per AI vs AI (X e O)','10 lingue sincronizzate'],
+                pt: ['PvP e IA vs IA para Gomoku, Ligue 4 e Personalizado','Barra battle-switch adicionada','IA adaptada para IA vs IA (X e O)','10 idiomas sincronizados'],
+            }
+        },
+        {
             version: '0.3.0',
             date: { zh:'2026-04-17', en:'Apr 17, 2026', ja:'2026年4月17日', ko:'2026년 4월 17일', fr:'17 avr. 2026', de:'17. Apr. 2026', es:'17 abr. 2026', ru:'17 апр. 2026', it:'17 apr. 2026', pt:'17 de abr. de 2026' },
             items: {
@@ -338,12 +357,13 @@
         });
         updateScoreLabels();
         updateStatus(getTurnText(), currentPlayer === PLAYER_X ? 'x' : 'o');
+        const bm = getEffectiveBattleMode();
         if (currentMode === 'pve') subtitle.textContent = t('subtitle-pve');
         else if (currentMode === 'pvp') subtitle.textContent = t('subtitle-pvp');
         else if (currentMode === 'aivsai') subtitle.textContent = t('subtitle-aivsai');
-        else if (currentMode === 'connect4') subtitle.textContent = t('subtitle-connect4');
-        else if (currentMode === 'gomoku') subtitle.textContent = t('subtitle-gomoku');
-        else subtitle.textContent = t('subtitle-custom');
+        else if (currentMode === 'connect4') subtitle.textContent = bm === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
+        else if (currentMode === 'gomoku') subtitle.textContent = bm === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
+        else subtitle.textContent = bm === 'pvp' ? t('subtitle-custom') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-custom') + ' — ' + t('subtitle-aivsai') : t('subtitle-custom');
         renderChangelog();
     }
 
@@ -383,6 +403,7 @@
         modalBtn.addEventListener('click', resetGame);
         modal.addEventListener('click', e => { if (e.target === modal) resetGame(); });
         modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
+        battleBtns.forEach(btn => btn.addEventListener('click', () => setBattleMode(btn.dataset.battle)));
 
         settingsBtn.addEventListener('click', openDrawer);
         drawerClose.addEventListener('click', closeDrawer);
@@ -832,12 +853,23 @@
         if (currentMode === mode) return;
         currentMode = mode;
         modeBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+        const bm2 = getEffectiveBattleMode();
         if (currentMode === 'pve') subtitle.textContent = t('subtitle-pve');
         else if (currentMode === 'pvp') subtitle.textContent = t('subtitle-pvp');
         else if (currentMode === 'aivsai') subtitle.textContent = t('subtitle-aivsai');
-        else if (currentMode === 'connect4') subtitle.textContent = t('subtitle-connect4');
-        else if (currentMode === 'gomoku') subtitle.textContent = t('subtitle-gomoku');
-        else subtitle.textContent = t('subtitle-custom');
+        else if (currentMode === 'connect4') subtitle.textContent = bm2 === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
+        else if (currentMode === 'gomoku') subtitle.textContent = bm2 === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
+        else subtitle.textContent = bm2 === 'pvp' ? t('subtitle-custom') + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-custom') + ' — ' + t('subtitle-aivsai') : t('subtitle-custom');
+
+        // Show battle-switch for board games that need sub-modes
+        const boardGames = ['connect4', 'gomoku', 'custom'];
+        if (boardGames.includes(currentMode)) {
+            battleSwitch.style.display = 'flex';
+        } else {
+            battleSwitch.style.display = 'none';
+            battleMode = currentMode; // sync for ttt modes
+        }
+
         const aiModes = ['pve', 'connect4', 'gomoku', 'custom'];
         aiDifficultyGroup.style.display = aiModes.includes(currentMode) ? 'flex' : 'none';
         customGameGroup.style.display = currentMode === 'custom' ? 'flex' : 'none';
@@ -845,17 +877,37 @@
         resetGame();
     }
 
+    function setBattleMode(mode) {
+        clearTimeout(aiTimer); aiTimer = null;
+        if (battleMode === mode) return;
+        battleMode = mode;
+        battleBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.battle === mode));
+        const bm = getEffectiveBattleMode();
+        if (currentMode === 'connect4') subtitle.textContent = bm === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
+        else if (currentMode === 'gomoku') subtitle.textContent = bm === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
+        else if (currentMode === 'custom') subtitle.textContent = bm === 'pvp' ? t('subtitle-custom') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-custom') + ' — ' + t('subtitle-aivsai') : t('subtitle-custom');
+        updateScoreLabels();
+        resetGame();
+    }
+
     function updateScoreLabels() {
         const labelX = document.querySelector('.score-card.player-x .label');
         const labelO = document.querySelector('.score-card.player-o .label');
-        if (currentMode === 'pve' || currentMode === 'connect4' || currentMode === 'gomoku' || currentMode === 'custom') { labelX.textContent = t('label-player-x'); labelO.textContent = t('label-player-o'); }
-        else if (currentMode === 'pvp') { labelX.textContent = t('label-player-x-pvp'); labelO.textContent = t('label-player-o-pvp'); }
+        const bm = getEffectiveBattleMode();
+        if (bm === 'pve') { labelX.textContent = t('label-player-x'); labelO.textContent = t('label-player-o'); }
+        else if (bm === 'pvp') { labelX.textContent = t('label-player-x-pvp'); labelO.textContent = t('label-player-o-pvp'); }
         else { labelX.textContent = t('label-player-x-ai'); labelO.textContent = t('label-player-o-ai'); }
     }
 
+    function getEffectiveBattleMode() {
+        if (currentMode === 'connect4' || currentMode === 'gomoku' || currentMode === 'custom') return battleMode;
+        return currentMode;
+    }
+
     function getTurnText() {
-        if (currentMode === 'aivsai') return currentPlayer === PLAYER_X ? t('status-ai-x-thinking') : t('status-ai-o-thinking');
-        if (currentMode === 'pvp' || currentMode === 'connect4' || currentMode === 'gomoku' || currentMode === 'custom') return currentPlayer === PLAYER_X ? t('status-player1-turn') : t('status-player2-turn');
+        const bm = getEffectiveBattleMode();
+        if (bm === 'aivsai') return currentPlayer === PLAYER_X ? t('status-ai-x-thinking') : t('status-ai-o-thinking');
+        if (bm === 'pvp') return currentPlayer === PLAYER_X ? t('status-player1-turn') : t('status-player2-turn');
         return currentPlayer === PLAYER_X ? t('status-your-turn') : t('status-ai-thinking');
     }
 
@@ -900,8 +952,9 @@
 
     /* ===== Connect Four ===== */
     function handleC4CellClick(e) {
-        if (!gameActive || currentMode === 'aivsai') return;
-        if ((currentMode === 'pve' || currentMode === 'connect4') && currentPlayer !== PLAYER_X) return;
+        const bm = getEffectiveBattleMode();
+        if (!gameActive || bm === 'aivsai') return;
+        if (bm === 'pve' && currentPlayer !== PLAYER_X) return;
 
         const col = parseInt(e.currentTarget.dataset.col);
         const row = getC4NextOpenRow(col);
@@ -909,13 +962,13 @@
 
         makeC4Move(row, col, currentPlayer);
 
-        if (gameActive && (currentMode === 'pve' || currentMode === 'connect4')) {
+        if (gameActive && bm === 'pve') {
             updateStatus(getTurnText(), 'o');
             lockC4Board(true);
             const delay = settings.animations ? 600 : 80;
             aiTimer = setTimeout(() => {
                 if (!gameActive) return;
-                const aiCol = getC4AiMove();
+                const aiCol = getC4AiMove(PLAYER_O);
                 if (aiCol !== -1) {
                     const aiRow = getC4NextOpenRow(aiCol);
                     makeC4Move(aiRow, aiCol, PLAYER_O);
@@ -979,12 +1032,14 @@
     function endC4Game(draw, winner, winCells) {
         gameActive = false;
         lockC4Board(true);
+        const bm = getEffectiveBattleMode();
 
         if (draw) {
             scores.draw++;
             animateScore(scoreDrawEl);
             playDrawSound();
-            showModal('🤝', t('status-draw'), t('modal-draw-pvp'));
+            const msg = bm === 'aivsai' ? t('modal-draw-aivsai') : t('modal-draw-pvp');
+            showModal('🤝', t('status-draw'), msg);
             updateStatus(t('status-draw'), null);
         } else {
             scores[winner]++;
@@ -993,13 +1048,14 @@
             playWinSound();
             let icon = '🎉', title, msg;
             if (winner === PLAYER_X) {
-                title = currentMode === 'pvp' || currentMode === 'connect4' ? t('modal-player1-wins') : t('modal-you-win');
-                msg = title;
+                if (bm === 'aivsai') { title = t('modal-ai-x-wins'); msg = title; icon = '⚡'; }
+                else if (bm === 'pvp') { title = t('modal-player1-wins'); msg = title; }
+                else { title = t('modal-you-win'); msg = title; }
                 updateStatus(title, 'x');
             } else {
-                title = currentMode === 'pvp' || currentMode === 'connect4' ? t('modal-player2-wins') : t('modal-ai-wins');
-                msg = title;
-                icon = currentMode === 'pvp' || currentMode === 'connect4' ? '🔥' : '🤖';
+                if (bm === 'aivsai') { title = t('modal-ai-o-wins'); msg = title; icon = '⚡'; }
+                else if (bm === 'pvp') { title = t('modal-player2-wins'); msg = title; icon = '🔥'; }
+                else { title = t('modal-ai-wins'); msg = title; icon = '🤖'; }
                 updateStatus(title, 'o');
             }
             showModal(icon, title, msg);
@@ -1038,27 +1094,28 @@
     }
 
     /* ===== Connect Four AI ===== */
-    function getC4AiMove() {
+    function getC4AiMove(aiPlayer) {
         const diff = settings.difficulty;
-        if (diff === 'hard') return getC4BestMove(PLAYER_O);
-        if (diff === 'easy') return getC4EasyMove();
-        return Math.random() < 0.5 ? getC4BestMove(PLAYER_O) : getC4EasyMove();
+        if (diff === 'hard') return getC4BestMove(aiPlayer);
+        if (diff === 'easy') return getC4EasyMove(aiPlayer);
+        return Math.random() < 0.5 ? getC4BestMove(aiPlayer) : getC4EasyMove(aiPlayer);
     }
 
-    function getC4EasyMove() {
+    function getC4EasyMove(aiPlayer) {
+        const humanPlayer = aiPlayer === PLAYER_X ? PLAYER_O : PLAYER_X;
         for (let c = 0; c < C4_COLS; c++) {
             const r = getC4NextOpenRow(c);
             if (r === -1) continue;
-            c4Board[r][c] = PLAYER_O;
-            const win = checkWinC4(r, c, PLAYER_O);
+            c4Board[r][c] = aiPlayer;
+            const win = checkWinC4(r, c, aiPlayer);
             c4Board[r][c] = '';
             if (win) return c;
         }
         for (let c = 0; c < C4_COLS; c++) {
             const r = getC4NextOpenRow(c);
             if (r === -1) continue;
-            c4Board[r][c] = PLAYER_X;
-            const win = checkWinC4(r, c, PLAYER_X);
+            c4Board[r][c] = humanPlayer;
+            const win = checkWinC4(r, c, humanPlayer);
             c4Board[r][c] = '';
             if (win) return c;
         }
@@ -1151,8 +1208,9 @@
 
     /* ===== Gomoku & Custom ===== */
     function handleGmkCellClick(e) {
-        if (!gameActive || currentMode === 'aivsai') return;
-        if ((currentMode === 'pve' || currentMode === 'gomoku' || currentMode === 'custom') && currentPlayer !== PLAYER_X) return;
+        const bm = getEffectiveBattleMode();
+        if (!gameActive || bm === 'aivsai') return;
+        if (bm === 'pve' && currentPlayer !== PLAYER_X) return;
 
         const row = parseInt(e.currentTarget.dataset.row);
         const col = parseInt(e.currentTarget.dataset.col);
@@ -1161,13 +1219,13 @@
 
         makeGmkMove(row, col, currentPlayer);
 
-        if (gameActive && (currentMode === 'pve' || currentMode === 'gomoku' || currentMode === 'custom')) {
+        if (gameActive && bm === 'pve') {
             updateStatus(getTurnText(), 'o');
             lockGmkBoard(true);
             const delay = settings.animations ? 800 : 100;
             aiTimer = setTimeout(() => {
                 if (!gameActive) return;
-                const aiMove = getGmkAiMove();
+                const aiMove = getGmkAiMove(PLAYER_O);
                 if (aiMove) makeGmkMove(aiMove.r, aiMove.c, PLAYER_O);
                 lockGmkBoard(false);
             }, delay);
@@ -1238,12 +1296,14 @@
     function endGmkGame(draw, winner, winCells) {
         gameActive = false;
         lockGmkBoard(true);
+        const bm = getEffectiveBattleMode();
 
         if (draw) {
             scores.draw++;
             animateScore(scoreDrawEl);
             playDrawSound();
-            showModal('🤝', t('status-draw'), t('modal-draw-pvp'));
+            const msg = bm === 'aivsai' ? t('modal-draw-aivsai') : t('modal-draw-pvp');
+            showModal('🤝', t('status-draw'), msg);
             updateStatus(t('status-draw'), null);
         } else {
             scores[winner]++;
@@ -1252,13 +1312,14 @@
             playWinSound();
             let icon = '🎉', title, msg;
             if (winner === PLAYER_X) {
-                title = currentMode === 'pvp' || currentMode === 'gomoku' || currentMode === 'custom' ? t('modal-player1-wins') : t('modal-you-win');
-                msg = title;
+                if (bm === 'aivsai') { title = t('modal-ai-x-wins'); msg = title; icon = '⚡'; }
+                else if (bm === 'pvp') { title = t('modal-player1-wins'); msg = title; }
+                else { title = t('modal-you-win'); msg = title; }
                 updateStatus(title, 'x');
             } else {
-                title = currentMode === 'pvp' || currentMode === 'gomoku' || currentMode === 'custom' ? t('modal-player2-wins') : t('modal-ai-wins');
-                msg = title;
-                icon = currentMode === 'pvp' || currentMode === 'gomoku' || currentMode === 'custom' ? '🔥' : '🤖';
+                if (bm === 'aivsai') { title = t('modal-ai-o-wins'); msg = title; icon = '⚡'; }
+                else if (bm === 'pvp') { title = t('modal-player2-wins'); msg = title; icon = '🔥'; }
+                else { title = t('modal-ai-wins'); msg = title; icon = '🤖'; }
                 updateStatus(title, 'o');
             }
             showModal(icon, title, msg);
@@ -1296,22 +1357,23 @@
     }
 
     /* ===== Gomoku AI ===== */
-    function getGmkAiMove() {
+    function getGmkAiMove(aiPlayer) {
         const diff = settings.difficulty;
         const board = getActiveGmkBoard();
         const cfg = getActiveGmkConfig();
-        if (diff === 'easy') return getGmkEasyMove(board, cfg);
-        if (diff === 'medium') return Math.random() < 0.5 ? getGmkBestMove(board, cfg) : getGmkEasyMove(board, cfg);
-        return getGmkBestMove(board, cfg);
+        const humanPlayer = aiPlayer === PLAYER_X ? PLAYER_O : PLAYER_X;
+        if (diff === 'easy') return getGmkEasyMove(board, cfg, aiPlayer, humanPlayer);
+        if (diff === 'medium') return Math.random() < 0.5 ? getGmkBestMove(board, cfg, aiPlayer, humanPlayer) : getGmkEasyMove(board, cfg, aiPlayer, humanPlayer);
+        return getGmkBestMove(board, cfg, aiPlayer, humanPlayer);
     }
 
-    function getGmkEasyMove(board, cfg) {
+    function getGmkEasyMove(board, cfg, aiPlayer, humanPlayer) {
         // Immediate win
         for (let r = 0; r < cfg.h; r++) {
             for (let c = 0; c < cfg.w; c++) {
                 if (board[r][c] !== '') continue;
-                board[r][c] = PLAYER_O;
-                const win = checkWinGmk(r, c, PLAYER_O, cfg.w, cfg.h, cfg.winLen, board);
+                board[r][c] = aiPlayer;
+                const win = checkWinGmk(r, c, aiPlayer, cfg.w, cfg.h, cfg.winLen, board);
                 board[r][c] = '';
                 if (win) return { r, c };
             }
@@ -1320,8 +1382,8 @@
         for (let r = 0; r < cfg.h; r++) {
             for (let c = 0; c < cfg.w; c++) {
                 if (board[r][c] !== '') continue;
-                board[r][c] = PLAYER_X;
-                const win = checkWinGmk(r, c, PLAYER_X, cfg.w, cfg.h, cfg.winLen, board);
+                board[r][c] = humanPlayer;
+                const win = checkWinGmk(r, c, humanPlayer, cfg.w, cfg.h, cfg.winLen, board);
                 board[r][c] = '';
                 if (win) return { r, c };
             }
@@ -1343,16 +1405,16 @@
         return top[Math.floor(Math.random() * top.length)];
     }
 
-    function getGmkBestMove(board, cfg) {
+    function getGmkBestMove(board, cfg, aiPlayer, humanPlayer) {
         let bestScore = -Infinity, bestMove = null;
         const moves = generateGmkCandidates(board, cfg);
         for (const move of moves) {
-            board[move.r][move.c] = PLAYER_O;
-            const score = evaluateGmkPosition(board, cfg, PLAYER_O, PLAYER_X);
+            board[move.r][move.c] = aiPlayer;
+            const score = evaluateGmkPosition(board, cfg, aiPlayer, humanPlayer);
             board[move.r][move.c] = '';
             if (score > bestScore) { bestScore = score; bestMove = move; }
         }
-        return bestMove || getGmkEasyMove(board, cfg);
+        return bestMove || getGmkEasyMove(board, cfg, aiPlayer, humanPlayer);
     }
 
     function generateGmkCandidates(board, cfg) {
@@ -1498,18 +1560,21 @@
             boardEl.style.display = 'none';
             gomokuBoard.style.display = 'none';
             updateStatus(getTurnText(), 'x');
-            if (currentMode === 'connect4') {
+            const bm = getEffectiveBattleMode();
+            if (bm === 'pve') {
                 lockC4Board(true);
                 const delay = settings.animations ? 600 : 80;
                 aiTimer = setTimeout(() => {
                     if (!gameActive) return;
-                    const aiCol = getC4AiMove();
+                    const aiCol = getC4AiMove(PLAYER_O);
                     if (aiCol !== -1) {
                         const aiRow = getC4NextOpenRow(aiCol);
                         makeC4Move(aiRow, aiCol, PLAYER_O);
                     }
                     lockC4Board(false);
                 }, delay);
+            } else if (bm === 'aivsai') {
+                startC4AiVsAi();
             }
         } else if (isGmkMode()) {
             if (currentMode === 'custom') {
@@ -1528,15 +1593,18 @@
             boardEl.style.display = 'none';
             connect4Board.style.display = 'none';
             updateStatus(getTurnText(), 'x');
-            if (currentMode === 'gomoku' || currentMode === 'custom') {
+            const bm = getEffectiveBattleMode();
+            if (bm === 'pve') {
                 lockGmkBoard(true);
                 const delay = settings.animations ? 800 : 100;
                 aiTimer = setTimeout(() => {
                     if (!gameActive) return;
-                    const aiMove = getGmkAiMove();
+                    const aiMove = getGmkAiMove(PLAYER_O);
                     if (aiMove) makeGmkMove(aiMove.r, aiMove.c, PLAYER_O);
                     lockGmkBoard(false);
                 }, delay);
+            } else if (bm === 'aivsai') {
+                startGmkAiVsAi();
             }
         } else {
             gameBoard = Array(9).fill('');
@@ -1682,6 +1750,49 @@
             } else {
                 const nextDelay = settings.animations ? 1200 : 300;
                 aiTimer = setTimeout(() => { if (currentMode === 'aivsai') resetGame(); }, nextDelay);
+            }
+        }, delay);
+    }
+
+    /* ===== AI vs AI Connect Four ===== */
+    function startC4AiVsAi() {
+        if (!gameActive || !isC4Mode()) return;
+        if (getEffectiveBattleMode() !== 'aivsai') return;
+        lockC4Board(true);
+        const delay = settings.animations ? 500 : 60;
+        aiTimer = setTimeout(() => {
+            if (!gameActive || !isC4Mode()) return;
+            if (getEffectiveBattleMode() !== 'aivsai') return;
+            const aiCol = getC4AiMove(currentPlayer);
+            if (aiCol !== -1) {
+                const aiRow = getC4NextOpenRow(aiCol);
+                makeC4Move(aiRow, aiCol, currentPlayer);
+            }
+            if (gameActive) {
+                startC4AiVsAi();
+            } else {
+                const nextDelay = settings.animations ? 1200 : 300;
+                aiTimer = setTimeout(() => { if (isC4Mode() && getEffectiveBattleMode() === 'aivsai') resetGame(); }, nextDelay);
+            }
+        }, delay);
+    }
+
+    /* ===== AI vs AI Gomoku / Custom ===== */
+    function startGmkAiVsAi() {
+        if (!gameActive || !isGmkMode()) return;
+        if (getEffectiveBattleMode() !== 'aivsai') return;
+        lockGmkBoard(true);
+        const delay = settings.animations ? 600 : 80;
+        aiTimer = setTimeout(() => {
+            if (!gameActive || !isGmkMode()) return;
+            if (getEffectiveBattleMode() !== 'aivsai') return;
+            const aiMove = getGmkAiMove(currentPlayer);
+            if (aiMove) makeGmkMove(aiMove.r, aiMove.c, currentPlayer);
+            if (gameActive) {
+                startGmkAiVsAi();
+            } else {
+                const nextDelay = settings.animations ? 1500 : 400;
+                aiTimer = setTimeout(() => { if (isGmkMode() && getEffectiveBattleMode() === 'aivsai') resetGame(); }, nextDelay);
             }
         }, delay);
     }
