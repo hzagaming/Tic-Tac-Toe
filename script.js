@@ -73,6 +73,8 @@
     let scores = { X: 0, O: 0, draw: 0 };
     let aiTimer = null;
     let audioCtx = null;
+    let lastFocusedElement = null;
+    let lastWinData = null;
 
     // Custom game config
     let customConfig = { w: 15, h: 15, winLen: 5 };
@@ -207,6 +209,7 @@
             'aria-settings': { zh:'设置', en:'Settings', ja:'設定', ko:'설정', fr:'Paramètres', de:'Einstellungen', es:'Ajustes', ru:'Настройки', it:'Impostazioni', pt:'Configurações' },
             'aria-changelog': { zh:'更新公告', en:'Changelog', ja:'更新履歴', ko:'업데이트 공지', fr:'Journal', de:'Änderungen', es:'Actualizaciones', ru:'Обновления', it:'Aggiornamenti', pt:'Atualizações' },
             'aria-close': { zh:'关闭', en:'Close', ja:'閉じる', ko:'닫기', fr:'Fermer', de:'Schließen', es:'Cerrar', ru:'Закрыть', it:'Chiudi', pt:'Fechar' },
+            'aria-cell-empty': { zh:'空单元格，按 Enter 或空格下棋', en:'Empty cell, press Enter or Space to play', ja:'空のマス、Enterまたはスペースで着手', ko:'빈 칸, Enter 또는 스페이스로 플레이', fr:'Cellule vide, appuyez sur Entrée ou Espace pour jouer', de:'Leere Zelle, Enter oder Leertaste zum Spielen', es:'Celda vacía, presiona Enter o Espacio para jugar', ru:'Пустая ячейка, нажмите Enter или Пробел для хода', it:'Cella vuota, premi Invio o Spazio per giocare', pt:'Célula vazia, pressione Enter ou Espaço para jogar' },
             'custom-win-label': { zh:'子连珠', en:' in a row', ja:'子連珠', ko:'목', fr:' alignés', de:' in einer Reihe', es:' en línea', ru:' в ряд', it:' in fila', pt:' em linha' },
         };
         const out = {};
@@ -230,11 +233,43 @@
 
     const GMK_SIZE = 15;
 
-    const xSvg = `<svg class="mark mark-x" viewBox="0 0 100 100"><path d="M25 25 L75 75 M75 25 L25 75" /></svg>`;
-    const oSvg = `<svg class="mark mark-o" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" /></svg>`;
+    function createMarkSvg(player) {
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('class', 'mark mark-' + player.toLowerCase());
+        svg.setAttribute('viewBox', '0 0 100 100');
+        if (player === PLAYER_X) {
+            const path = document.createElementNS(svgNS, 'path');
+            path.setAttribute('d', 'M25 25 L75 75 M75 25 L25 75');
+            svg.appendChild(path);
+        } else {
+            const circle = document.createElementNS(svgNS, 'circle');
+            circle.setAttribute('cx', '50');
+            circle.setAttribute('cy', '50');
+            circle.setAttribute('r', '35');
+            svg.appendChild(circle);
+        }
+        return svg;
+    }
 
     /* ===== Changelog Data ===== */
     const changelogData = [
+        {
+            version: '0.4.2',
+            date: { zh:'2026-04-20', en:'Apr 20, 2026', ja:'2026年4月20日', ko:'2026년 4월 20일', fr:'20 avr. 2026', de:'20. Apr. 2026', es:'20 abr. 2026', ru:'20 апр. 2026', it:'20 apr. 2026', pt:'20 de abr. de 2026' },
+            items: {
+                zh: ['所有棋盘格子支持键盘操作（Tab 聚焦、Enter/Space 下棋）与屏幕阅读器', '弹窗与抽屉新增焦点陷阱，关闭后自动恢复焦点', '赢线在窗口缩放后自动重新计算位置', '自定义非正方形棋盘比例修复，棋子保持正圆', '五子棋 AI 去重赢线计分，评估更准确', 'SVG 标记改用安全的 DOM API 创建', '主题色输入增加格式校验，防止非法值崩溃'],
+                en: ['All board cells now keyboard-accessible (Tab focus, Enter/Space to play) and screen-reader friendly', 'Added focus trap to modals and drawer; focus restores on close', 'Win lines now recalculate correctly on window resize', 'Fixed non-square custom board aspect ratio; pieces stay circular', 'Fixed duplicate win-line scoring in Gomoku AI for better evaluation', 'SVG marks now created via safe DOM API instead of innerHTML', 'Added hex color input validation to prevent crash on malformed values'],
+                ja: ['すべてのマスがキーボード操作（Tab、Enter/Space）とスクリーンリーダーに対応','モーダルとドロワーにフォーカストラップ追加、閉じたらフォーカス復元','ウィンドウリサイズ後に勝利線が再計算されるように修正','非正方形カスタムボードの比率を修正、駒が正円を保つ','五目並べ AI の重複勝利線スコアリングを修正','SVG マークを安全な DOM API で作成','テーマ色入力にバリデーション追加'],
+                ko: ['모든 칸 키보드 조작(Tab, Enter/스페이스) 및 스크린리더 지원','모달과 서랍에 포커스 트랩 추가, 닫으면 포커스 복원','창 크기 조정 후 승리 선 자동 재계산','비정방형 사용자 지정 보드 비율 수정, 돌이 원형 유지','오목 AI 중복 승리 선 점수 수정','SVG 마크를 안전한 DOM API로 생성','테마색 입력에 유효성 검사 추가'],
+                fr: ['Toutes les cellules accessibles au clavier (Tab, Entrée/Espace) et lecteurs d\'écran','Piège de focus ajouté aux modales et au tiroir, restauration à la fermeture','Ligne victoire recalculée automatiquement au redimensionnement','Ratio plateau perso non-carré corrigé, pièces restent circulaires','Comptage double ligne victoire Gomoku IA corrigé','Marques SVG créées via API DOM sécurisée','Validation entrée couleur hexadécimale ajoutée'],
+                de: ['Alle Zellen tastaturzugänglich (Tab, Enter/Leertaste) und screenreader-freundlich','Fokusfalle für Modal und Drawer hinzugefügt, Fokus wird wiederhergestellt','Sieglinie wird bei Fenstergrößenänderung neu berechnet','Nicht-quadratisches benutzerdef. Brett-Verhältnis korrigiert, Steine bleiben rund','Doppelte Sieglinienzählung Gomoku-KI korrigiert','SVG-Markierungen über sichere DOM-API erstellt','Hex-Farbeneingabe-Validierung hinzugefügt'],
+                es: ['Todas las celdas accesibles por teclado (Tab, Enter/Espacio) y lectores de pantalla','Trampa de foco añadida a modales y cajón, restauración al cerrar','Línea victoria recalculada automáticamente al redimensionar ventana','Proporción tablero personalizado no cuadrado corregida, piezas circulares','Conteo duplicado línea victoria IA Gomoku corregido','Marcas SVG creadas mediante API DOM segura','Validación entrada color hexadecimal añadida'],
+                ru: ['Все ячейки доступны с клавиатуры (Tab, Enter/Пробел) и для экранных дикторов','Добавлена ловушка фокуса для модалок и панели, восстановление при закрытии','Победная линия пересчитывается при изменении размера окна','Исправлено соотношение сторон не-квадратной доски, фишки остаются круглыми','Исправлено дублирование подсчёта победных линий в ИИ Гомоку','SVG-метки создаются через безопасный DOM API','Добавлена валидация ввода hex-цвета'],
+                it: ['Tutte le celle accessibili da tastiera (Tab, Invio/Spazio) e screen reader','Aggiunta trappola del fuoco a modali e cassetto, ripristino alla chiusura','Linea vittoria ricalcolata automaticamente al ridimensionamento','Rapporto scacchiera personalizzata non quadrata corretto, pedine rotonde','Corretto punteggio linee vittoria duplicate IA Gomoku','Marcatori SVG creati tramite API DOM sicura','Aggiunta validazione input colore esadecimale'],
+                pt: ['Todas as células acessíveis por teclado (Tab, Enter/Espaço) e leitores de tela','Armadilha de foco adicionada a modais e gaveta, restauração ao fechar','Linha vitória recalculada automaticamente ao redimensionar janela','Proporção tabuleiro personalizado não quadrado corrigida, peças circulares','Corrigida pontuação duplicada linha vitória IA Gomoku','Marcas SVG criadas via API DOM segura','Adicionada validação entrada cor hexadecimal'],
+            }
+        },
         {
             version: '0.4.1',
             date: { zh:'2026-04-20', en:'Apr 20, 2026', ja:'2026年4月20日', ko:'2026년 4월 20일', fr:'20 avr. 2026', de:'20. Apr. 2026', es:'20 abr. 2026', ru:'20 апр. 2026', it:'20 apr. 2026', pt:'20 de abr. de 2026' },
@@ -370,6 +405,22 @@
         return (i18n[settings.lang] && i18n[settings.lang][key]) || key;
     }
 
+    function updateCellAriaLabels() {
+        const label = t('aria-cell-empty');
+        cells.forEach(cell => {
+            if (!cell.querySelector('.mark')) cell.setAttribute('aria-label', label);
+            else cell.removeAttribute('aria-label');
+        });
+        document.querySelectorAll('.c4-cell').forEach(cell => {
+            if (!cell.querySelector('.c4-piece')) cell.setAttribute('aria-label', label);
+            else cell.removeAttribute('aria-label');
+        });
+        document.querySelectorAll('.gomoku-cell').forEach(cell => {
+            if (!cell.querySelector('.gomoku-piece')) cell.setAttribute('aria-label', label);
+            else cell.removeAttribute('aria-label');
+        });
+    }
+
     function applyI18n() {
         document.documentElement.lang = settings.lang === 'zh' ? 'zh-CN' : settings.lang;
         document.title = t('app-title');
@@ -383,6 +434,7 @@
             const tr = t(key);
             if (tr) el.setAttribute('aria-label', tr);
         });
+        updateCellAriaLabels();
         updateScoreLabels();
         updateStatus(getTurnText(), currentPlayer === PLAYER_X ? 'x' : 'o');
         const bm = getEffectiveBattleMode();
@@ -426,7 +478,17 @@
         buildColorPicker();
         buildC4Cells();
         buildGomokuCells();
-        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+        cells.forEach(cell => {
+            cell.setAttribute('tabindex', '0');
+            cell.setAttribute('role', 'button');
+            cell.addEventListener('click', handleCellClick);
+            cell.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleCellClick(e);
+                }
+            });
+        });
         restartBtn.addEventListener('click', resetGame);
         modalBtn.addEventListener('click', resetGame);
         modal.addEventListener('click', e => { if (e.target === modal) resetGame(); });
@@ -476,11 +538,37 @@
         changelogClose.addEventListener('click', closeChangelog);
         changelogModal.addEventListener('click', e => { if (e.target === changelogModal) closeChangelog(); });
 
+        window.addEventListener('resize', () => {
+            if (!lastWinData) return;
+            if (lastWinData.mode === 'ttt') {
+                if (winLine.classList.contains('show')) drawWinLine(lastWinData.winner);
+            } else if (lastWinData.mode === 'c4') {
+                if (c4WinLine.classList.contains('show')) drawC4WinLine(lastWinData.winCells, lastWinData.winner);
+            } else if (lastWinData.mode === 'gmk') {
+                if (gomokuWinLine.classList.contains('show')) drawGmkWinLine(lastWinData.winCells, lastWinData.winner);
+            }
+        });
+
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
                 if (drawer.classList.contains('show')) { closeDrawer(); }
                 else if (changelogModal.classList.contains('show')) { closeChangelog(); }
                 else if (modal.classList.contains('show')) { hideModal(); }
+            }
+            if (e.key === 'Tab') {
+                const activeModal = modal.classList.contains('show') ? modal :
+                    drawer.classList.contains('show') ? drawer :
+                    changelogModal.classList.contains('show') ? changelogModal : null;
+                if (!activeModal) return;
+                const focusable = Array.from(activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'));
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
             }
         });
 
@@ -494,9 +582,17 @@
             for (let c = 0; c < C4_COLS; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'c4-cell';
+                cell.setAttribute('tabindex', '0');
+                cell.setAttribute('role', 'button');
                 cell.dataset.row = r;
                 cell.dataset.col = c;
                 cell.addEventListener('click', handleC4CellClick);
+                cell.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleC4CellClick(e);
+                    }
+                });
                 c4CellsContainer.appendChild(cell);
             }
         }
@@ -506,13 +602,22 @@
         gomokuCellsContainer.innerHTML = '';
         gomokuCellsContainer.style.gridTemplateColumns = `repeat(${GMK_SIZE}, 1fr)`;
         gomokuCellsContainer.style.gridTemplateRows = `repeat(${GMK_SIZE}, 1fr)`;
+        gomokuBoard.style.aspectRatio = `${GMK_SIZE} / ${GMK_SIZE}`;
         for (let r = 0; r < GMK_SIZE; r++) {
             for (let c = 0; c < GMK_SIZE; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'gomoku-cell';
+                cell.setAttribute('tabindex', '0');
+                cell.setAttribute('role', 'button');
                 cell.dataset.row = r;
                 cell.dataset.col = c;
                 cell.addEventListener('click', handleGmkCellClick);
+                cell.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleGmkCellClick(e);
+                    }
+                });
                 gomokuCellsContainer.appendChild(cell);
             }
         }
@@ -522,21 +627,43 @@
         gomokuCellsContainer.innerHTML = '';
         gomokuCellsContainer.style.gridTemplateColumns = `repeat(${customConfig.w}, 1fr)`;
         gomokuCellsContainer.style.gridTemplateRows = `repeat(${customConfig.h}, 1fr)`;
+        gomokuBoard.style.aspectRatio = `${customConfig.w} / ${customConfig.h}`;
         for (let r = 0; r < customConfig.h; r++) {
             for (let c = 0; c < customConfig.w; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'gomoku-cell';
+                cell.setAttribute('tabindex', '0');
+                cell.setAttribute('role', 'button');
                 cell.dataset.row = r;
                 cell.dataset.col = c;
                 cell.addEventListener('click', handleGmkCellClick);
+                cell.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleGmkCellClick(e);
+                    }
+                });
                 gomokuCellsContainer.appendChild(cell);
             }
         }
     }
 
     /* ===== Settings Logic ===== */
-    function openDrawer() { closeChangelog(); drawer.classList.add('show'); drawerOverlay.classList.add('show'); }
-    function closeDrawer() { drawer.classList.remove('show'); drawerOverlay.classList.remove('show'); }
+    function openDrawer() {
+        closeChangelog();
+        lastFocusedElement = document.activeElement;
+        drawer.classList.add('show');
+        drawerOverlay.classList.add('show');
+        setTimeout(() => {
+            const focusable = drawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusable.length) focusable[0].focus();
+        }, 50);
+    }
+    function closeDrawer() {
+        drawer.classList.remove('show');
+        drawerOverlay.classList.remove('show');
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+    }
 
     function setLang(lang) {
         if (settings.lang === lang) return;
@@ -672,6 +799,7 @@
 
     /* ===== Color Helpers ===== */
     function hexToRgb(hex) {
+        if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) hex = '#7b68ee';
         const r = parseInt(hex.slice(1, 3), 16);
         const g = parseInt(hex.slice(3, 5), 16);
         const b = parseInt(hex.slice(5, 7), 16);
@@ -1003,8 +1131,10 @@
     function makeMove(index, player) {
         if (!gameActive || index < 0 || index > 8 || gameBoard[index] !== '') return;
         gameBoard[index] = player;
-        cells[index].innerHTML = player === PLAYER_X ? xSvg : oSvg;
+        cells[index].innerHTML = '';
+        cells[index].appendChild(createMarkSvg(player));
         cells[index].classList.add('disabled');
+        cells[index].removeAttribute('aria-label');
         playMoveSound(player);
 
         if (checkWinTTT(gameBoard, player)) {
@@ -1061,6 +1191,7 @@
         piece.className = 'c4-piece ' + (player === PLAYER_X ? 'x-piece' : 'o-piece');
         cell.appendChild(piece);
         cell.classList.add('disabled');
+        cell.removeAttribute('aria-label');
         playMoveSound(player);
 
         const winCells = checkWinC4(row, col, player);
@@ -1151,9 +1282,11 @@
 
     function drawC4WinLine(winCells, winner) {
         if (!winCells || winCells.length < 2) return;
+        lastWinData = { mode: 'c4', winner, winCells };
         const [[r1, c1], [r2, c2]] = getWinLineEndpoints(winCells);
         const cell1 = c4CellsContainer.children[r1 * C4_COLS + c1];
         const cell2 = c4CellsContainer.children[r2 * C4_COLS + c2];
+        if (!cell1 || !cell2) return;
         const rect1 = cell1.getBoundingClientRect();
         const rect2 = cell2.getBoundingClientRect();
         const boardRect = connect4Board.getBoundingClientRect();
@@ -1336,6 +1469,7 @@
         piece.className = 'gomoku-piece ' + (player === PLAYER_X ? 'x-piece' : 'o-piece');
         cell.appendChild(piece);
         cell.classList.add('disabled');
+        cell.removeAttribute('aria-label');
         playMoveSound(player);
 
         const winCells = checkWinGmk(row, col, player, cfg.w, cfg.h, cfg.winLen, board);
@@ -1419,9 +1553,11 @@
     function drawGmkWinLine(winCells, winner) {
         if (!winCells || winCells.length < 2) return;
         const cfg = getActiveGmkConfig();
+        lastWinData = { mode: 'gmk', winner, winCells };
         const [[r1, c1], [r2, c2]] = getWinLineEndpoints(winCells);
         const cell1 = gomokuCellsContainer.children[r1 * cfg.w + c1];
         const cell2 = gomokuCellsContainer.children[r2 * cfg.w + c2];
+        if (!cell1 || !cell2) return;
         const rect1 = cell1.getBoundingClientRect();
         const rect2 = cell2.getBoundingClientRect();
         const boardRect = gomokuBoard.getBoundingClientRect();
@@ -1534,6 +1670,8 @@
     function evaluateGmkPosition(board, cfg, aiPlayer, humanPlayer) {
         let score = 0;
         const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+        const SAFE_MAX = Math.min(cfg.winLen - 1, 15);
+        const WIN_BONUS = Math.pow(5, SAFE_MAX) * 10 + 1;
         for (let r = 0; r < cfg.h; r++) {
             for (let c = 0; c < cfg.w; c++) {
                 for (const [dr, dc] of directions) {
@@ -1545,10 +1683,12 @@
                     if (window.length === cfg.winLen) {
                         const aiCount = window.filter(v => v === aiPlayer).length;
                         const humanCount = window.filter(v => v === humanPlayer).length;
-                        const SAFE_MAX = Math.min(cfg.winLen - 1, 15);
-                        const WIN_BONUS = Math.pow(5, SAFE_MAX) * 10 + 1;
-                        if (aiCount === cfg.winLen) score += WIN_BONUS;
-                        else if (humanCount === cfg.winLen) score -= WIN_BONUS;
+                        // Prevent duplicate exact-win counting for contiguous lines longer than winLen
+                        const prevR = r - dr, prevC = c - dc;
+                        const isExtension = prevR >= 0 && prevR < cfg.h && prevC >= 0 && prevC < cfg.w && board[prevR][prevC] === aiPlayer;
+                        const isHumanExtension = prevR >= 0 && prevR < cfg.h && prevC >= 0 && prevC < cfg.w && board[prevR][prevC] === humanPlayer;
+                        if (aiCount === cfg.winLen && !isExtension) score += WIN_BONUS;
+                        else if (humanCount === cfg.winLen && !isHumanExtension) score -= WIN_BONUS;
                         else if (aiCount > 0 && humanCount === 0) score += Math.pow(5, Math.min(aiCount, SAFE_MAX));
                         else if (humanCount > 0 && aiCount === 0) score -= Math.pow(5, Math.min(humanCount, SAFE_MAX));
                     }
@@ -1637,6 +1777,7 @@
         clearTimeout(aiTimer); aiTimer = null;
         gameActive = true;
         currentPlayer = PLAYER_X;
+        lastWinData = null;
         hideModal();
         hideWinLine();
         c4WinLine.classList.remove('show');
@@ -1669,6 +1810,7 @@
                 if (gomokuCellsContainer.children.length !== neededCells) {
                     buildGomokuCells();
                 } else {
+                    gomokuBoard.style.aspectRatio = `${GMK_SIZE} / ${GMK_SIZE}`;
                     document.querySelectorAll('.gomoku-cell').forEach(cell => {
                         cell.innerHTML = '';
                         cell.classList.remove('disabled');
@@ -1695,6 +1837,7 @@
             updateStatus(getTurnText(), 'x');
             if (currentMode === 'aivsai') startAiVsAi();
         }
+        updateCellAriaLabels();
     }
 
     function isC4Mode() {
@@ -1710,14 +1853,20 @@
         modalIcon.textContent = icon;
         modalTitle.textContent = title;
         modalMessage.textContent = msg;
+        lastFocusedElement = document.activeElement;
         modal.classList.add('show');
+        setTimeout(() => modalBtn.focus(), 50);
     }
-    function hideModal() { modal.classList.remove('show'); }
+    function hideModal() {
+        modal.classList.remove('show');
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+    }
 
     /* ===== Win Line ===== */
     function drawWinLine(winner) {
         const condition = getWinningConditionTTT(gameBoard, winner);
         if (!condition) return;
+        lastWinData = { mode: 'ttt', winner, condition };
         const [a, , c] = condition;
         const posA = getCellCenter(a);
         const posB = getCellCenter(c);
@@ -1890,8 +2039,20 @@
     }
 
     /* ===== Changelog ===== */
-    function openChangelog() { closeDrawer(); renderChangelog(); changelogModal.classList.add('show'); }
-    function closeChangelog() { changelogModal.classList.remove('show'); }
+    function openChangelog() {
+        closeDrawer();
+        lastFocusedElement = document.activeElement;
+        renderChangelog();
+        changelogModal.classList.add('show');
+        setTimeout(() => {
+            const focusable = changelogModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusable.length) focusable[0].focus();
+        }, 50);
+    }
+    function closeChangelog() {
+        changelogModal.classList.remove('show');
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+    }
 
     function renderChangelog() {
         changelogBody.innerHTML = '';
