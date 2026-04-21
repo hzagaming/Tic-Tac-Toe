@@ -162,10 +162,6 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 
 .battle-switch {
-    display: none;
-}
-
-.battle-switch.show {
     display: flex;
     margin-top: -0.25rem;
     animation: fade-in-up calc(0.4s * var(--anim-scale)) ease-out both;
@@ -286,7 +282,20 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 
 .board.is-3d {
-    transform: perspective(900px) rotateX(15deg) rotateY(-5deg);
+    transform: perspective(900px) rotateX(var(--rot-x, 15deg)) rotateY(var(--rot-y, -5deg));
+}
+
+.board.is-3d.dragging,
+.connect4-board.is-3d.dragging,
+.gomoku-board.is-3d.dragging {
+    transition: none;
+    cursor: grabbing;
+}
+
+.board.is-3d:not(.dragging),
+.connect4-board.is-3d:not(.dragging),
+.gomoku-board.is-3d:not(.dragging) {
+    cursor: grab;
 }
 
 .cell {
@@ -399,7 +408,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 
 .connect4-board.is-3d {
-    transform: perspective(900px) rotateX(12deg) rotateY(-3deg);
+    transform: perspective(900px) rotateX(var(--rot-x, 12deg)) rotateY(var(--rot-y, -3deg));
 }
 
 .connect4-board.show { display: block; }
@@ -504,7 +513,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 
 .gomoku-board.is-3d {
-    transform: perspective(900px) rotateX(10deg) rotateY(-4deg);
+    transform: perspective(900px) rotateX(var(--rot-x, 10deg)) rotateY(var(--rot-y, -4deg));
 }
 
 .gomoku-board.show { display: block; }

@@ -68,7 +68,7 @@
     let customBoard = [];
     let gameActive = true;
     let currentPlayer = PLAYER_X;
-    let currentMode = 'pve';
+    let currentMode = 'ttt';
     let battleMode = 'pve';
     let scores = { X: 0, O: 0, draw: 0 };
     let aiTimer = null;
@@ -130,6 +130,7 @@
             'mode-pve': { zh:'人机', en:'PvE', ja:'CPU戦', ko:'AI전', fr:'PvE', de:'PvE', es:'PvE', ru:'PvE', it:'PvE', pt:'PvE' },
             'mode-pvp': { zh:'双人', en:'PvP', ja:'対戦', ko:'2인전', fr:'PvP', de:'PvP', es:'PvP', ru:'PvP', it:'PvP', pt:'PvP' },
             'mode-aivsai': { zh:'AI 对战', en:'AI vs AI', ja:'AI対AI', ko:'AI vs AI', fr:'IA vs IA', de:'KI vs KI', es:'IA vs IA', ru:'ИИ vs ИИ', it:'AI vs AI', pt:'IA vs IA' },
+            'mode-ttt': { zh:'井字棋', en:'Tic-Tac-Toe', ja:'三目並べ', ko:'틱택토', fr:'Morpion', de:'Tic-Tac-Toe', es:'Tres en raya', ru:'Крестики-нолики', it:'Tris', pt:'Jogo da velha' },
             'mode-connect4': { zh:'四子棋', en:'Connect 4', ja:'四目', ko:'사목', fr:'Puissance 4', de:'Vier', es:'Conecta 4', ru:'4 в ряд', it:'Forza 4', pt:'Ligue 4' },
             'mode-gomoku': { zh:'五子棋', en:'Gomoku', ja:'五目', ko:'오목', fr:'Gomoku', de:'Gomoku', es:'Gomoku', ru:'Гомоку', it:'Gomoku', pt:'Gomoku' },
             'mode-custom': { zh:'自定义', en:'Custom', ja:'カスタム', ko:'사용자 지정', fr:'Perso', de:'Benutzerdef.', es:'Personalizado', ru:'Свой', it:'Personalizzato', pt:'Personalizado' },
@@ -197,6 +198,10 @@
             'sound-space': { zh:'太空', en:'Space', ja:'宇宙', ko:'우주', fr:'Espace', de:'Weltraum', es:'Espacio', ru:'Космос', it:'Spazio', pt:'Espaço' },
             'sound-drum': { zh:'鼓点', en:'Drum', ja:'ドラム', ko:'드럼', fr:'Tambour', de:'Trommel', es:'Tambor', ru:'Барабан', it:'Tamburo', pt:'Tambor' },
             'sound-piano': { zh:'钢琴', en:'Piano', ja:'ピアノ', ko:'피아노', fr:'Piano', de:'Klavier', es:'Piano', ru:'Фортепиано', it:'Pianoforte', pt:'Piano' },
+            'sound-synth': { zh:'合成器', en:'Synth', ja:'シンセ', ko:'신스', fr:'Synthé', de:'Synthesizer', es:'Sintetizador', ru:'Синтезатор', it:'Synth', pt:'Sintetizador' },
+            'sound-chiptune': { zh:'芯片', en:'Chiptune', ja:'チップチューン', ko:'칩튠', fr:'Chiptune', de:'Chiptune', es:'Chiptune', ru:'Чиптюн', it:'Chiptune', pt:'Chiptune' },
+            'sound-pluck': { zh:'弹拨', en:'Pluck', ja:'プラック', ko:'플럭', fr:'Pincé', de:'Zupf', es:'Pizzicato', ru:'Щипок', it:'Pizzicato', pt:'Pluck' },
+            'sound-crystal': { zh:'水晶', en:'Crystal', ja:'クリスタル', ko:'크리스탈', fr:'Cristal', de:'Kristall', es:'Cristal', ru:'Кристалл', it:'Cristallo', pt:'Cristal' },
             'sound-pitch': { zh:'音高', en:'Pitch', ja:'ピッチ', ko:'피치', fr:'Hauteur', de:'Tonhöhe', es:'Tono', ru:'Высота', it:'Altezza', pt:'Tom' },
             'sound-duration': { zh:'音长', en:'Duration', ja:'音長', ko:'지속', fr:'Durée', de:'Dauer', es:'Duración', ru:'Длительность', it:'Durata', pt:'Duração' },
             'sound-volume': { zh:'音量', en:'Volume', ja:'音量', ko:'볼륨', fr:'Volume', de:'Lautstärke', es:'Volumen', ru:'Громкость', it:'Volume', pt:'Volume' },
@@ -254,6 +259,22 @@
 
     /* ===== Changelog Data ===== */
     const changelogData = [
+        {
+            version: '0.5.0',
+            date: { zh:'2026-04-20', en:'Apr 20, 2026', ja:'2026年4月20日', ko:'2026년 4월 20일', fr:'20 avr. 2026', de:'20. Apr. 2026', es:'20 abr. 2026', ru:'20 апр. 2026', it:'20 apr. 2026', pt:'20 de abr. de 2026' },
+            items: {
+                zh: ['统一对战栏：所有游戏（井字棋/四子棋/五子棋/自定义）都支持人机/双人/AI对战切换', '3D 棋盘支持鼠标拖拽旋转视角', 'Connect Four AI 搜索深度从 3 提升到 5，评估函数增强', '五子棋/自定义 AI 引入 Minimax + Alpha-Beta 剪枝（2 层搜索）', '新增 4 种音效风格：合成器/芯片/弹拨/水晶'],
+                en: ['Unified battle bar: all games (TTT/C4/Gomoku/Custom) support PvE/PvP/AIvsAI switching', '3D board now supports mouse-drag rotation', 'Connect Four AI search depth increased from 3 to 5 with enhanced evaluation', 'Gomoku/Custom AI now uses Minimax + Alpha-Beta pruning (2-ply search)', 'Added 4 sound styles: Synth, Chiptune, Pluck, Crystal'],
+                ja: ['対戦バー統一：すべてのゲームでPvE/PvP/AI対AI切替に対応','3Dボードがマウスドラッグ回転に対応','四目並べ AI の探索深度を3から5に向上、評価関数強化','五目並べ/カスタム AI にMinimax+Alpha-Beta剪枝（2層探索）を導入','4種類の効果音スタイル追加：シンセ/チップチューン/プラック/クリスタル'],
+                ko: ['대전 바 통일: 모든 게임에서 PvE/PvP/AI 대 AI 전환 지원','3D 보드 마우스 드래그 회전 지원','사목 AI 탐색 깊이 3에서 5로 증가, 평가 함수 강화','오목/사용자 지정 AI 에 Minimax+Alpha-Beta 가지치기(2층 탐색) 도입','4가지 효과음 스타일 추가: 신스/칩튠/플럭/크리스탈'],
+                fr: ['Barre de combat unifiée : tous les jeux supportent PvE/PvP/IA vs IA','Plateau 3D rotatif par glisser-déposer','IA Puissance 4 : profondeur 3→5, évaluation renforcée','IA Gomoku/Perso : Minimax + élagage αβ (2 couches)','4 styles sonores ajoutés : Synthé, Chiptune, Pincé, Cristal'],
+                de: ['Einheitliche Kampfleiste: alle Spiele unterstützen PvE/PvP/KI vs KI','3D-Brett mit Mauszieh-Rotation','Vier-gewinnt-KI: Tiefe 3→5, verbesserte Bewertung','Gomoku/Benutzerdef. KI: Minimax + Alpha-Beta (2 Ebenen)','4 Tonstile hinzugefügt: Synthesizer, Chiptune, Zupf, Kristall'],
+                es: ['Barra de batalla unificada: todos los juegos soportan PvE/PvP/IA vs IA','Tablero 3D con rotación por arrastre','IA Conecta 4: profundidad 3→5, evaluación mejorada','IA Gomoku/Personalizado: Minimax + poda αβ (2 niveles)','4 estilos de sonido añadidos: Sintetizador, Chiptune, Pizzicato, Cristal'],
+                ru: ['Единая панель боя: все игры поддерживают PvE/PvP/ИИ vs ИИ','3D доска с вращением перетаскиванием','ИИ 4 в ряд: глубина 3→5, улучшенная оценка','ИИ Гомоку/Своя: Minimax + альфа-бета отсечение (2 уровня)','4 стиля звука добавлено: Синтезатор, Чиптюн, Щипок, Кристалл'],
+                it: ['Barra battaglia unificata: tutti i giochi supportano PvE/PvP/AI vs AI','Scacchiera 3D rotabile con trascinamento','IA Forza 4: profondità 3→5, valutazione migliorata','IA Gomoku/Personalizzato: Minimax + potatura αβ (2 livelli)','4 stili audio aggiunti: Synth, Chiptune, Pizzicato, Cristallo'],
+                pt: ['Barra de batalha unificada: todos os jogos suportam PvE/PvP/IA vs IA','Tabuleiro 3D com rotação por arrasto','IA Ligue 4: profundidade 3→5, avaliação melhorada','IA Gomoku/Personalizado: Minimax + poda αβ (2 níveis)','4 estilos de som adicionados: Sintetizador, Chiptune, Pluck, Cristal'],
+            }
+        },
         {
             version: '0.4.2',
             date: { zh:'2026-04-20', en:'Apr 20, 2026', ja:'2026年4月20日', ko:'2026년 4월 20일', fr:'20 avr. 2026', de:'20. Apr. 2026', es:'20 abr. 2026', ru:'20 апр. 2026', it:'20 apr. 2026', pt:'20 de abr. de 2026' },
@@ -438,9 +459,7 @@
         updateScoreLabels();
         updateStatus(getTurnText(), currentPlayer === PLAYER_X ? 'x' : 'o');
         const bm = getEffectiveBattleMode();
-        if (currentMode === 'pve') subtitle.textContent = t('subtitle-pve');
-        else if (currentMode === 'pvp') subtitle.textContent = t('subtitle-pvp');
-        else if (currentMode === 'aivsai') subtitle.textContent = t('subtitle-aivsai');
+        if (currentMode === 'ttt') subtitle.textContent = bm === 'pvp' ? t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-aivsai') : t('subtitle-pve');
         else if (currentMode === 'connect4') subtitle.textContent = bm === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
         else if (currentMode === 'gomoku') subtitle.textContent = bm === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
         else subtitle.textContent = bm === 'pvp' ? getCustomSubtitle() + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? getCustomSubtitle() + ' — ' + t('subtitle-aivsai') : getCustomSubtitle();
@@ -736,7 +755,71 @@
         boardEl.classList.toggle('is-3d', on);
         connect4Board.classList.toggle('is-3d', on);
         gomokuBoard.classList.toggle('is-3d', on);
+        if (on) {
+            setBoardRot(boardEl, defaultRot.ttt.x, defaultRot.ttt.y);
+            setBoardRot(connect4Board, defaultRot.c4.x, defaultRot.c4.y);
+            setBoardRot(gomokuBoard, defaultRot.gmk.x, defaultRot.gmk.y);
+        } else {
+            boardEl.style.removeProperty('--rot-x'); boardEl.style.removeProperty('--rot-y');
+            connect4Board.style.removeProperty('--rot-x'); connect4Board.style.removeProperty('--rot-y');
+            gomokuBoard.style.removeProperty('--rot-x'); gomokuBoard.style.removeProperty('--rot-y');
+        }
     }
+
+    /* ===== 3D Board Drag Rotation ===== */
+    const defaultRot = { ttt: { x: 15, y: -5 }, c4: { x: 12, y: -3 }, gmk: { x: 10, y: -4 } };
+    const rotState = { active: false, startX: 0, startY: 0, startRotX: 0, startRotY: 0, board: null };
+
+    function getBoardRot(board) {
+        const x = parseFloat(board.style.getPropertyValue('--rot-x')) || 0;
+        const y = parseFloat(board.style.getPropertyValue('--rot-y')) || 0;
+        return { x, y };
+    }
+
+    function setBoardRot(board, x, y) {
+        board.style.setProperty('--rot-x', clamp(x, -60, 60) + 'deg');
+        board.style.setProperty('--rot-y', clamp(y, -60, 60) + 'deg');
+    }
+
+    function onDragStart(e, board) {
+        if (!settings.board3d) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        rotState.active = true;
+        rotState.startX = clientX;
+        rotState.startY = clientY;
+        rotState.board = board;
+        const rot = getBoardRot(board);
+        rotState.startRotX = rot.x;
+        rotState.startRotY = rot.y;
+        board.classList.add('dragging');
+        e.preventDefault();
+    }
+
+    function onDragMove(e) {
+        if (!rotState.active || !rotState.board) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const dx = clientX - rotState.startX;
+        const dy = clientY - rotState.startY;
+        setBoardRot(rotState.board, rotState.startRotX - dy * 0.4, rotState.startRotY + dx * 0.4);
+    }
+
+    function onDragEnd() {
+        if (!rotState.active || !rotState.board) return;
+        rotState.board.classList.remove('dragging');
+        rotState.active = false;
+        rotState.board = null;
+    }
+
+    [boardEl, connect4Board, gomokuBoard].forEach(board => {
+        board.addEventListener('mousedown', e => onDragStart(e, board));
+        board.addEventListener('touchstart', e => onDragStart(e, board), { passive: false });
+    });
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('touchmove', onDragMove, { passive: false });
+    document.addEventListener('mouseup', onDragEnd);
+    document.addEventListener('touchend', onDragEnd);
 
     function setDifficulty(diff) {
         if (settings.difficulty === diff) return;
@@ -982,6 +1065,91 @@
         setTimeout(() => playOsc(freq * 3, 'sine', duration * 0.3, vol * 0.1), 20);
     }
 
+    function playSynth(freq, duration, vol) {
+        if (!settings.sound || !audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const lfo = audioCtx.createOscillator();
+        const lfoGain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freqShift(freq), audioCtx.currentTime);
+        lfo.type = 'sine';
+        lfo.frequency.setValueAtTime(6, audioCtx.currentTime);
+        lfoGain.gain.setValueAtTime(30, audioCtx.currentTime);
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+        gain.gain.setValueAtTime(vol * volMul() * 0.4, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration));
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        lfo.start();
+        osc.start();
+        osc.stop(audioCtx.currentTime + durMul(duration));
+        lfo.stop(audioCtx.currentTime + durMul(duration));
+    }
+
+    function playChiptune(freq, duration, vol) {
+        if (!settings.sound || !audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const notes = [freq, freq * 1.25, freq * 1.5, freq * 2];
+        notes.forEach((f, i) => {
+            setTimeout(() => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(freqShift(f), audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol * volMul() * 0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + durMul(duration) * 0.15);
+            }, i * 40);
+        });
+    }
+
+    function playPluck(freq, duration, vol) {
+        if (!settings.sound || !audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freqShift(freq), audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol * volMul() * 0.5, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.25);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + durMul(duration) * 0.3);
+    }
+
+    function playCrystal(freq, duration, vol) {
+        if (!settings.sound || !audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freqShift(freq * 2), audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol * volMul() * 0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 1.2);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + durMul(duration) * 1.2);
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(freqShift(freq * 3), audioCtx.currentTime + 0.05);
+        gain2.gain.setValueAtTime(0, audioCtx.currentTime);
+        gain2.gain.linearRampToValueAtTime(vol * volMul() * 0.1, audioCtx.currentTime + 0.08);
+        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.8);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start(audioCtx.currentTime + 0.05);
+        osc2.stop(audioCtx.currentTime + durMul(duration) * 0.8);
+    }
+
     function playMoveSound(player) {
         initAudio();
         const style = settings.soundStyle;
@@ -995,6 +1163,10 @@
         else if (style === 'space') playSpace(baseFreq, 0.2, 0.1);
         else if (style === 'drum') playDrum(baseFreq, 0.15, 0.12);
         else if (style === 'piano') playPiano(baseFreq, 0.2, 0.15);
+        else if (style === 'synth') playSynth(baseFreq, 0.25, 0.12);
+        else if (style === 'chiptune') playChiptune(baseFreq, 0.2, 0.12);
+        else if (style === 'pluck') playPluck(baseFreq, 0.15, 0.15);
+        else if (style === 'crystal') playCrystal(baseFreq, 0.3, 0.12);
     }
 
     function playWinSound() {
@@ -1009,6 +1181,10 @@
         else if (style === 'space') notes.forEach((freq, i) => setTimeout(() => playSpace(freq, 0.25, 0.08), i * 90));
         else if (style === 'drum') notes.forEach((freq, i) => setTimeout(() => playDrum(freq, 0.15, 0.1), i * 70));
         else if (style === 'piano') notes.forEach((freq, i) => setTimeout(() => playPiano(freq, 0.25, 0.12), i * 90));
+        else if (style === 'synth') notes.forEach((freq, i) => setTimeout(() => playSynth(freq, 0.3, 0.1), i * 90));
+        else if (style === 'chiptune') notes.forEach((freq, i) => setTimeout(() => playChiptune(freq, 0.25, 0.1), i * 70));
+        else if (style === 'pluck') notes.forEach((freq, i) => setTimeout(() => playPluck(freq, 0.2, 0.12), i * 80));
+        else if (style === 'crystal') notes.forEach((freq, i) => setTimeout(() => playCrystal(freq, 0.35, 0.1), i * 100));
     }
 
     function playDrawSound() {
@@ -1022,6 +1198,10 @@
         else if (style === 'space') { playSpace(261, 0.3, 0.08); setTimeout(() => playSpace(196, 0.3, 0.08), 200); }
         else if (style === 'drum') { playDrum(261, 0.2, 0.1); setTimeout(() => playDrum(196, 0.2, 0.1), 180); }
         else if (style === 'piano') { playPiano(261, 0.3, 0.12); setTimeout(() => playPiano(196, 0.3, 0.12), 200); }
+        else if (style === 'synth') { playSynth(261, 0.35, 0.1); setTimeout(() => playSynth(196, 0.35, 0.1), 200); }
+        else if (style === 'chiptune') { playChiptune(261, 0.25, 0.1); setTimeout(() => playChiptune(196, 0.25, 0.1), 180); }
+        else if (style === 'pluck') { playPluck(261, 0.2, 0.12); setTimeout(() => playPluck(196, 0.2, 0.12), 180); }
+        else if (style === 'crystal') { playCrystal(261, 0.4, 0.1); setTimeout(() => playCrystal(196, 0.4, 0.1), 220); }
     }
 
     /* ===== Game Flow ===== */
@@ -1031,21 +1211,10 @@
         currentMode = mode;
         modeBtns.forEach(btn => { btn.classList.toggle('active', btn.dataset.mode === mode); btn.setAttribute('aria-pressed', btn.dataset.mode === mode); });
         const bm2 = getEffectiveBattleMode();
-        if (currentMode === 'pve') subtitle.textContent = t('subtitle-pve');
-        else if (currentMode === 'pvp') subtitle.textContent = t('subtitle-pvp');
-        else if (currentMode === 'aivsai') subtitle.textContent = t('subtitle-aivsai');
+        if (currentMode === 'ttt') subtitle.textContent = bm2 === 'pvp' ? t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-aivsai') : t('subtitle-pve');
         else if (currentMode === 'connect4') subtitle.textContent = bm2 === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
         else if (currentMode === 'gomoku') subtitle.textContent = bm2 === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
         else subtitle.textContent = bm2 === 'pvp' ? getCustomSubtitle() + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? getCustomSubtitle() + ' — ' + t('subtitle-aivsai') : getCustomSubtitle();
-
-        // Show battle-switch for board games that need sub-modes
-        const boardGames = ['connect4', 'gomoku', 'custom'];
-        if (boardGames.includes(currentMode)) {
-            battleSwitch.classList.add('show');
-        } else {
-            battleSwitch.classList.remove('show');
-            battleMode = currentMode; // sync for ttt modes
-        }
 
         aiDifficultyGroup.style.display = getEffectiveBattleMode() !== 'pvp' ? 'flex' : 'none';
         customGameGroup.style.display = currentMode === 'custom' ? 'flex' : 'none';
@@ -1060,7 +1229,8 @@
         battleMode = mode;
         battleBtns.forEach(btn => { btn.classList.toggle('active', btn.dataset.battle === mode); btn.setAttribute('aria-pressed', btn.dataset.battle === mode); });
         const bm = getEffectiveBattleMode();
-        if (currentMode === 'connect4') subtitle.textContent = bm === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
+        if (currentMode === 'ttt') subtitle.textContent = bm === 'pvp' ? t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-aivsai') : t('subtitle-pve');
+        else if (currentMode === 'connect4') subtitle.textContent = bm === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
         else if (currentMode === 'gomoku') subtitle.textContent = bm === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
         else if (currentMode === 'custom') subtitle.textContent = bm === 'pvp' ? getCustomSubtitle() + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? getCustomSubtitle() + ' — ' + t('subtitle-aivsai') : getCustomSubtitle();
         aiDifficultyGroup.style.display = getEffectiveBattleMode() !== 'pvp' ? 'flex' : 'none';
@@ -1079,8 +1249,7 @@
     }
 
     function getEffectiveBattleMode() {
-        if (currentMode === 'connect4' || currentMode === 'gomoku' || currentMode === 'custom') return battleMode;
-        return currentMode;
+        return battleMode;
     }
 
     function getCustomSubtitle() {
@@ -1108,13 +1277,13 @@
     function handleCellClick(e) {
         const index = parseInt(e.currentTarget.dataset.index);
         if (!gameActive || gameBoard[index] !== '') return;
-        if (currentMode === 'aivsai') return;
-        if (currentMode === 'pve' && currentPlayer !== PLAYER_X) return;
+        if (battleMode === 'aivsai') return;
+        if (battleMode === 'pve' && currentPlayer !== PLAYER_X) return;
 
         const player = currentPlayer;
         makeMove(index, player);
 
-        if (gameActive && currentMode === 'pve') {
+        if (gameActive && battleMode === 'pve') {
             updateStatus(getTurnText(), 'o');
             lockBoard(true);
             const delay = settings.animations ? 400 : 50;
@@ -1369,7 +1538,7 @@
             }
         }
         if (checkDrawC4()) return 0;
-        if (depth >= 3) return evaluateC4Board(aiPlayer, humanPlayer);
+        if (depth >= 5) return evaluateC4Board(aiPlayer, humanPlayer);
 
         if (isMaximizing) {
             let bestScore = -Infinity;
@@ -1400,11 +1569,20 @@
 
     function evaluateC4Board(aiPlayer, humanPlayer) {
         let score = 0;
+        // Center column control
         for (let r = 0; r < C4_ROWS; r++) {
-            if (c4Board[r][3] === aiPlayer) score += 3;
-            else if (c4Board[r][3] === humanPlayer) score -= 3;
+            if (c4Board[r][3] === aiPlayer) score += 4;
+            else if (c4Board[r][3] === humanPlayer) score -= 4;
+        }
+        // Column 2 and 4 also valuable
+        for (let r = 0; r < C4_ROWS; r++) {
+            if (c4Board[r][2] === aiPlayer) score += 1;
+            else if (c4Board[r][2] === humanPlayer) score -= 1;
+            if (c4Board[r][4] === aiPlayer) score += 1;
+            else if (c4Board[r][4] === humanPlayer) score -= 1;
         }
         const directions = [[0,1],[1,0],[1,1],[1,-1]];
+        let aiThreats = 0, humanThreats = 0;
         for (let r = 0; r < C4_ROWS; r++) {
             for (let c = 0; c < C4_COLS; c++) {
                 for (const [dr, dc] of directions) {
@@ -1416,12 +1594,21 @@
                     if (window.length === 4) {
                         const aiCount = window.filter(v => v === aiPlayer).length;
                         const humanCount = window.filter(v => v === humanPlayer).length;
-                        if (aiCount > 0 && humanCount === 0) score += aiCount * aiCount;
-                        if (humanCount > 0 && aiCount === 0) score -= humanCount * humanCount;
+                        if (aiCount > 0 && humanCount === 0) {
+                            score += Math.pow(aiCount, 3);
+                            if (aiCount === 3) aiThreats++;
+                        }
+                        if (humanCount > 0 && aiCount === 0) {
+                            score -= Math.pow(humanCount, 3);
+                            if (humanCount === 3) humanThreats++;
+                        }
                     }
                 }
             }
         }
+        // Double threat bonus/penalty
+        if (aiThreats >= 2) score += 80;
+        if (humanThreats >= 2) score -= 80;
         return score;
     }
 
@@ -1631,15 +1818,76 @@
     }
 
     function getGmkBestMove(board, cfg, aiPlayer, humanPlayer) {
-        let bestScore = -Infinity, bestMove = null;
         const moves = generateGmkCandidates(board, cfg);
-        for (const move of moves) {
+        // Performance cap: limit to top 30 candidates by static eval
+        let scoredMoves = moves.map(m => {
+            board[m.r][m.c] = aiPlayer;
+            const s = evaluateGmkPosition(board, cfg, aiPlayer, humanPlayer);
+            board[m.r][m.c] = '';
+            return { ...m, score: s };
+        });
+        scoredMoves.sort((a, b) => b.score - a.score);
+        const topMoves = scoredMoves.slice(0, Math.min(scoredMoves.length, 30));
+
+        let bestScore = -Infinity, bestMove = null;
+        for (const move of topMoves) {
             board[move.r][move.c] = aiPlayer;
-            const score = evaluateGmkPosition(board, cfg, aiPlayer, humanPlayer);
+            const score = minimaxGmk(board, cfg, 1, false, aiPlayer, humanPlayer, -Infinity, Infinity);
             board[move.r][move.c] = '';
             if (score > bestScore) { bestScore = score; bestMove = move; }
         }
         return bestMove || getGmkEasyMove(board, cfg, aiPlayer, humanPlayer);
+    }
+
+    function minimaxGmk(board, cfg, depth, isMaximizing, aiPlayer, humanPlayer, alpha, beta) {
+        // Terminal checks
+        for (let r = 0; r < cfg.h; r++) {
+            for (let c = 0; c < cfg.w; c++) {
+                if (board[r][c] === aiPlayer) {
+                    const win = checkWinGmk(r, c, aiPlayer, cfg.w, cfg.h, cfg.winLen, board);
+                    if (win) return 100000 - depth;
+                } else if (board[r][c] === humanPlayer) {
+                    const win = checkWinGmk(r, c, humanPlayer, cfg.w, cfg.h, cfg.winLen, board);
+                    if (win) return depth - 100000;
+                }
+            }
+        }
+        if (checkDrawGmk(cfg.w, cfg.h, board)) return 0;
+        if (depth >= 2) return evaluateGmkPosition(board, cfg, aiPlayer, humanPlayer);
+
+        const player = isMaximizing ? aiPlayer : humanPlayer;
+        const moves = generateGmkCandidates(board, cfg);
+        // Limit branching factor for performance
+        let scored = moves.map(m => {
+            board[m.r][m.c] = player;
+            const s = evaluateGmkPosition(board, cfg, aiPlayer, humanPlayer);
+            board[m.r][m.c] = '';
+            return { ...m, score: s };
+        });
+        scored.sort((a, b) => isMaximizing ? b.score - a.score : a.score - b.score);
+        const top = scored.slice(0, Math.min(scored.length, 20));
+
+        if (isMaximizing) {
+            let best = -Infinity;
+            for (const m of top) {
+                board[m.r][m.c] = aiPlayer;
+                best = Math.max(best, minimaxGmk(board, cfg, depth + 1, false, aiPlayer, humanPlayer, alpha, beta));
+                board[m.r][m.c] = '';
+                alpha = Math.max(alpha, best);
+                if (beta <= alpha) break;
+            }
+            return best;
+        } else {
+            let best = Infinity;
+            for (const m of top) {
+                board[m.r][m.c] = humanPlayer;
+                best = Math.min(best, minimaxGmk(board, cfg, depth + 1, true, aiPlayer, humanPlayer, alpha, beta));
+                board[m.r][m.c] = '';
+                beta = Math.min(beta, best);
+                if (beta <= alpha) break;
+            }
+            return best;
+        }
     }
 
     function generateGmkCandidates(board, cfg) {
@@ -1731,7 +1979,7 @@
             scores.draw++;
             animateScore(scoreDrawEl);
             playDrawSound();
-            const msg = currentMode === 'aivsai' ? t('modal-draw-aivsai') : currentMode === 'pve' ? t('modal-draw-pve') : t('modal-draw-pvp');
+            const msg = battleMode === 'aivsai' ? t('modal-draw-aivsai') : battleMode === 'pve' ? t('modal-draw-pve') : t('modal-draw-pvp');
             showModal('🤝', t('status-draw'), msg);
             updateStatus(t('status-draw'), null);
         } else {
@@ -1743,16 +1991,16 @@
             let icon, title, msg;
             if (winner === PLAYER_X) {
                 title = getWinnerText(winner);
-                icon = currentMode === 'aivsai' ? '⚡' : '🎉';
-                if (currentMode === 'aivsai') msg = t('modal-ai-x-wins');
-                else if (currentMode === 'pvp') msg = t('modal-player1-wins');
+                icon = battleMode === 'aivsai' ? '⚡' : '🎉';
+                if (battleMode === 'aivsai') msg = t('modal-ai-x-wins');
+                else if (battleMode === 'pvp') msg = t('modal-player1-wins');
                 else msg = t('modal-you-win');
                 updateStatus(title, 'x');
             } else {
                 title = getWinnerText(winner);
-                icon = currentMode === 'aivsai' ? '⚡' : (currentMode === 'pvp' ? '🔥' : '🤖');
-                if (currentMode === 'aivsai') msg = t('modal-ai-o-wins');
-                else if (currentMode === 'pvp') msg = t('modal-player2-wins');
+                icon = battleMode === 'aivsai' ? '⚡' : (battleMode === 'pvp' ? '🔥' : '🤖');
+                if (battleMode === 'aivsai') msg = t('modal-ai-o-wins');
+                else if (battleMode === 'pvp') msg = t('modal-player2-wins');
                 else msg = t('modal-ai-wins');
                 updateStatus(title, 'o');
             }
@@ -1835,7 +2083,7 @@
             connect4Board.style.display = 'none';
             gomokuBoard.style.display = 'none';
             updateStatus(getTurnText(), 'x');
-            if (currentMode === 'aivsai') startAiVsAi();
+            if (battleMode === 'aivsai') startAiVsAi();
         }
         updateCellAriaLabels();
     }
@@ -1967,12 +2215,12 @@
 
     /* ===== AI vs AI TTT ===== */
     function startAiVsAi() {
-        if (!gameActive || currentMode !== 'aivsai') return;
+        if (!gameActive || battleMode !== 'aivsai') return;
         lockBoard(true);
         updateStatus(getTurnText(), currentPlayer === PLAYER_X ? 'x' : 'o');
         const delay = settings.animations ? 500 : 50;
         aiTimer = setTimeout(() => {
-            if (!gameActive || currentMode !== 'aivsai') return;
+            if (!gameActive || battleMode !== 'aivsai') return;
             const move = getAiMove(gameBoard, currentPlayer);
             if (move < 0 || move > 8) { endGame(true); return; }
             makeMove(move, currentPlayer);
@@ -1980,7 +2228,7 @@
                 startAiVsAi();
             } else {
                 const nextDelay = settings.animations ? 1200 : 300;
-                aiTimer = setTimeout(() => { if (!gameActive && currentMode === 'aivsai') resetGame(); }, nextDelay);
+                aiTimer = setTimeout(() => { if (!gameActive && battleMode === 'aivsai') resetGame(); }, nextDelay);
             }
         }, delay);
     }
