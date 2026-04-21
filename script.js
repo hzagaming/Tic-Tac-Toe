@@ -260,6 +260,22 @@
     /* ===== Changelog Data ===== */
     const changelogData = [
         {
+            version: '0.5.2',
+            date: { zh:'2026-04-20', en:'Apr 20, 2026', ja:'2026年4月20日', ko:'2026년 4월 20일', fr:'20 avr. 2026', de:'20. Apr. 2026', es:'20 abr. 2026', ru:'20 апр. 2026', it:'20 apr. 2026', pt:'20 de abr. de 2026' },
+            items: {
+                zh: ['统一 handleCellClick 中 battleMode 的获取方式，改用 getEffectiveBattleMode() 与 C4/Gomoku 保持一致'],
+                en: ['Unified battleMode access in handleCellClick to use getEffectiveBattleMode() for consistency with C4/Gomoku'],
+                ja: ['handleCellClick の battleMode 取得を getEffectiveBattleMode() に統一（C4/Gomoku と一致）'],
+                ko: ['handleCellClick 의 battleMode 접근을 getEffectiveBattleMode() 로 통일 (C4/Gomoku 와 일치)'],
+                fr: ['Uniformisation de battleMode dans handleCellClick via getEffectiveBattleMode() (cohérence C4/Gomoku)'],
+                de: ['battleMode in handleCellClick auf getEffectiveBattleMode() vereinheitlicht (Konsistenz mit C4/Gomoku)'],
+                es: ['Unificado acceso a battleMode en handleCellClick con getEffectiveBattleMode() (consistencia C4/Gomoku)'],
+                ru: ['Унифицирован доступ к battleMode в handleCellClick через getEffectiveBattleMode() (согласованность с C4/Gomoku)'],
+                it: ['Uniformato accesso battleMode in handleCellClick con getEffectiveBattleMode() (coerenza C4/Gomoku)'],
+                pt: ['Unificado acesso a battleMode em handleCellClick com getEffectiveBattleMode() (consistência C4/Gomoku)'],
+            }
+        },
+        {
             version: '0.5.1',
             date: { zh:'2026-04-20', en:'Apr 20, 2026', ja:'2026年4月20日', ko:'2026년 4월 20일', fr:'20 avr. 2026', de:'20. Apr. 2026', es:'20 abr. 2026', ru:'20 апр. 2026', it:'20 apr. 2026', pt:'20 de abr. de 2026' },
             items: {
@@ -1308,15 +1324,16 @@
 
     /* ===== Tic Tac Toe ===== */
     function handleCellClick(e) {
+        const bm = getEffectiveBattleMode();
         const index = parseInt(e.currentTarget.dataset.index, 10);
         if (!gameActive || gameBoard[index] !== '') return;
-        if (battleMode === 'aivsai') return;
-        if (battleMode === 'pve' && currentPlayer !== PLAYER_X) return;
+        if (bm === 'aivsai') return;
+        if (bm === 'pve' && currentPlayer !== PLAYER_X) return;
 
         const player = currentPlayer;
         makeMove(index, player);
 
-        if (gameActive && battleMode === 'pve') {
+        if (gameActive && bm === 'pve') {
             updateStatus(getTurnText(), 'o');
             lockBoard(true);
             const delay = settings.animations ? 400 : 50;
