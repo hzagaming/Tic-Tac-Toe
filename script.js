@@ -58,6 +58,27 @@
     const changelogClose = document.getElementById('changelog-close');
     const changelogBody = document.getElementById('changelog-body');
 
+    const SETTINGS_KEY = 'ttt_settings_v1';
+
+    const undoBtn = document.getElementById('undo-btn');
+    const historyBtn = document.getElementById('history-btn');
+    const historyDrawer = document.getElementById('history-drawer');
+    const historyOverlay = document.getElementById('history-overlay');
+    const historyClose = document.getElementById('history-close');
+    const historyEmpty = document.getElementById('history-empty');
+    const historyList = document.getElementById('history-list');
+    const clearHistoryBtn = document.getElementById('clear-history-btn');
+    const replayModal = document.getElementById('replay-modal');
+    const replayClose = document.getElementById('replay-close');
+    const replayBoardWrap = document.getElementById('replay-board-wrap');
+    const replayMeta = document.getElementById('replay-meta');
+    const replayStepText = document.getElementById('replay-step-text');
+    const replayBarFill = document.getElementById('replay-bar-fill');
+    const replayReset = document.getElementById('replay-reset');
+    const replayPrev = document.getElementById('replay-prev');
+    const replayPlay = document.getElementById('replay-play');
+    const replayNext = document.getElementById('replay-next');
+
     const PLAYER_X = 'X';
     const PLAYER_O = 'O';
 
@@ -75,6 +96,19 @@
     let audioCtx = null;
     let lastFocusedElement = null;
     let lastWinData = null;
+
+    // History & Replay state
+    let moveHistory = [];
+    let gameStartTime = 0;
+    let currentMoveStartTime = 0;
+    let boardSnapshots = [];
+    let playerHistory = [];
+    let replayData = null;
+    let replayStep = 0;
+    let replayTimer = null;
+    let replayPlaying = false;
+    const HISTORY_KEY = 'ttt_game_history_v1';
+    const MAX_HISTORY = 50;
 
     // Custom game config
     let customConfig = { w: 15, h: 15, winLen: 5 };
@@ -221,6 +255,26 @@
             'aria-close': { zh:'关闭', en:'Close', ja:'閉じる', ko:'닫기', fr:'Fermer', de:'Schließen', es:'Cerrar', ru:'Закрыть', it:'Chiudi', pt:'Fechar' },
             'aria-cell-empty': { zh:'空单元格，按 Enter 或空格下棋', en:'Empty cell, press Enter or Space to play', ja:'空のマス、Enterまたはスペースで着手', ko:'빈 칸, Enter 또는 스페이스로 플레이', fr:'Cellule vide, appuyez sur Entrée ou Espace pour jouer', de:'Leere Zelle, Enter oder Leertaste zum Spielen', es:'Celda vacía, presiona Enter o Espacio para jugar', ru:'Пустая ячейка, нажмите Enter или Пробел для хода', it:'Cella vuota, premi Invio o Spazio per giocare', pt:'Célula vazia, pressione Enter ou Espaço para jogar' },
             'custom-win-label': { zh:'子连珠', en:' in a row', ja:'子連珠', ko:'목', fr:' alignés', de:' in einer Reihe', es:' en línea', ru:' в ряд', it:' in fila', pt:' em linha' },
+            'aria-history': { zh:'对局历史', en:'History', ja:'対局履歴', ko:'대국 기록', fr:'Historique', de:'Verlauf', es:'Historial', ru:'История', it:'Cronologia', pt:'Histórico' },
+            'history-title': { zh:'对局历史', en:'Game History', ja:'対局履歴', ko:'대국 기록', fr:'Historique', de:'Spielverlauf', es:'Historial', ru:'История игр', it:'Cronologia', pt:'Histórico' },
+            'history-empty': { zh:'暂无对局记录', en:'No games yet', ja:'記録がありません', ko:'기록 없음', fr:'Aucune partie', de:'Noch keine Spiele', es:'Sin partidas', ru:'Нет записей', it:'Nessuna partita', pt:'Sem jogos' },
+            'history-empty-sub': { zh:'完成一局游戏后，记录将自动保存', en:'Records are saved automatically after each game', ja:'ゲーム終了後に自動保存されます', ko:'게임 종료 후 자동 저장', fr:'Enregistré auto. après chaque partie', de:'Autom. nach jedem Spiel gespeichert', es:'Se guarda automáticamente', ru:'Сохраняется автоматически', it:'Salvato automaticamente', pt:'Salvo automaticamente' },
+            'btn-clear-history': { zh:'清空记录', en:'Clear All', ja:'すべて削除', ko:'기록 삭제', fr:'Tout effacer', de:'Alle löschen', es:'Borrar todo', ru:'Очистить', it:'Cancella tutto', pt:'Limpar tudo' },
+            'history-replay': { zh:'回放', en:'Replay', ja:'再生', ko:'재생', fr:'Revoir', de:'Wiederholung', es:'Repetición', ru:'Повтор', it:'Replay', pt:'Repetir' },
+            'history-delete': { zh:'删除', en:'Delete', ja:'削除', ko:'삭제', fr:'Supprimer', de:'Löschen', es:'Eliminar', ru:'Удалить', it:'Elimina', pt:'Excluir' },
+            'history-moves': { zh:'步', en:'moves', ja:'手', ko:'수', fr:'coups', de:'Züge', es:'jugadas', ru:'ходов', it:'mosse', pt:'jogadas' },
+            'replay-title': { zh:'回放中', en:'Replay', ja:'再生中', ko:'재생 중', fr:'Relecture', de:'Wiedergabe', es:'Repetición', ru:'Повтор', it:'Replay', pt:'Repetição' },
+            'replay-winner': { zh:'获胜', en:'wins', ja:'勝利', ko:'승리', fr:'gagne', de:'gewinnt', es:'gana', ru:'побеждает', it:'vince', pt:'vence' },
+            'replay-draw': { zh:'平局', en:'Draw', ja:'引き分け', ko:'무승부', fr:'Égalité', de:'Unentschieden', es:'Empate', ru:'Ничья', it:'Pareggio', pt:'Empate' },
+            'replay-reset': { zh:'重置', en:'Reset', ja:'最初', ko:'처음', fr:'Début', de:'Anfang', es:'Inicio', ru:'Сброс', it:'Inizio', pt:'Início' },
+            'replay-prev': { zh:'上一步', en:'Previous', ja:'前', ko:'이전', fr:'Précédent', de:'Zurück', es:'Anterior', ru:'Назад', it:'Indietro', pt:'Anterior' },
+            'replay-play': { zh:'播放', en:'Play', ja:'再生', ko:'재생', fr:'Lecture', de:'Abspielen', es:'Reproducir', ru:'Играть', it:'Riproduci', pt:'Reproduzir' },
+            'replay-pause': { zh:'暂停', en:'Pause', ja:'一時停止', ko:'일시정지', fr:'Pause', de:'Pause', es:'Pausa', ru:'Пауза', it:'Pausa', pt:'Pausar' },
+            'replay-next': { zh:'下一步', en:'Next', ja:'次', ko:'다음', fr:'Suivant', de:'Weiter', es:'Siguiente', ru:'Вперёд', it:'Avanti', pt:'Próximo' },
+            'replay-finished': { zh:'回放结束', en:'Replay finished', ja:'再生終了', ko:'재생 종료', fr:'Fin de la relecture', de:'Wiedergabe beendet', es:'Repetición terminada', ru:'Повтор завершён', it:'Replay finito', pt:'Repetição concluída' },
+            'history-confirm-clear': { zh:'确定要清空所有对局记录吗？此操作无法撤销。', en:'Clear all game history? This cannot be undone.', ja:'すべての記録を削除しますか？', ko:'모든 기록을 삭제하시겠습니까?', fr:'Effacer tout l\'historique ?', de:'Gesamten Verlauf löschen?', es:'¿Borrar todo el historial?', ru:'Очистить всю историю?', it:'Cancellare tutta la cronologia?', pt:'Limpar todo o histórico?' },
+            'history-confirm-delete': { zh:'确定要删除这条对局记录吗？', en:'Delete this game record?', ja:'この記録を削除しますか？', ko:'이 기록을 삭제하시겠습니까?', fr:'Supprimer cette partie ?', de:'Diesen Eintrag löschen?', es:'¿Eliminar esta partida?', ru:'Удалить эту запись?', it:'Eliminare questa partita?', pt:'Excluir este registro?' },
+            'aria-undo': { zh:'悔棋', en:'Undo', ja:'待った', ko:'무르기', fr:'Annuler', de:'Rückgängig', es:'Deshacer', ru:'Отменить', it:'Annulla', pt:'Desfazer' },
         };
         const out = {};
         for (const [key, langs] of Object.entries(c)) {
@@ -264,6 +318,54 @@
 
     /* ===== Changelog Data ===== */
     const changelogData = [
+        {
+            version: '0.6.2',
+            date: { zh:'2026-04-28', en:'Apr 28, 2026', ja:'2026年4月28日', ko:'2026년 4월 28일', fr:'28 avr. 2026', de:'28. Apr. 2026', es:'28 abr. 2026', ru:'28 апр. 2026', it:'28 apr. 2026', pt:'28 de abr. de 2026' },
+            items: {
+                zh: ['修复 init() 未调用 resetGame() 导致首步无法悔棋、首步耗时统计异常的问题', '修复 openHistory() 未关闭回放弹窗导致的面板层级冲突', '修复 CSS 未定义 --surface-hover 导致「关于」链接悬停效果失效的问题', '新增 Ctrl+Z / Cmd+Z 键盘悔棋快捷键，输入框内自动屏蔽', '新增设置持久化：所有设置（语言/主题/音效/难度/自定义规则等）刷新后自动恢复', '修复 applySettingsUI() 未同步自定义棋盘输入框值的问题', '单条历史记录删除前新增确认对话框，防止误删', '优化历史抽屉初始 DOM 状态，空记录时列表与清空按钮默认隐藏'],
+                en: ['Fixed init() not calling resetGame() causing undo broken on first move and incorrect move timing', 'Fixed openHistory() not closing replay modal causing panel z-index conflict', 'Fixed missing CSS --surface-hover breaking About link hover effect', 'Added Ctrl+Z / Cmd+Z keyboard undo shortcut, auto-disabled inside input fields', 'Added settings persistence: all settings (language, theme, sound, difficulty, custom rules, etc.) restore after refresh', 'Fixed applySettingsUI() not syncing custom board input values', 'Added confirmation dialog before single history deletion to prevent accidents', 'Optimized history drawer initial DOM state: list and clear button hidden by default when empty'],
+                ja: ['init() が resetGame() を呼ばず、初手の待ち不可と時間統計異常を修正','openHistory() が再生モーダルを閉じず、パネル衝突を修正','CSS --surface-hover 未定義で「About」リンクホバーが効かない問題を修正','Ctrl+Z / Cmd+Z キーボード待ちショートカット追加、入力欄では自動無効','設定永続化追加：言語/テーマ/効果音/難易度/カスタムルールなど更新後も復元','applySettingsUI() がカスタムボード入力値を同期しない問題を修正','個別記録削除前に確認ダイアログ追加、誤削除防止','履歴ドロワーの初期 DOM 状態を最適化：空時はリストと削除ボタンを非表示'],
+                ko: ['init() 이 resetGame() 을 호출하지 않아 첫 수 무르기 불가 및 시간 통계 오류 수정','openHistory() 이 재생 모달을 닫지 않아 패널 충돌 수정','CSS --surface-hover 미정의로 About 링크 호버 효과 실패 수정','Ctrl+Z / Cmd+Z 키보드 무르기 단축키 추가, 입력창에서는 자동 비활성화','설정 영구 저장 추가: 언어/테마/효과음/난이도/사용자 지정 규칙 등 새로고침 후 자동 복원','applySettingsUI() 이 사용자 지정 보드 입력값을 동기화하지 않는 문제 수정','개별 기록 삭제 전 확인 대화상자 추가, 오삭제 방지','기록 서랍 초기 DOM 상태 최적화: 빈 기록 시 목록과 전체 삭제 버튼 기본 숨김'],
+                fr: ['Correction init() n\'appelant pas resetGame() empêchant l\'annulation du premier coup et timing erroné','Correction openHistory() ne fermant pas la relecture causant un conflit de z-index','Correction --surface-hover CSS manquant cassant le survol des liens À propos','Raccourci clavier Ctrl+Z / Cmd+Z pour annuler, auto-désactivé dans les champs','Persistance des paramètres : langue, thème, son, difficulté, règles perso. restaurés après refresh','Correction applySettingsUI() ne synchronisant pas les valeurs des champs plateau perso.','Dialogue de confirmation avant suppression individuelle pour éviter les accidents','État DOM initial du tiroir optimisé : liste et bouton effacer masqués par défaut si vide'],
+                de: ['Korrigiert: init() ruft resetGame() nicht auf, wodurch Rückgängig beim ersten Zug und Zeitmessung fehlschlagen','Korrigiert: openHistory() schließt Wiederholung nicht, was z-index-Konflikte verursacht','Korrigiert: Fehlende CSS-Variable --surface-hover bricht Hover-Effekt bei Über-Links','Tastenkürzel Ctrl+Z / Cmd+Z für Rückgängig, in Eingabefeldern automatisch deaktiviert','Einstellungen werden dauerhaft gespeichert: Sprache, Theme, Ton, Schwierigkeit, benutzerdef. Regeln usw.','Korrigiert: applySettingsUI() synchronisiert benutzerdef. Brett-Eingabewerte nicht','Bestätigungsdialog vor einzelnem Löschen zum Verhindern von Fehlbedienungen','Anfänglicher DOM-Zustand der Historie optimiert: Liste und Löschen-Button standardmäßig ausgeblendet'],
+                es: ['Corregido: init() no llama a resetGame() rompiendo deshacer en primer movimiento y tiempo erróneo','Corregido: openHistory() no cierra repetición causando conflicto de z-index','Corregido: falta CSS --surface-hover rompiendo hover de enlaces Acerca de','Atajo de teclado Ctrl+Z / Cmd+Z para deshacer, auto-desactivado en campos de entrada','Persistencia de ajustes: idioma, tema, sonido, dificultad, reglas personalizadas, etc. se restauran','Corregido: applySettingsUI() no sincroniza valores de entrada de tablero personalizado','Diálogo de confirmación antes de eliminar una partida para evitar accidentes','Estado DOM inicial del cajón optimizado: lista y botón borrar ocultos por defecto cuando está vacío'],
+                ru: ['Исправлено: init() не вызывает resetGame(), ломая отмену первого хода и статистику времени','Исправлено: openHistory() не закрывает повтор, вызывая конфликт z-index','Исправлено: отсутствие CSS --surface-hover ломает эффект наведения на ссылки О приложении','Горячая клавиша Ctrl+Z / Cmd+Z для отмены хода, автоматически отключается в полях ввода','Постоянное сохранение настроек: язык, тема, звук, сложность, пользовательские правила и др.','Исправлено: applySettingsUI() не синхронизирует значения полей пользовательской доски','Диалог подтверждения перед удалением отдельной записи для предотвращения случайных действий','Оптимизировано начальное состояние DOM панели истории: список и кнопка очистки скрыты по умолчанию'],
+                it: ['Corretto: init() non chiama resetGame() rompendo annulla alla prima mossa e tempistica','Corretto: openHistory() non chiude replay causando conflitto z-index','Corretto: CSS --surface-hover mancante rompendo hover link Informazioni','Scorciatoia da tastiera Ctrl+Z / Cmd+Z per annulla, auto-disabilitata nei campi di input','Persistenza impostazioni: lingua, tema, audio, difficoltà, regole personalizzate ripristinate al refresh','Corretto: applySettingsUI() non sincronizza i valori dei campi scacchiera personalizzata','Conferma prima dell\'eliminazione singola per prevenire cancellazioni accidentali','Stato DOM iniziale del cassetto ottimizzato: lista e pulsante cancella nascosti di default se vuoto'],
+                pt: ['Corrigido: init() não chama resetGame() quebrando desfazer na primeira jogada e tempo incorreto','Corrigido: openHistory() não fecha repetição causando conflito de z-index','Corrigido: CSS --surface-hover ausente quebrando hover de links Sobre','Atalho de teclado Ctrl+Z / Cmd+Z para desfazer, auto-desativado em campos de entrada','Persistência de configurações: idioma, tema, som, dificuldade, regras personalizadas restauradas','Corrigido: applySettingsUI() não sincroniza valores de entrada do tabuleiro personalizado','Diálogo de confirmação antes de excluir um registro para evitar acidentes','Estado DOM inicial da gaveta otimizado: lista e botão limpar ocultos por padrão quando vazio'],
+            }
+        },
+        {
+            version: '0.6.1',
+            date: { zh:'2026-04-28', en:'Apr 28, 2026', ja:'2026年4月28日', ko:'2026년 4월 28일', fr:'28 avr. 2026', de:'28. Apr. 2026', es:'28 abr. 2026', ru:'28 апр. 2026', it:'28 apr. 2026', pt:'28 de abr. de 2026' },
+            items: {
+                zh: ['新增悔棋系统：PvE 模式下可撤销玩家与 AI 各一步，PvP 模式下可撤销上一步，AI 对战模式不可用', '悔棋按钮根据当前游戏状态智能启用/禁用，支持鼠标与键盘无障碍操作', '悔棋后完整恢复棋盘状态、回合顺序、赢线与模态框，时间戳重新计算'],
+                en: ['Added Undo System: undo both player and AI moves in PvE, undo last move in PvP, disabled in AI vs AI', 'Undo button intelligently enables/disables based on game state, supports mouse and keyboard accessibility', 'Full board state restoration after undo including turn order, win lines and modal cleanup, timestamp recalculation'],
+                ja: ['待ったシステム追加：PvE はプレイヤーと AI 双方を待った、PvP は1手待った、AI対AI は不可', '待ったボタンはゲーム状態に応じて自動有効/無効、マウスとキーボードのアクセシビリティ対応', '待った後に盤面状態、手番、勝利線、モーダルを完全復元、タイムスタンプ再計算'],
+                ko: ['무르기 시스템 추가: PvE 는 플레이어와 AI 각각 무르기, PvP 는 한 수 무르기, AI 대 AI 는 불가', '무르기 버튼은 게임 상태에 따라 자동 활성화/비활성화, 마우스 및 키보드 접근성 지원', '무르기 후 보드 상태, 턴 순서, 승리 선, 모달 완전 복원, 타임스탬프 재계산'],
+                fr: ['Système d\'annulation : annule joueur + IA en PvE, dernier coup en PvP, désactivé en IA vs IA', 'Bouton Annulation s\'active/désactive intelligemment, accessible souris et clavier', 'Restauration complète après annulation : plateau, tour, lignes victoire, modal, recalcul horodatage'],
+                de: ['Rückgängig-System: Spieler + KI in PvE, letzter Zug in PvP, deaktiviert in KI vs KI', 'Rückgängig-Button aktiviert/deaktiviert sich intelligent, Maus- und Tastatur-Barrierefreiheit', 'Vollständige Wiederherstellung nach Rückgängig: Brett, Zug, Sieglinien, Modal, Zeitstempel-Neuberechnung'],
+                es: ['Sistema de deshacer: deshacer jugador + IA en PvE, última jugada en PvP, desactivado en IA vs IA', 'Botón Deshacer se activa/desactiva inteligentemente, accesible con ratón y teclado', 'Restauración completa después de deshacer: tablero, turno, líneas victoria, modal, recálculo de marca temporal'],
+                ru: ['Система отмены хода: отмена игрока и ИИ в PvE, последнего хода в PvP, отключено в ИИ vs ИИ', 'Кнопка отмены интеллектуально включается/выключается, доступна мышью и клавиатурой', 'Полное восстановление после отмены: доска, ход, линии победы, модалка, пересчёт временной метки'],
+                it: ['Sistema Annulla: annulla giocatore + AI in PvE, ultima mossa in PvP, disabilitato in AI vs AI', 'Pulsante Annulla si attiva/disattiva intelligentemente, accessibile mouse e tastiera', 'Ripristino completo dopo annulla: scacchiera, turno, linee vittoria, modale, ricalcolo timestamp'],
+                pt: ['Sistema de desfazer: desfazer jogador + IA em PvE, última jogada em PvP, desativado em IA vs IA', 'Botão Desfazer ativa/desativa inteligentemente, acessível com mouse e teclado', 'Restauração completa após desfazer: tabuleiro, turno, linhas vitória, modal, recálculo de carimbo de tempo'],
+            }
+        },
+        {
+            version: '0.6.0',
+            date: { zh:'2026-04-28', en:'Apr 28, 2026', ja:'2026年4月28日', ko:'2026년 4월 28일', fr:'28 avr. 2026', de:'28. Apr. 2026', es:'28 abr. 2026', ru:'28 апр. 2026', it:'28 apr. 2026', pt:'28 de abr. de 2026' },
+            items: {
+                zh: ['新增对局历史记录系统：自动保存每局游戏，支持查看模式、对战方式、胜负、步数与时间', '新增回放系统：可逐步回放任意历史对局，支持播放/暂停/上一步/下一步/重置控制', '历史记录支持本地持久化存储，最多保留 50 条，支持单条删除与一键清空（带确认对话框）', '历史记录与回放系统完整支持 10 种语言与无障碍访问（焦点陷阱、键盘导航、ARIA 动态标签）'],
+                en: ['Added Game History: auto-saves every match with mode, battle type, winner, move count and timestamp', 'Added Replay System: step-by-step replay of any historical match with play/pause/step/reset controls', 'History supports local persistent storage (max 50 entries), single deletion and clear-all with confirmation dialog', 'History and Replay fully support 10 languages and accessibility (focus trap, keyboard nav, dynamic ARIA labels)'],
+                ja: ['対局履歴システム追加：モード、対戦方式、勝敗、手数、日時を自動保存', '再生システム追加：任意の対局をステップ再生、再生/一時停止/前/次/リセット対応', 'ローカル保存対応（最大50件）、個別削除と一括削除（確認ダイアログ付き）', '10言語対応とアクセシビリティ完全対応（フォーカストラップ、キーボード操作、ARIA動的ラベル）'],
+                ko: ['대국 기록 시스템 추가: 모드, 대전 방식, 승패, 수, 시간 자동 저장', '재생 시스템 추가: 임의의 대국을 단계별 재생, 재생/일시정지/이전/다음/리셋 지원', '로컬 저장 지원(최대 50건), 개별 삭제 및 일괄 삭제(확인 대화상자 포함)', '10개 언어 지원 및 접근성 완벽 지원(포커스 트랩, 키보드 낵, ARIA 동적 라벨)'],
+                fr: ['Historique des parties : sauvegarde auto. avec mode, type, vainqueur, coups et horodatage', 'Système de relecture : revoir pas à pas n\'importe quelle partie, lecture/pause/précédent/suivant/réinitialisation', 'Stockage local (max 50), suppression individuelle et totale avec dialogue de confirmation', 'Support complet 10 langues et accessibilité (piège focus, nav. clavier, étiquettes ARIA dynamiques)'],
+                de: ['Spielverlauf: automat. Speicherung mit Modus, Kampfart, Sieger, Zügen und Zeitstempel', 'Wiederholungssystem: schrittweise Wiedergabe beliebiger Partien, Abspielen/Pause/Zurück/Weiter/Reset', 'Lokale Speicherung (max. 50), Einzel- und Gesamtlöschung mit Bestätigungsdialog', 'Vollständige 10-Sprachen-Unterstützung und Barrierefreiheit (Fokusfalle, Tastaturnav., dynamische ARIA-Labels)'],
+                es: ['Historial de partidas: guardado automático con modo, tipo, ganador, jugadas y marca temporal', 'Sistema de repetición: reproducción paso a paso con reproducción/pausa/anterior/siguiente/reinicio', 'Almacenamiento local (máx. 50), eliminación individual y total con diálogo de confirmación', 'Soporte completo 10 idiomas y accesibilidad (trampa de foco, navegación teclado, etiquetas ARIA dinámicas)'],
+                ru: ['История игр: автосохранение с режимом, типом боя, победителем, ходами и временем', 'Система повтора: пошаговый просмотр любой партии, воспроизведение/пауза/назад/вперёд/сброс', 'Локальное хранилище (макс. 50), удаление по одному и полная очистка с подтверждением', 'Полная поддержка 10 языков и доступность (ловушка фокуса, навигация клавиатурой, динамические метки ARIA)'],
+                it: ['Cronologia partite: salvataggio automatico con modalità, tipo, vincitore, mosse e orario', 'Sistema replay: riproduzione passo-passo con riproduci/pausa/indietro/avanti/reset', 'Archiviazione locale (max 50), eliminazione singola e totale con dialogo di conferma', 'Supporto completo 10 lingue e accessibilità (trappola fuoco, nav. tastiera, etichette ARIA dinamiche)'],
+                pt: ['Histórico de jogos: salvamento automático com modo, tipo, vencedor, jogadas e horário', 'Sistema de repetição: reprodução passo a passo com reproduzir/pausar/anterior/próximo/reiniciar', 'Armazenamento local (máx. 50), exclusão individual e total com caixa de diálogo de confirmação', 'Suporte completo 10 idiomas e acessibilidade (armadilha de foco, navegação teclado, rótulos ARIA dinâmicos)'],
+            }
+        },
         {
             version: '0.5.5',
             date: { zh:'2026-04-22', en:'Apr 22, 2026', ja:'2026年4月22日', ko:'2026년 4월 22일', fr:'22 avr. 2026', de:'22. Apr. 2026', es:'22 abr. 2026', ru:'22 апр. 2026', it:'22 apr. 2026', pt:'22 de abr. de 2026' },
@@ -561,7 +663,52 @@
     }
 
     /* ===== Init ===== */
+    function loadSettings() {
+        try {
+            const raw = localStorage.getItem(SETTINGS_KEY);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return;
+            if (parsed.settings && typeof parsed.settings === 'object') {
+                const s = parsed.settings;
+                if (langMap[s.lang]) settings.lang = s.lang;
+                if (['dark','light','auto'].includes(s.theme)) settings.theme = s.theme;
+                if (/^#[0-9A-Fa-f]{6}$/.test(s.accentColor)) settings.accentColor = s.accentColor;
+                if (/^#[0-9A-Fa-f]{6}$/.test(s.customColor)) settings.customColor = s.customColor;
+                if (typeof s.contrast === 'number' && s.contrast >= 80 && s.contrast <= 130) settings.contrast = s.contrast;
+                if (['inter','serif','mono','rounded'].includes(s.font)) settings.font = s.font;
+                if (typeof s.animations === 'boolean') settings.animations = s.animations;
+                if (['slow','normal','fast'].includes(s.animSpeed)) settings.animSpeed = s.animSpeed;
+                if (typeof s.board3d === 'boolean') settings.board3d = s.board3d;
+                if (typeof s.sound === 'boolean') settings.sound = s.sound;
+                const validStyles = ['classic','electronic','retro','wood','bell','space','drum','piano','synth','chiptune','pluck','crystal'];
+                if (validStyles.includes(s.soundStyle)) settings.soundStyle = s.soundStyle;
+                if (typeof s.soundPitch === 'number' && s.soundPitch >= -12 && s.soundPitch <= 12) settings.soundPitch = s.soundPitch;
+                if (typeof s.soundDuration === 'number' && s.soundDuration >= 50 && s.soundDuration <= 200) settings.soundDuration = s.soundDuration;
+                if (typeof s.soundVolume === 'number' && s.soundVolume >= 0 && s.soundVolume <= 100) settings.soundVolume = s.soundVolume;
+                if (['easy','medium','hard'].includes(s.difficulty)) settings.difficulty = s.difficulty;
+                if (['3','5','7','10','15','custom'].includes(s.customBoardSize)) settings.customBoardSize = s.customBoardSize;
+            }
+            if (parsed.customConfig && typeof parsed.customConfig === 'object') {
+                const c = parsed.customConfig;
+                if (typeof c.w === 'number' && c.w >= 3 && c.w <= 20) customConfig.w = c.w;
+                if (typeof c.h === 'number' && c.h >= 3 && c.h <= 20) customConfig.h = c.h;
+                if (typeof c.winLen === 'number' && c.winLen >= 3 && c.winLen <= 20) customConfig.winLen = c.winLen;
+                const minDim = Math.min(customConfig.w, customConfig.h);
+                if (customConfig.winLen > minDim) customConfig.winLen = minDim;
+            }
+        } catch (e) {}
+    }
+
+    function saveSettings() {
+        try {
+            const payload = { settings: { ...settings }, customConfig: { ...customConfig } };
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(payload));
+        } catch (e) {}
+    }
+
     function init() {
+        loadSettings();
         buildLangGrid();
         buildColorPicker();
         buildC4Cells();
@@ -600,15 +747,20 @@
         document.querySelectorAll('#board-size-segmented .seg-btn').forEach(btn =>
             btn.addEventListener('click', () => setCustomBoardSize(btn.dataset.size)));
 
-        animToggle.addEventListener('change', e => setAnimations(e.target.checked));
-        soundToggle.addEventListener('change', e => setSound(e.target.checked));
-        toggle3d.addEventListener('change', e => set3d(e.target.checked));
+        animToggle.addEventListener('change', e => { setAnimations(e.target.checked); saveSettings(); });
+        soundToggle.addEventListener('change', e => { setSound(e.target.checked); saveSettings(); });
+        toggle3d.addEventListener('change', e => { set3d(e.target.checked); saveSettings(); });
         contrastSlider.addEventListener('input', e => setContrast(e.target.value));
+        contrastSlider.addEventListener('change', () => saveSettings());
         customColorInput.addEventListener('input', e => setAccentColor(e.target.value, true));
+        customColorInput.addEventListener('change', () => saveSettings());
 
         pitchSlider.addEventListener('input', e => { settings.soundPitch = parseInt(e.target.value, 10); pitchValue.textContent = (settings.soundPitch > 0 ? '+' : '') + settings.soundPitch; });
+        pitchSlider.addEventListener('change', () => saveSettings());
         durationSlider.addEventListener('input', e => { settings.soundDuration = parseInt(e.target.value, 10); durationValue.textContent = settings.soundDuration + '%'; });
+        durationSlider.addEventListener('change', () => saveSettings());
         volumeSlider.addEventListener('input', e => { settings.soundVolume = parseInt(e.target.value, 10); volumeValue.textContent = settings.soundVolume + '%'; });
+        volumeSlider.addEventListener('change', () => saveSettings());
         testSoundBtn.addEventListener('click', () => { initAudio(); playMoveSound(PLAYER_X); });
 
         function validateCustomConfig() {
@@ -618,13 +770,26 @@
                 customWinLenInput.value = minDim;
             }
         }
-        customWinLenInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.winLen = clamp(isNaN(v) ? 5 : v, 3, 20); validateCustomConfig(); if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); } });
-        customBoardWInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.w = clamp(isNaN(v) ? 15 : v, 3, 20); validateCustomConfig(); customBoardWInput.value = customConfig.w; if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); } });
-        customBoardHInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.h = clamp(isNaN(v) ? 15 : v, 3, 20); validateCustomConfig(); customBoardHInput.value = customConfig.h; if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); } });
+        customWinLenInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.winLen = clamp(isNaN(v) ? 5 : v, 3, 20); validateCustomConfig(); saveSettings(); if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); } });
+        customBoardWInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.w = clamp(isNaN(v) ? 15 : v, 3, 20); validateCustomConfig(); customBoardWInput.value = customConfig.w; saveSettings(); if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); } });
+        customBoardHInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.h = clamp(isNaN(v) ? 15 : v, 3, 20); validateCustomConfig(); customBoardHInput.value = customConfig.h; saveSettings(); if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); } });
 
         changelogBtn.addEventListener('click', openChangelog);
         changelogClose.addEventListener('click', closeChangelog);
         changelogModal.addEventListener('click', e => { if (e.target === changelogModal) closeChangelog(); });
+
+        undoBtn.addEventListener('click', undoMove);
+        historyBtn.addEventListener('click', openHistory);
+        historyClose.addEventListener('click', closeHistory);
+        historyOverlay.addEventListener('click', closeHistory);
+        clearHistoryBtn.addEventListener('click', clearHistory);
+
+        replayClose.addEventListener('click', closeReplay);
+        replayModal.addEventListener('click', e => { if (e.target === replayModal) closeReplay(); });
+        replayReset.addEventListener('click', resetReplay);
+        replayPrev.addEventListener('click', stepReplayBackward);
+        replayPlay.addEventListener('click', toggleReplayPlay);
+        replayNext.addEventListener('click', stepReplayForward);
 
         const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
         if (backToLobbyBtn) backToLobbyBtn.addEventListener('click', () => { window.location.href = 'https://haazargames.com'; });
@@ -642,16 +807,20 @@
 
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
-                if (drawer.classList.contains('show')) { closeDrawer(); }
+                if (replayModal.classList.contains('show')) { closeReplay(); }
+                else if (historyDrawer.classList.contains('show')) { closeHistory(); }
+                else if (drawer.classList.contains('show')) { closeDrawer(); }
                 else if (changelogModal.classList.contains('show')) { closeChangelog(); }
                 else if (modal.classList.contains('show')) { hideModal(); }
             }
             if (e.key === 'Tab') {
-                const activeModal = modal.classList.contains('show') ? modal :
+                const activeModal = replayModal.classList.contains('show') ? replayModal :
+                    historyDrawer.classList.contains('show') ? historyDrawer :
+                    modal.classList.contains('show') ? modal :
                     drawer.classList.contains('show') ? drawer :
                     changelogModal.classList.contains('show') ? changelogModal : null;
                 if (!activeModal) return;
-                const focusable = Array.from(activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'));
+                const focusable = Array.from(activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
                 if (focusable.length === 0) return;
                 const first = focusable[0];
                 const last = focusable[focusable.length - 1];
@@ -661,10 +830,17 @@
                     if (document.activeElement === last) { e.preventDefault(); first.focus(); }
                 }
             }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                const tag = document.activeElement.tagName.toLowerCase();
+                if (tag === 'input' || tag === 'textarea' || document.activeElement.isContentEditable) return;
+                e.preventDefault();
+                undoMove();
+            }
         });
 
         applySettingsUI();
         applyI18n();
+        resetGame();
     }
 
     function buildC4Cells() {
@@ -742,6 +918,8 @@
     /* ===== Settings Logic ===== */
     function openDrawer() {
         closeChangelog();
+        closeHistory();
+        closeReplay();
         lastFocusedElement = document.activeElement;
         drawer.classList.add('show');
         drawerOverlay.classList.add('show');
@@ -761,6 +939,7 @@
         settings.lang = lang;
         buildLangGrid();
         applyI18n();
+        saveSettings();
     }
 
     function setTheme(theme) {
@@ -768,6 +947,7 @@
         settings.theme = theme;
         applySettingsUI();
         document.documentElement.setAttribute('data-theme', theme);
+        saveSettings();
     }
 
     function setAccentColor(hex, isCustom = false) {
@@ -780,12 +960,14 @@
         document.documentElement.style.setProperty('--accent-l', hsl.l + '%');
         if (!isCustom) customColorInput.value = hex;
         buildColorPicker();
+        saveSettings();
     }
 
     function setContrast(val) {
         settings.contrast = val;
         contrastValue.textContent = val + '%';
         document.documentElement.style.setProperty('--contrast', val / 100);
+        saveSettings();
     }
 
     function setFont(font) {
@@ -793,12 +975,14 @@
         settings.font = font;
         applySettingsUI();
         document.body.setAttribute('data-font', font);
+        saveSettings();
     }
 
     function setAnimations(on) {
         settings.animations = on;
         applySettingsUI();
         document.body.classList.toggle('animations-off', !on);
+        saveSettings();
     }
 
     function setAnimSpeed(speed) {
@@ -807,18 +991,21 @@
         applySettingsUI();
         const scale = speed === 'slow' ? 1.8 : speed === 'fast' ? 0.4 : 1;
         document.documentElement.style.setProperty('--anim-scale', scale);
+        saveSettings();
     }
 
     function setSound(on) {
         settings.sound = on;
         applySettingsUI();
         if (on) initAudio();
+        saveSettings();
     }
 
     function setSoundStyle(style) {
         if (settings.soundStyle === style) return;
         settings.soundStyle = style;
         applySettingsUI();
+        saveSettings();
     }
 
     function set3d(on) {
@@ -836,6 +1023,7 @@
             connect4Board.style.removeProperty('--rot-x'); connect4Board.style.removeProperty('--rot-y');
             gomokuBoard.style.removeProperty('--rot-x'); gomokuBoard.style.removeProperty('--rot-y');
         }
+        saveSettings();
     }
 
     /* ===== 3D Board Drag Rotation ===== */
@@ -938,6 +1126,7 @@
         if (settings.difficulty === diff) return;
         settings.difficulty = diff;
         applySettingsUI();
+        saveSettings();
         if (getEffectiveBattleMode() !== 'pvp') resetGame();
     }
 
@@ -953,6 +1142,7 @@
         customWinLenInput.value = customConfig.winLen;
         customBoardWInput.value = customConfig.w;
         customBoardHInput.value = customConfig.h;
+        saveSettings();
         if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); }
     }
 
@@ -975,6 +1165,9 @@
         durationValue.textContent = settings.soundDuration + '%';
         volumeSlider.value = settings.soundVolume;
         volumeValue.textContent = settings.soundVolume + '%';
+        customWinLenInput.value = customConfig.winLen;
+        customBoardWInput.value = customConfig.w;
+        customBoardHInput.value = customConfig.h;
         aiDifficultyGroup.style.display = getEffectiveBattleMode() !== 'pvp' ? 'flex' : 'none';
         customGameGroup.style.display = currentMode === 'custom' ? 'flex' : 'none';
         document.documentElement.setAttribute('data-theme', settings.theme);
@@ -1413,7 +1606,12 @@
 
     function makeMove(index, player) {
         if (!gameActive || index < 0 || index > 8 || gameBoard[index] !== '') return;
+        const elapsed = Date.now() - (moveHistory.length === 0 ? gameStartTime : currentMoveStartTime);
         gameBoard[index] = player;
+        moveHistory.push({ player, index, elapsed });
+        currentMoveStartTime = Date.now();
+        pushBoardSnapshot();
+        playerHistory.push(player);
         cells[index].innerHTML = '';
         cells[index].appendChild(createMarkSvg(player));
         cells[index].classList.add('disabled');
@@ -1429,6 +1627,7 @@
             const activeClass = currentPlayer === PLAYER_X ? 'x' : 'o';
             updateStatus(getTurnText(), activeClass);
         }
+        updateUndoButton();
     }
 
     /* ===== Connect Four ===== */
@@ -1468,7 +1667,12 @@
 
     function makeC4Move(row, col, player) {
         if (!gameActive || row < 0 || row >= C4_ROWS || col < 0 || col >= C4_COLS || c4Board[row][col] !== '') return;
+        const elapsed = Date.now() - (moveHistory.length === 0 ? gameStartTime : currentMoveStartTime);
         c4Board[row][col] = player;
+        moveHistory.push({ player, row, col, elapsed });
+        currentMoveStartTime = Date.now();
+        pushBoardSnapshot();
+        playerHistory.push(player);
         const cell = c4CellsContainer.children[row * C4_COLS + col];
         const piece = document.createElement('div');
         piece.className = 'c4-piece ' + (player === PLAYER_X ? 'x-piece' : 'o-piece');
@@ -1487,6 +1691,7 @@
             const activeClass = currentPlayer === PLAYER_X ? 'x' : 'o';
             updateStatus(getTurnText(), activeClass);
         }
+        updateUndoButton();
     }
 
     function checkWinC4(row, col, player) {
@@ -1515,6 +1720,7 @@
     function endC4Game(draw, winner, winCells) {
         gameActive = false;
         lockC4Board(true);
+        saveGameHistory(draw ? null : winner);
         const bm = getEffectiveBattleMode();
 
         if (draw) {
@@ -1766,7 +1972,12 @@
         const board = getActiveGmkBoard();
         const cfg = getActiveGmkConfig();
         if (row < 0 || row >= cfg.h || col < 0 || col >= cfg.w || board[row][col] !== '') return;
+        const elapsed = Date.now() - (moveHistory.length === 0 ? gameStartTime : currentMoveStartTime);
         board[row][col] = player;
+        moveHistory.push({ player, row, col, elapsed });
+        currentMoveStartTime = Date.now();
+        pushBoardSnapshot();
+        playerHistory.push(player);
         const cell = gomokuCellsContainer.children[row * cfg.w + col];
         const piece = document.createElement('div');
         piece.className = 'gomoku-piece ' + (player === PLAYER_X ? 'x-piece' : 'o-piece');
@@ -1785,6 +1996,7 @@
             const activeClass = currentPlayer === PLAYER_X ? 'x' : 'o';
             updateStatus(getTurnText(), activeClass);
         }
+        updateUndoButton();
     }
 
     function getActiveGmkConfig() {
@@ -1823,6 +2035,7 @@
     function endGmkGame(draw, winner, winCells) {
         gameActive = false;
         lockGmkBoard(true);
+        saveGameHistory(draw ? null : winner);
         const bm = getEffectiveBattleMode();
 
         if (draw) {
@@ -2090,6 +2303,7 @@
     function endGame(draw, winner) {
         gameActive = false;
         lockBoard(true);
+        saveGameHistory(draw ? null : winner);
 
         const bm = getEffectiveBattleMode();
         if (draw) {
@@ -2140,9 +2354,15 @@
 
     function resetGame() {
         clearTimeout(aiTimer); aiTimer = null;
+        clearTimeout(replayTimer); replayTimer = null;
         gameActive = true;
         currentPlayer = PLAYER_X;
         lastWinData = null;
+        moveHistory = [];
+        gameStartTime = Date.now();
+        currentMoveStartTime = gameStartTime;
+        boardSnapshots = [];
+        playerHistory = [];
         hideModal();
         hideWinLine();
         c4WinLine.classList.remove('show');
@@ -2157,6 +2377,7 @@
             connect4Board.style.display = 'block';
             boardEl.style.display = 'none';
             gomokuBoard.style.display = 'none';
+            pushBoardSnapshot();
             const bm = getEffectiveBattleMode();
             if (bm === 'pve') {
                 updateStatus(getTurnText(), 'x');
@@ -2185,6 +2406,7 @@
             gomokuBoard.style.display = 'block';
             boardEl.style.display = 'none';
             connect4Board.style.display = 'none';
+            pushBoardSnapshot();
             const bm = getEffectiveBattleMode();
             if (bm === 'pve') {
                 updateStatus(getTurnText(), 'x');
@@ -2199,10 +2421,12 @@
             boardEl.style.display = 'grid';
             connect4Board.style.display = 'none';
             gomokuBoard.style.display = 'none';
+            pushBoardSnapshot();
             updateStatus(getTurnText(), 'x');
             if (battleMode === 'aivsai') startAiVsAi();
         }
         updateCellAriaLabels();
+        updateUndoButton();
     }
 
     function isC4Mode() {
@@ -2406,6 +2630,8 @@
     /* ===== Changelog ===== */
     function openChangelog() {
         closeDrawer();
+        closeHistory();
+        closeReplay();
         lastFocusedElement = document.activeElement;
         renderChangelog();
         changelogModal.classList.add('show');
@@ -2446,6 +2672,484 @@
             block.appendChild(list);
             changelogBody.appendChild(block);
         });
+    }
+
+    /* ===== History ===== */
+    function saveGameHistory(winner) {
+        if (moveHistory.length === 0) return;
+        const record = {
+            id: Date.now(),
+            mode: currentMode,
+            battleMode: battleMode,
+            winner: winner || 'draw',
+            difficulty: settings.difficulty,
+            timestamp: Date.now(),
+            moves: JSON.parse(JSON.stringify(moveHistory)),
+            totalMoves: moveHistory.length,
+            customConfig: currentMode === 'custom' ? { w: customConfig.w, h: customConfig.h, winLen: customConfig.winLen } : null
+        };
+        let history = loadHistory();
+        history.unshift(record);
+        if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
+        try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch (e) {}
+    }
+
+    function loadHistory() {
+        try {
+            const raw = localStorage.getItem(HISTORY_KEY);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) { return []; }
+    }
+
+    function deleteHistoryItem(id) {
+        if (!confirm(t('history-confirm-delete'))) return;
+        let history = loadHistory();
+        history = history.filter(h => h.id !== id);
+        try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch (e) {}
+        renderHistory();
+        const focusable = Array.from(historyDrawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
+        if (focusable.length) focusable[0].focus();
+    }
+
+    function formatGameDate(ts) {
+        const d = new Date(ts);
+        const pad = n => n.toString().padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function getModeLabel(mode) {
+        if (mode === 'ttt') return t('mode-ttt');
+        if (mode === 'connect4') return t('mode-connect4');
+        if (mode === 'gomoku') return t('mode-gomoku');
+        return t('mode-custom');
+    }
+
+    function getBattleLabel(bm) {
+        if (bm === 'pvp') return t('mode-pvp');
+        if (bm === 'aivsai') return t('mode-aivsai');
+        return t('mode-pve');
+    }
+
+    function getWinnerLabel(winner, bm) {
+        if (winner === 'draw') return t('label-draw');
+        if (bm === 'aivsai') return winner === 'X' ? t('label-player-x-ai') : t('label-player-o-ai');
+        if (bm === 'pvp') return winner === 'X' ? t('label-player-x-pvp') : t('label-player-o-pvp');
+        return winner === 'X' ? t('label-player-x') : t('label-player-o');
+    }
+
+    function openHistory() {
+        closeDrawer();
+        closeChangelog();
+        closeReplay();
+        lastFocusedElement = document.activeElement;
+        renderHistory();
+        historyDrawer.classList.add('show');
+        historyOverlay.classList.add('show');
+        setTimeout(() => {
+            const focusable = Array.from(historyDrawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
+            if (focusable.length) focusable[0].focus();
+        }, 50);
+    }
+
+    function closeHistory() {
+        historyDrawer.classList.remove('show');
+        historyOverlay.classList.remove('show');
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+    }
+
+    function clearHistory() {
+        if (!confirm(t('history-confirm-clear'))) return;
+        try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
+        renderHistory();
+        const focusable = Array.from(historyDrawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
+        if (focusable.length) focusable[0].focus();
+    }
+
+    function renderHistory() {
+        const history = loadHistory();
+        historyList.innerHTML = '';
+        if (history.length === 0) {
+            historyEmpty.style.display = 'flex';
+            historyList.style.display = 'none';
+            clearHistoryBtn.style.display = 'none';
+        } else {
+            historyEmpty.style.display = 'none';
+            historyList.style.display = 'flex';
+            clearHistoryBtn.style.display = 'block';
+            history.forEach(h => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                const meta = document.createElement('div');
+                meta.className = 'history-item-meta';
+                const modeBadge = document.createElement('span');
+                modeBadge.className = 'history-mode';
+                modeBadge.textContent = getModeLabel(h.mode);
+                const battleBadge = document.createElement('span');
+                battleBadge.className = 'history-battle';
+                battleBadge.textContent = getBattleLabel(h.battleMode);
+                const diffBadge = document.createElement('span');
+                diffBadge.className = 'history-diff';
+                diffBadge.textContent = t('diff-' + h.difficulty);
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'history-date';
+                dateSpan.textContent = formatGameDate(h.timestamp);
+                meta.appendChild(modeBadge);
+                meta.appendChild(battleBadge);
+                if (h.battleMode !== 'pvp') meta.appendChild(diffBadge);
+                meta.appendChild(dateSpan);
+                const info = document.createElement('div');
+                info.className = 'history-item-info';
+                const result = document.createElement('span');
+                result.className = 'history-result result-' + h.winner.toLowerCase();
+                result.textContent = h.winner === 'draw' ? t('label-draw') : getWinnerLabel(h.winner, h.battleMode) + ' ' + t('replay-winner');
+                const moves = document.createElement('span');
+                moves.className = 'history-moves';
+                moves.textContent = h.totalMoves + ' ' + t('history-moves');
+                info.appendChild(result);
+                info.appendChild(moves);
+                const actions = document.createElement('div');
+                actions.className = 'history-item-actions';
+                const replayBtn = document.createElement('button');
+                replayBtn.className = 'btn btn-history-replay';
+                replayBtn.textContent = t('history-replay');
+                replayBtn.addEventListener('click', () => openReplay(h));
+                const delBtn = document.createElement('button');
+                delBtn.className = 'btn btn-history-delete';
+                delBtn.textContent = t('history-delete');
+                delBtn.addEventListener('click', () => deleteHistoryItem(h.id));
+                actions.appendChild(replayBtn);
+                actions.appendChild(delBtn);
+                item.appendChild(meta);
+                item.appendChild(info);
+                item.appendChild(actions);
+                historyList.appendChild(item);
+            });
+        }
+    }
+
+    /* ===== Replay ===== */
+    function openReplay(record) {
+        closeHistory();
+        closeDrawer();
+        closeChangelog();
+        lastFocusedElement = document.activeElement;
+        replayData = record;
+        replayStep = 0;
+        replayPlaying = false;
+        clearTimeout(replayTimer);
+        replayTimer = null;
+        const modeLabel = getModeLabel(record.mode);
+        const battleLabel = getBattleLabel(record.battleMode);
+        replayMeta.textContent = modeLabel + ' · ' + battleLabel + ' · ' + (record.totalMoves + ' ' + t('history-moves'));
+        renderReplayBoard();
+        updateReplayProgress();
+        replayPlay.textContent = '▶';
+        replayPlay.setAttribute('aria-label', t('replay-play'));
+        replayModal.classList.add('show');
+        setTimeout(() => { replayClose.focus(); }, 50);
+    }
+
+    function closeReplay() {
+        replayModal.classList.remove('show');
+        clearTimeout(replayTimer);
+        replayTimer = null;
+        replayPlaying = false;
+        replayData = null;
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+    }
+
+    function renderReplayBoard() {
+        replayBoardWrap.innerHTML = '';
+        if (!replayData) return;
+        const mode = replayData.mode;
+        if (mode === 'ttt') {
+            const board = document.createElement('div');
+            board.className = 'replay-board-ttt';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'replay-cell-ttt';
+                cell.dataset.index = i;
+                board.appendChild(cell);
+            }
+            replayBoardWrap.appendChild(board);
+        } else if (mode === 'connect4') {
+            const board = document.createElement('div');
+            board.className = 'replay-board-c4';
+            for (let r = 0; r < C4_ROWS; r++) {
+                for (let c = 0; c < C4_COLS; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'replay-cell-c4';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    board.appendChild(cell);
+                }
+            }
+            replayBoardWrap.appendChild(board);
+        } else {
+            const cfg = replayData.customConfig || { w: GMK_SIZE, h: GMK_SIZE };
+            const board = document.createElement('div');
+            board.className = 'replay-board-gmk';
+            board.style.gridTemplateColumns = `repeat(${cfg.w}, 1fr)`;
+            board.style.gridTemplateRows = `repeat(${cfg.h}, 1fr)`;
+            for (let r = 0; r < cfg.h; r++) {
+                for (let c = 0; c < cfg.w; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'replay-cell-gmk';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    board.appendChild(cell);
+                }
+            }
+            replayBoardWrap.appendChild(board);
+        }
+    }
+
+    function executeReplayStep(i, animate = true) {
+        if (!replayData || i < 0 || i >= replayData.moves.length) return;
+        const move = replayData.moves[i];
+        const mode = replayData.mode;
+        if (mode === 'ttt') {
+            const cell = replayBoardWrap.querySelector(`.replay-cell-ttt[data-index="${move.index}"]`);
+            if (cell) {
+                cell.innerHTML = '';
+                cell.appendChild(createMarkSvg(move.player));
+                if (animate) cell.classList.add('replay-pop');
+            }
+        } else if (mode === 'connect4') {
+            const cell = replayBoardWrap.querySelector(`.replay-cell-c4[data-row="${move.row}"][data-col="${move.col}"]`);
+            if (cell) {
+                const piece = document.createElement('div');
+                piece.className = 'replay-c4-piece ' + (move.player === PLAYER_X ? 'x-piece' : 'o-piece');
+                if (!animate) piece.style.animation = 'none';
+                cell.appendChild(piece);
+            }
+        } else {
+            const cfg = replayData.customConfig || { w: GMK_SIZE, h: GMK_SIZE };
+            const cell = replayBoardWrap.querySelector(`.replay-cell-gmk[data-row="${move.row}"][data-col="${move.col}"]`);
+            if (cell) {
+                const piece = document.createElement('div');
+                piece.className = 'replay-gmk-piece ' + (move.player === PLAYER_X ? 'x-piece' : 'o-piece');
+                if (!animate) piece.style.animation = 'none';
+                cell.appendChild(piece);
+            }
+        }
+    }
+
+    function resetReplay() {
+        if (!replayData) return;
+        replayStep = 0;
+        replayPlaying = false;
+        clearTimeout(replayTimer);
+        replayTimer = null;
+        replayPlay.textContent = '▶';
+        replayPlay.setAttribute('aria-label', t('replay-play'));
+        renderReplayBoard();
+        updateReplayProgress();
+    }
+
+    function stepReplayForward() {
+        if (!replayData || replayStep >= replayData.moves.length) return;
+        executeReplayStep(replayStep, true);
+        replayStep++;
+        updateReplayProgress();
+        if (replayStep >= replayData.moves.length && replayPlaying) {
+            replayPlaying = false;
+            replayPlay.textContent = '▶';
+            replayPlay.setAttribute('aria-label', t('replay-play'));
+            clearTimeout(replayTimer);
+            replayTimer = null;
+        }
+    }
+
+    function stepReplayBackward() {
+        if (!replayData || replayStep <= 0) return;
+        replayPlaying = false;
+        clearTimeout(replayTimer);
+        replayTimer = null;
+        replayPlay.textContent = '▶';
+        replayPlay.setAttribute('aria-label', t('replay-play'));
+        replayStep--;
+        // Re-render board up to current step
+        renderReplayBoard();
+        for (let i = 0; i < replayStep; i++) {
+            executeReplayStep(i, false);
+        }
+        updateReplayProgress();
+    }
+
+    function toggleReplayPlay() {
+        if (!replayData) return;
+        if (replayPlaying) {
+            replayPlaying = false;
+            replayPlay.textContent = '▶';
+            replayPlay.setAttribute('aria-label', t('replay-play'));
+            clearTimeout(replayTimer);
+            replayTimer = null;
+        } else {
+            if (replayStep >= replayData.moves.length) {
+                resetReplay();
+            }
+            replayPlaying = true;
+            replayPlay.textContent = '⏸';
+            replayPlay.setAttribute('aria-label', t('replay-pause'));
+            advanceReplay();
+        }
+    }
+
+    function advanceReplay() {
+        if (!replayPlaying || !replayData) return;
+        if (replayStep >= replayData.moves.length) {
+            replayPlaying = false;
+            replayPlay.textContent = '▶';
+            replayPlay.setAttribute('aria-label', t('replay-play'));
+            replayTimer = null;
+            return;
+        }
+        executeReplayStep(replayStep, true);
+        replayStep++;
+        updateReplayProgress();
+        if (replayStep < replayData.moves.length) {
+            replayTimer = setTimeout(advanceReplay, 800);
+        } else {
+            replayPlaying = false;
+            replayPlay.textContent = '▶';
+            replayPlay.setAttribute('aria-label', t('replay-play'));
+            replayTimer = null;
+        }
+    }
+
+    function updateReplayProgress() {
+        if (!replayData) return;
+        replayStepText.textContent = replayStep + ' / ' + replayData.moves.length;
+        const pct = replayData.moves.length > 0 ? (replayStep / replayData.moves.length) * 100 : 0;
+        replayBarFill.style.width = pct + '%';
+    }
+
+    /* ===== Undo System ===== */
+    function pushBoardSnapshot() {
+        if (isC4Mode()) {
+            boardSnapshots.push(c4Board.map(r => [...r]));
+        } else if (isGmkMode()) {
+            const board = getActiveGmkBoard();
+            boardSnapshots.push(board.map(r => [...r]));
+        } else {
+            boardSnapshots.push([...gameBoard]);
+        }
+    }
+
+    function restoreBoardFromSnapshot() {
+        const snapshot = boardSnapshots[boardSnapshots.length - 1];
+        if (isC4Mode()) {
+            c4Board = snapshot.map(r => [...r]);
+            document.querySelectorAll('.c4-cell').forEach((cell, i) => {
+                cell.innerHTML = '';
+                cell.classList.remove('disabled');
+                const r = Math.floor(i / C4_COLS);
+                const c = i % C4_COLS;
+                if (c4Board[r][c]) {
+                    const piece = document.createElement('div');
+                    piece.className = 'c4-piece ' + (c4Board[r][c] === PLAYER_X ? 'x-piece' : 'o-piece');
+                    cell.appendChild(piece);
+                    cell.classList.add('disabled');
+                } else {
+                    const col = parseInt(cell.dataset.col, 10);
+                    const cellRow = parseInt(cell.dataset.row, 10);
+                    const nextRow = getC4NextOpenRow(col);
+                    if (nextRow !== -1 && cellRow !== nextRow) cell.classList.add('disabled');
+                }
+            });
+        } else if (isGmkMode()) {
+            const board = getActiveGmkBoard();
+            const cfg = getActiveGmkConfig();
+            for (let r = 0; r < cfg.h; r++) {
+                for (let c = 0; c < cfg.w; c++) {
+                    board[r][c] = snapshot[r][c];
+                }
+            }
+            document.querySelectorAll('.gomoku-cell').forEach((cell, i) => {
+                cell.innerHTML = '';
+                cell.classList.remove('disabled');
+                const r = Math.floor(i / cfg.w);
+                const c = i % cfg.w;
+                if (board[r][c]) {
+                    const piece = document.createElement('div');
+                    piece.className = 'gomoku-piece ' + (board[r][c] === PLAYER_X ? 'x-piece' : 'o-piece');
+                    cell.appendChild(piece);
+                    cell.classList.add('disabled');
+                }
+            });
+        } else {
+            gameBoard = [...snapshot];
+            cells.forEach((cell, i) => {
+                cell.innerHTML = '';
+                cell.classList.remove('disabled');
+                if (gameBoard[i]) {
+                    cell.appendChild(createMarkSvg(gameBoard[i]));
+                    cell.classList.add('disabled');
+                }
+            });
+        }
+    }
+
+    function undoMove() {
+        if (undoBtn.classList.contains('disabled')) return;
+        if (battleMode === 'aivsai') return;
+
+        if (battleMode === 'pve') {
+            if (playerHistory.length === 0) return;
+            const lastPlayer = playerHistory[playerHistory.length - 1];
+            if (lastPlayer === PLAYER_X) {
+                // Last move was by player, undo one step
+                if (boardSnapshots.length <= 1) return;
+                boardSnapshots.pop();
+                playerHistory.pop();
+                moveHistory.pop();
+                clearTimeout(aiTimer);
+                aiTimer = null;
+                restoreBoardFromSnapshot();
+                currentPlayer = PLAYER_X;
+            } else {
+                // Last move was by AI, undo two steps (AI + player)
+                if (boardSnapshots.length <= 2) return;
+                boardSnapshots.pop();
+                playerHistory.pop();
+                moveHistory.pop();
+                boardSnapshots.pop();
+                playerHistory.pop();
+                moveHistory.pop();
+                restoreBoardFromSnapshot();
+                currentPlayer = PLAYER_X;
+            }
+        } else {
+            // PvP
+            if (boardSnapshots.length <= 1) return;
+            boardSnapshots.pop();
+            playerHistory.pop();
+            moveHistory.pop();
+            restoreBoardFromSnapshot();
+            currentPlayer = playerHistory.length > 0
+                ? (playerHistory[playerHistory.length - 1] === PLAYER_X ? PLAYER_O : PLAYER_X)
+                : PLAYER_X;
+        }
+
+        gameActive = true;
+        lastWinData = null;
+        hideModal();
+        hideWinLine();
+        c4WinLine.classList.remove('show');
+        gomokuWinLine.classList.remove('show');
+        currentMoveStartTime = Date.now();
+        updateStatus(getTurnText(), currentPlayer === PLAYER_X ? 'x' : 'o');
+        updateCellAriaLabels();
+        updateUndoButton();
+    }
+
+    function updateUndoButton() {
+        const canUndo = battleMode !== 'aivsai' && boardSnapshots.length > 1;
+        undoBtn.classList.toggle('disabled', !canUndo);
+        undoBtn.setAttribute('aria-disabled', String(!canUndo));
     }
 
     init();

@@ -94,6 +94,18 @@
                 </svg>
                 <span data-i18n="btn-restart">再来一局</span>
             </button>
+            <button class="btn btn-undo disabled" id="undo-btn" data-i18n-aria="aria-undo" aria-label="Undo" aria-disabled="true">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 14L4 9l5-5"></path>
+                    <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"></path>
+                </svg>
+            </button>
+            <button class="btn btn-history" id="history-btn" data-i18n-aria="aria-history" aria-label="History">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </button>
             <button class="btn btn-settings" id="settings-btn" data-i18n-aria="aria-settings" aria-label="Settings">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="3"></circle>
@@ -324,6 +336,58 @@
                 </button>
             </div>
             <div class="changelog-body" id="changelog-body"></div>
+        </div>
+    </div>
+
+    <!-- History Drawer -->
+    <div class="drawer-overlay" id="history-overlay"></div>
+    <aside class="history-drawer" id="history-drawer" role="dialog" aria-modal="true" data-i18n-aria="history-title" aria-label="History">
+        <div class="drawer-header">
+            <h2 data-i18n="history-title">对局历史</h2>
+            <button class="drawer-close" id="history-close" data-i18n-aria="aria-close" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="drawer-body" id="history-body">
+            <div class="history-empty" id="history-empty">
+                <span class="history-empty-icon">📝</span>
+                <p data-i18n="history-empty">暂无对局记录</p>
+                <p class="history-empty-sub" data-i18n="history-empty-sub">完成一局游戏后，记录将自动保存</p>
+            </div>
+            <div class="history-list" id="history-list" style="display: none;"></div>
+            <button class="btn btn-clear-history" id="clear-history-btn" style="display: none;" data-i18n="btn-clear-history">清空记录</button>
+        </div>
+    </aside>
+
+    <!-- Replay Modal -->
+    <div class="modal" id="replay-modal" role="dialog" aria-modal="true" aria-labelledby="replay-title">
+        <div class="modal-content replay-content">
+            <div class="replay-header">
+                <div>
+                    <h2 id="replay-title" data-i18n="replay-title">回放中</h2>
+                    <p class="replay-meta" id="replay-meta"></p>
+                </div>
+                <button class="drawer-close" id="replay-close" data-i18n-aria="aria-close" aria-label="Close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="replay-board-wrap" id="replay-board-wrap"></div>
+            <div class="replay-progress">
+                <span id="replay-step-text">0 / 0</span>
+                <div class="replay-bar"><div class="replay-bar-fill" id="replay-bar-fill"></div></div>
+            </div>
+            <div class="replay-controls">
+                <button class="replay-btn" id="replay-reset" data-i18n-aria="replay-reset" aria-label="Reset">⏮</button>
+                <button class="replay-btn" id="replay-prev" data-i18n-aria="replay-prev" aria-label="Previous">⏴</button>
+                <button class="replay-btn replay-play" id="replay-play" data-i18n-aria="replay-play" aria-label="Play">▶</button>
+                <button class="replay-btn" id="replay-next" data-i18n-aria="replay-next" aria-label="Next">⏵</button>
+            </div>
         </div>
     </div>
 

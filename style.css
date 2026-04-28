@@ -19,6 +19,7 @@
     --win-glow: rgba(126, 214, 223, 0.4);
     --shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     --overlay: rgba(0, 0, 0, 0.6);
+    --surface-hover: color-mix(in srgb, var(--surface-light) 80%, var(--text) 10%);
     --contrast: 1;
     --anim-scale: 1;
     --font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -1168,4 +1169,498 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     .battle-btn { font-size: 0.58rem; padding: 0.4rem 0.05rem; }
     .gomoku-piece { width: 60%; height: 60%; }
     .gomoku-board { max-width: 300px; }
+}
+
+/* ===== History Button ===== */
+.btn-history {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--surface-light);
+    box-shadow: var(--shadow);
+    position: relative;
+}
+
+.btn-history:hover {
+    color: var(--text);
+    transform: scale(1.08);
+}
+
+/* ===== History Drawer ===== */
+.history-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(420px, 92vw);
+    height: 100%;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    z-index: 110;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.history-drawer.show { transform: translateX(0); }
+
+.history-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.history-empty-icon { font-size: 2.5rem; opacity: 0.6; }
+
+.history-empty-sub {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.history-item {
+    background: var(--surface-light);
+    border-radius: 14px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.history-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.history-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.history-mode {
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+.history-battle {
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+.history-diff {
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+.history-date {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-left: auto;
+}
+
+.history-item-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-result {
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.history-result.result-x { color: var(--x-color); }
+.history-result.result-o { color: var(--o-color); }
+.history-result.result-draw { color: var(--text-muted); }
+
+.history-moves {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.history-item-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-history-replay {
+    flex: 1;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-history-replay:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.btn-history-delete {
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--surface-light);
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-history-delete:hover {
+    color: var(--x-color);
+    background: rgba(255, 107, 107, 0.1);
+}
+
+.btn-clear-history {
+    width: 100%;
+    background: var(--surface-light);
+    color: var(--text-muted);
+    border: 1px solid var(--surface-light);
+    border-radius: 10px;
+    padding: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    font-family: inherit;
+    margin-top: 0.5rem;
+}
+
+.btn-clear-history:hover {
+    color: var(--x-color);
+    background: rgba(255, 107, 107, 0.08);
+}
+
+/* ===== Replay Modal ===== */
+.replay-content {
+    max-width: 420px;
+    width: 92%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.replay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.replay-header h2 { font-size: 1.25rem; }
+
+.replay-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+}
+
+.replay-board-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 120px;
+}
+
+/* Replay TTT Board */
+.replay-board-ttt {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 6px;
+    width: 220px;
+    aspect-ratio: 1 / 1;
+    background: var(--surface-light);
+    border-radius: 16px;
+    padding: 8px;
+}
+
+.replay-cell-ttt {
+    background: var(--surface);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.replay-cell-ttt .mark {
+    width: 55%;
+    height: 55%;
+    animation: pop-in calc(0.3s * var(--anim-scale)) cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.replay-cell-ttt .mark-x path {
+    stroke: var(--x-color);
+    stroke-width: 10;
+    stroke-linecap: round;
+    fill: none;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: draw calc(0.4s * var(--anim-scale)) ease forwards;
+}
+
+.replay-cell-ttt .mark-o circle {
+    stroke: var(--o-color);
+    stroke-width: 10;
+    fill: none;
+    stroke-dasharray: 160;
+    stroke-dashoffset: 160;
+    animation: draw calc(0.5s * var(--anim-scale)) ease forwards;
+}
+
+.replay-pop {
+    animation: replay-cell-pop calc(0.25s * var(--anim-scale)) ease both;
+}
+
+@keyframes replay-cell-pop {
+    from { transform: scale(0.6); opacity: 0.5; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Replay C4 Board */
+.replay-board-c4 {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 4px;
+    width: 280px;
+    aspect-ratio: 7 / 6;
+    background: var(--surface-light);
+    border-radius: 16px;
+    padding: 8px;
+}
+
+.replay-cell-c4 {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--surface);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.replay-c4-piece {
+    width: 78%;
+    height: 78%;
+    border-radius: 50%;
+    animation: c4-drop calc(0.35s * var(--anim-scale)) cubic-bezier(0.5, 0, 0.5, 1.3) forwards;
+    box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.15);
+}
+
+/* Replay Gomoku Board */
+.replay-board-gmk {
+    display: grid;
+    width: 300px;
+    max-height: 300px;
+    gap: 1px;
+    background: var(--surface-light);
+    border-radius: 12px;
+    padding: 4px;
+    overflow: auto;
+}
+
+.replay-cell-gmk {
+    background: var(--surface);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    aspect-ratio: 1;
+    min-width: 0;
+    min-height: 0;
+    border-radius: 2px;
+}
+
+.replay-gmk-piece {
+    width: 72%;
+    height: 72%;
+    border-radius: 50%;
+    animation: gmk-pop calc(0.2s * var(--anim-scale)) ease-out forwards;
+}
+
+/* Replay Controls */
+.replay-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.replay-progress span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    min-width: 60px;
+    text-align: center;
+}
+
+.replay-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--surface-light);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.replay-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.replay-controls {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.replay-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: none;
+    background: var(--surface-light);
+    color: var(--text);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+    font-family: inherit;
+}
+
+.replay-btn:hover {
+    background: var(--surface);
+    transform: scale(1.08);
+}
+
+.replay-btn.replay-play {
+    background: var(--accent);
+    color: #fff;
+    font-size: 1rem;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    margin-top: -4px;
+    box-shadow: 0 4px 12px hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.4);
+}
+
+.replay-btn.replay-play:hover {
+    filter: brightness(1.1);
+    transform: scale(1.1);
+}
+
+/* ===== Responsive History ===== */
+@media (max-width: 400px) {
+    .history-drawer { width: 96vw; }
+    .replay-content { max-width: 96vw; padding: 1.25rem; }
+    .replay-board-ttt { width: 180px; }
+    .replay-board-c4 { width: 240px; }
+    .replay-board-gmk { width: 260px; max-height: 260px; }
+    .controls { gap: 0.5rem; }
+}
+
+/* Replay piece colors */
+.replay-c4-piece.x-piece,
+.replay-gmk-piece.x-piece {
+    background: linear-gradient(135deg, var(--x-color), color-mix(in srgb, var(--x-color) 70%, #000));
+}
+
+.replay-c4-piece.o-piece,
+.replay-gmk-piece.o-piece {
+    background: linear-gradient(135deg, var(--o-color), color-mix(in srgb, var(--o-color) 70%, #000));
+}
+
+.replay-gmk-piece.x-piece {
+    box-shadow: 0 1px 4px rgba(255, 107, 107, 0.3);
+}
+
+.replay-gmk-piece.o-piece {
+    box-shadow: 0 1px 4px rgba(78, 205, 196, 0.3);
+}
+
+/* Focus styles for history and replay buttons */
+.replay-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.btn-history-replay:focus-visible,
+.btn-history-delete:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* ===== Undo Button ===== */
+.btn-undo {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--surface-light);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-undo:not(.disabled):hover {
+    color: var(--text);
+    transform: scale(1.08);
+}
+
+.btn-undo.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: default;
+}
+
+.btn-undo:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
