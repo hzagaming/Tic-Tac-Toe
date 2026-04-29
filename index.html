@@ -38,6 +38,7 @@
         <div class="scoreboard" id="scoreboard">
             <div class="score-card player-x">
                 <span class="label" data-i18n="label-player-x">玩家 (X)</span>
+                <span class="timer" id="timer-x">--:--</span>
                 <span class="score" id="score-x">0</span>
             </div>
             <div class="score-card draws">
@@ -46,6 +47,7 @@
             </div>
             <div class="score-card player-o">
                 <span class="label" data-i18n="label-player-o">AI (O)</span>
+                <span class="timer" id="timer-o">--:--</span>
                 <span class="score" id="score-o">0</span>
             </div>
         </div>
@@ -110,6 +112,16 @@
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+            <button class="btn btn-achievements" id="achievements-btn" data-i18n-aria="aria-achievements" aria-label="Achievements">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5h1.5"></path>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5h-1.5"></path>
+                    <path d="M4 22h16"></path>
+                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
                 </svg>
             </button>
             <button class="btn btn-changelog" id="changelog-btn" data-i18n-aria="aria-changelog" aria-label="Changelog">
@@ -310,6 +322,27 @@
                 </div>
             </div>
 
+            <!-- Timer Settings -->
+            <div class="setting-group" id="timer-settings-group">
+                <label class="setting-label" data-i18n="setting-timer">对战计时器</label>
+                <div class="setting-row">
+                    <span class="setting-label sub" data-i18n="setting-timer-toggle">启用计时</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-timer">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="timer-presets" id="timer-presets" style="display:none;">
+                    <label class="setting-label sub" data-i18n="setting-timer-duration">每方时长</label>
+                    <div class="segmented" id="timer-segmented">
+                        <button class="seg-btn" data-timer="60" data-i18n="timer-1m">1分</button>
+                        <button class="seg-btn active" data-timer="180" data-i18n="timer-3m">3分</button>
+                        <button class="seg-btn" data-timer="300" data-i18n="timer-5m">5分</button>
+                        <button class="seg-btn" data-timer="600" data-i18n="timer-10m">10分</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- About -->
             <div class="setting-group" id="about-group">
                 <label class="setting-label" data-i18n="setting-about">关于</label>
@@ -362,6 +395,21 @@
         </div>
     </aside>
 
+    <!-- Achievements Drawer -->
+    <div class="drawer-overlay" id="achievements-overlay"></div>
+    <aside class="achievements-drawer" id="achievements-drawer" role="dialog" aria-modal="true" data-i18n-aria="achievements-title" aria-label="Achievements">
+        <div class="drawer-header">
+            <h2 data-i18n="achievements-title">成就</h2>
+            <button class="drawer-close" id="achievements-close" data-i18n-aria="aria-close" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="drawer-body" id="achievements-body"></div>
+    </aside>
+
     <!-- Replay Modal -->
     <div class="modal" id="replay-modal" role="dialog" aria-modal="true" aria-labelledby="replay-title">
         <div class="modal-content replay-content">
@@ -391,6 +439,23 @@
         </div>
     </div>
 
+    <!-- Hotkey Help Modal -->
+    <div class="modal" id="hotkey-modal" role="dialog" aria-modal="true" aria-labelledby="hotkey-title">
+        <div class="modal-content hotkey-content">
+            <div class="hotkey-header">
+                <h2 id="hotkey-title" data-i18n="hotkey-title">键盘快捷键</h2>
+                <button class="drawer-close" id="hotkey-close" data-i18n-aria="aria-close" aria-label="Close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="hotkey-body" id="hotkey-body"></div>
+        </div>
+    </div>
+
+    <div class="achievement-toast-container" id="achievement-toast-container"></div>
     <script src="script.js"></script>
 </body>
 </html>

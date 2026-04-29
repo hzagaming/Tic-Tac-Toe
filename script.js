@@ -35,6 +35,15 @@
     const aiDifficultyGroup = document.getElementById('ai-difficulty-group');
     const customGameGroup = document.getElementById('custom-game-group');
 
+    const timerXEl = document.getElementById('timer-x');
+    const timerOEl = document.getElementById('timer-o');
+    const timerToggle = document.getElementById('toggle-timer');
+    const timerPresets = document.getElementById('timer-presets');
+
+    const hotkeyModal = document.getElementById('hotkey-modal');
+    const hotkeyClose = document.getElementById('hotkey-close');
+    const hotkeyBody = document.getElementById('hotkey-body');
+
     const animToggle = document.getElementById('toggle-animations');
     const soundToggle = document.getElementById('toggle-sound');
     const toggle3d = document.getElementById('toggle-3d');
@@ -79,6 +88,13 @@
     const replayPlay = document.getElementById('replay-play');
     const replayNext = document.getElementById('replay-next');
 
+    const achievementsBtn = document.getElementById('achievements-btn');
+    const achievementsDrawer = document.getElementById('achievements-drawer');
+    const achievementsOverlay = document.getElementById('achievements-overlay');
+    const achievementsClose = document.getElementById('achievements-close');
+    const achievementsBody = document.getElementById('achievements-body');
+    const toastContainer = document.getElementById('achievement-toast-container');
+
     const PLAYER_X = 'X';
     const PLAYER_O = 'O';
 
@@ -110,8 +126,19 @@
     const HISTORY_KEY = 'ttt_game_history_v1';
     const MAX_HISTORY = 50;
 
+    // Achievement state
+    let achievementStats = {};
+    let achievementState = {};
+    const ACHIEVEMENT_KEY = 'ttt_achievements_v1';
+    const ACHIEVEMENT_STATS_KEY = 'ttt_achievement_stats_v1';
+
     // Custom game config
     let customConfig = { w: 15, h: 15, winLen: 5 };
+
+    let timerInterval = null;
+    let timerState = { X: 0, O: 0, running: false, activePlayer: null, lastTick: 0 };
+    let lastTickSoundTime = 0;
+    let timerTimeoutFlag = false;
 
     const settings = {
         lang: 'zh',
@@ -129,7 +156,9 @@
         soundDuration: 100,
         soundVolume: 80,
         difficulty: 'hard',
-        customBoardSize: 'custom'
+        customBoardSize: 'custom',
+        timerEnabled: false,
+        timerDuration: 180
     };
 
     const langMap = {
@@ -275,6 +304,97 @@
             'history-confirm-clear': { zh:'确定要清空所有对局记录吗？此操作无法撤销。', en:'Clear all game history? This cannot be undone.', ja:'すべての記録を削除しますか？', ko:'모든 기록을 삭제하시겠습니까?', fr:'Effacer tout l\'historique ?', de:'Gesamten Verlauf löschen?', es:'¿Borrar todo el historial?', ru:'Очистить всю историю?', it:'Cancellare tutta la cronologia?', pt:'Limpar todo o histórico?' },
             'history-confirm-delete': { zh:'确定要删除这条对局记录吗？', en:'Delete this game record?', ja:'この記録を削除しますか？', ko:'이 기록을 삭제하시겠습니까?', fr:'Supprimer cette partie ?', de:'Diesen Eintrag löschen?', es:'¿Eliminar esta partida?', ru:'Удалить эту запись?', it:'Eliminare questa partita?', pt:'Excluir este registro?' },
             'aria-undo': { zh:'悔棋', en:'Undo', ja:'待った', ko:'무르기', fr:'Annuler', de:'Rückgängig', es:'Deshacer', ru:'Отменить', it:'Annulla', pt:'Desfazer' },
+            'aria-achievements': { zh:'成就', en:'Achievements', ja:'実績', ko:'업적', fr:'Succès', de:'Erfolge', es:'Logros', ru:'Достижения', it:'Obiettivi', pt:'Conquistas' },
+            'achievements-title': { zh:'成就', en:'Achievements', ja:'実績', ko:'업적', fr:'Succès', de:'Erfolge', es:'Logros', ru:'Достижения', it:'Obiettivi', pt:'Conquistas' },
+            'achievement-unlocked': { zh:'成就解锁', en:'Achievement Unlocked', ja:'実績解除', ko:'업적 해제', fr:'Succès débloqué', de:'Erfolg freigeschaltet', es:'Logro desbloqueado', ru:'Достижение разблокировано', it:'Obiettivo sbloccato', pt:'Conquista desbloqueada' },
+            'achievements-total': { zh:'总成就', en:'Total', ja:'総数', ko:'총 업적', fr:'Total', de:'Gesamt', es:'Total', ru:'Всего', it:'Totale', pt:'Total' },
+            'achievements-completed': { zh:'已完成', en:'Completed', ja:'達成', ko:'완료', fr:'Complétés', de:'Abgeschlossen', es:'Completados', ru:'Выполнено', it:'Completati', pt:'Concluídas' },
+            'cat-victory': { zh:'胜利之路', en:'Victory', ja:'勝利', ko:'승리', fr:'Victoire', de:'Sieg', es:'Victoria', ru:'Победа', it:'Vittoria', pt:'Vitória' },
+            'cat-explorer': { zh:'探索者', en:'Explorer', ja:'探検家', ko:'탐험가', fr:'Explorateur', de:'Entdecker', es:'Explorador', ru:'Исследователь', it:'Esploratore', pt:'Explorador' },
+            'cat-master': { zh:'大师', en:'Master', ja:'マスター', ko:'마스터', fr:'Maître', de:'Meister', es:'Maestro', ru:'Мастер', it:'Maestro', pt:'Mestre' },
+            'ach-first-win-ttt': { zh:'井字棋首胜', en:'TTT First Win', ja:'三目初勝利', ko:'틱택토 첫 승리', fr:'Première victoire Morpion', de:'Erster TTT-Sieg', es:'Primera victoria TTT', ru:'Первая победа в Крестики-нолики', it:'Prima vittoria Tris', pt:'Primeira vitória Jogo da velha' },
+            'ach-first-win-ttt-desc': { zh:'在井字棋人机模式中取得首胜', en:'Win your first Tic-Tac-Toe match against AI', ja:'三目並べ CPU戦で初勝利', ko:'틱택토 AI전에서 첫 승리', fr:'Gagnez votre première partie de Morpion contre l\'IA', de:'Gewinnen Sie Ihr erstes Tic-Tac-Toe-Spiel gegen die KI', es:'Gana tu primera partida de Tres en raya contra la IA', ru:'Победите в первой партии в Крестики-нолики против ИИ', it:'Vinci la tua prima partita a Tris contro l\'AI', pt:'Vença sua primeira partida de Jogo da velha contra a IA' },
+            'ach-first-win-c4': { zh:'四子棋首胜', en:'Connect 4 First Win', ja:'四目初勝利', ko:'사목 첫 승리', fr:'Première victoire Puissance 4', de:'Erster Vier-gewinnt-Sieg', es:'Primera victoria Conecta 4', ru:'Первая победа в 4 в ряд', it:'Prima vittoria Forza 4', pt:'Primeira vitória Ligue 4' },
+            'ach-first-win-c4-desc': { zh:'在四子棋人机模式中取得首胜', en:'Win your first Connect Four match against AI', ja:'四目並べ CPU戦で初勝利', ko:'사목 AI전에서 첫 승리', fr:'Gagnez votre première partie de Puissance 4 contre l\'IA', de:'Gewinnen Sie Ihr erstes Vier-gewinnt-Spiel gegen die KI', es:'Gana tu primera partida de Conecta 4 contra la IA', ru:'Победите в первой партии в 4 в ряд против ИИ', it:'Vinci la tua prima partita a Forza 4 contro l\'AI', pt:'Vença sua primeira partida de Ligue 4 contra a IA' },
+            'ach-first-win-gmk': { zh:'五子棋首胜', en:'Gomoku First Win', ja:'五目初勝利', ko:'오목 첫 승리', fr:'Première victoire Gomoku', de:'Erster Gomoku-Sieg', es:'Primera victoria Gomoku', ru:'Первая победа в Гомоку', it:'Prima vittoria Gomoku', pt:'Primeira vitória Gomoku' },
+            'ach-first-win-gmk-desc': { zh:'在五子棋人机模式中取得首胜', en:'Win your first Gomoku match against AI', ja:'五目並べ CPU戦で初勝利', ko:'오목 AI전에서 첫 승리', fr:'Gagnez votre première partie de Gomoku contre l\'IA', de:'Gewinnen Sie Ihr erstes Gomoku-Spiel gegen die KI', es:'Gana tu primera partida de Gomoku contra la IA', ru:'Победите в первой партии в Гомоку против ИИ', it:'Vinci la tua prima partita a Gomoku contro l\'AI', pt:'Vença sua primeira partida de Gomoku contra a IA' },
+            'ach-first-win-custom': { zh:'自定义首胜', en:'Custom First Win', ja:'カスタム初勝利', ko:'사용자 지정 첫 승리', fr:'Première victoire Perso', de:'Erster Benutzerdef.-Sieg', es:'Primera victoria Personalizado', ru:'Первая победа в Своя игра', it:'Prima vittoria Personalizzato', pt:'Primeira vitória Personalizado' },
+            'ach-first-win-custom-desc': { zh:'在自定义模式人机对战中取得首胜', en:'Win your first Custom match against AI', ja:'カスタム CPU戦で初勝利', ko:'사용자 지정 AI전에서 첫 승리', fr:'Gagnez votre première partie Perso contre l\'IA', de:'Gewinnen Sie Ihr erstes Benutzerdef.-Spiel gegen die KI', es:'Gana tu primera partida Personalizada contra la IA', ru:'Победите в первой партии в Своя игра против ИИ', it:'Vinci la tua prima partita Personalizzata contro l\'AI', pt:'Vença sua primeira partida Personalizada contra a IA' },
+            'ach-beat-hard': { zh:'击败困难AI', en:'Hard Mode Conqueror', ja:'難しいAI撃破', ko:'어려움 AI 격파', fr:'Vainqueur Difficile', de:'Harter Gegner besiegt', es:'Conquistador Difícil', ru:'Покоритель сложности', it:'Conquistatore Difficile', pt:'Conquistador Difícil' },
+            'ach-beat-hard-desc': { zh:'在任意模式的困难难度下击败AI', en:'Beat the AI on Hard difficulty in any mode', ja:'任意モードの難易度「難しい」でAIに勝利', ko:'임의 모드 어려움 난이도에서 AI 격파', fr:'Battez l\'IA en Difficile dans n\'importe quel mode', de:'Besiegen Sie die KI auf Schwer in beliebigem Modus', es:'Vence a la IA en Difícil en cualquier modo', ru:'Победите ИИ на Сложно в любом режиме', it:'Batti l\'AI in Difficile in qualsiasi modalità', pt:'Vença a IA no Difícil em qualquer modo' },
+            'ach-streak-3': { zh:'三连胜', en:'Triple Threat', ja:'3連勝', ko:'3연승', fr:'Série de 3', de:'Dreifache Bedrohung', es:'Amenaza Triple', ru:'Тройная угроза', it:'Tripla Minaccia', pt:'Ameaça Tripla' },
+            'ach-streak-3-desc': { zh:'人机模式下取得3连胜', en:'Win 3 consecutive PvE matches', ja:'CPU戦で3連勝', ko:'AI전에서 3연승', fr:'3 victoires consécutives en PvE', de:'3 aufeinanderfolgende PvE-Siege', es:'3 victorias consecutivas en PvE', ru:'3 победы подряд в PvE', it:'3 vittorie consecutive in PvE', pt:'3 vitórias consecutivas em PvE' },
+            'ach-streak-5': { zh:'五连胜', en:'Unstoppable', ja:'5連勝', ko:'5연승', fr:'Irrésistible', de:'Unaufhaltsam', es:'Imparable', ru:'Неостановимый', it:'Imprendibile', pt:'Imparável' },
+            'ach-streak-5-desc': { zh:'人机模式下取得5连胜', en:'Win 5 consecutive PvE matches', ja:'CPU戦で5連勝', ko:'AI전에서 5연승', fr:'5 victoires consécutives en PvE', de:'5 aufeinanderfolgende PvE-Siege', es:'5 victorias consecutivas en PvE', ru:'5 побед подряд в PvE', it:'5 vittorie consecutive in PvE', pt:'5 vitórias consecutivas em PvE' },
+            'ach-streak-10': { zh:'十连胜', en:'Legendary Streak', ja:'10連勝', ko:'10연승', fr:'Série légendaire', de:'Legendäre Serie', es:'Racha legendaria', ru:'Легендарная серия', it:'Serie leggendaria', pt:'Sequência lendária' },
+            'ach-streak-10-desc': { zh:'人机模式下取得10连胜', en:'Win 10 consecutive PvE matches', ja:'CPU戦で10連勝', ko:'AI전에서 10연승', fr:'10 victoires consécutives en PvE', de:'10 aufeinanderfolgende PvE-Siege', es:'10 victorias consecutivas en PvE', ru:'10 побед подряд в PvE', it:'10 vittorie consecutive in PvE', pt:'10 vitórias consecutivas em PvE' },
+            'ach-draw-master': { zh:'平局大师', en:'Draw Master', ja:'引き分けマスター', ko:'무승부 마스터', fr:'Maître des égalités', de:'Remis-Meister', es:'Maestro del Empate', ru:'Мастер ничьих', it:'Maestro del Pareggio', pt:'Mestre do Empate' },
+            'ach-draw-master-desc': { zh:'累计达成10场平局', en:'Reach 10 draws in total', ja:'累計10回の引き分けを達成', ko:'총 10회 무승부 달성', fr:'Atteignez 10 égalités au total', de:'Erreichen Sie insgesamt 10 Remis', es:'Alcanza 10 empates en total', ru:'Достигните 10 ничьих всего', it:'Raggiungi 10 pareggi in totale', pt:'Alcance 10 empates no total' },
+            'ach-pvp-first': { zh:'双人首胜', en:'PvP Victor', ja:'対戦初勝利', ko:'2인전 첫 승리', fr:'Première victoire PvP', de:'PvP-Sieger', es:'Victoria PvP', ru:'Первый победитель PvP', it:'Vittoria PvP', pt:'Vitória PvP' },
+            'ach-pvp-first-desc': { zh:'在双人模式中作为玩家1获胜', en:'Win as Player 1 in a PvP match', ja:'対戦モードでプレイヤー1として勝利', ko:'2인전 모드에서 플레이어 1으로 승리', fr:'Gagnez en tant que Joueur 1 en PvP', de:'Gewinnen Sie als Spieler 1 in einem PvP-Spiel', es:'Gana como Jugador 1 en una partida PvP', ru:'Победите как Игрок 1 в PvP', it:'Vinci come Giocatore 1 in PvP', pt:'Vença como Jogador 1 em PvP' },
+            'ach-aivsai-first': { zh:'AI观战者', en:'AI Spectator', ja:'AI観戦者', ko:'AI 관전자', fr:'Spectateur IA', de:'KI-Zuschauer', es:'Espectador IA', ru:'Наблюдатель за ИИ', it:'Spettatore AI', pt:'Espectador IA' },
+            'ach-aivsai-first-desc': { zh:'观看一局AI对战', en:'Watch an AI vs AI match', ja:'AI対AIの対戦を観戦', ko:'AI 대 AI 경기 관전', fr:'Regardez une partie IA vs IA', de:'Sehen Sie sich ein KI-vs-KI-Spiel an', es:'Observa una partida IA vs IA', ru:'Посмотрите партию ИИ против ИИ', it:'Guarda una partita AI vs AI', pt:'Assista a uma partida IA vs IA' },
+            'ach-all-languages': { zh:'环球旅行者', en:'Globetrotter', ja:'环球旅行者', ko:'글로벌 여행자', fr:'Globetrotter', de:'Weltenbummler', es:'Trotamundos', ru:'Глобтроттер', it:'Giramondo', pt:'Girotondo' },
+            'ach-all-languages-desc': { zh:'尝试过所有10种语言', en:'Try all 10 languages', ja:'10言語すべてを試す', ko:'10개 언어 모두 사용', fr:'Essayez les 10 langues', de:'Probieren Sie alle 10 Sprachen aus', es:'Prueba los 10 idiomas', ru:'Попробуйте все 10 языков', it:'Prova tutte le 10 lingue', pt:'Experimente os 10 idiomas' },
+            'ach-all-colors': { zh:'色彩大师', en:'Color Master', ja:'色彩マスター', ko:'색상 마스터', fr:'Maître des couleurs', de:'Farb-Meister', es:'Maestro del Color', ru:'Мастер цвета', it:'Maestro del Colore', pt:'Mestre da Cor' },
+            'ach-all-colors-desc': { zh:'使用过所有预设主题色', en:'Use all preset accent colors', ja:'全プリセットアクセント色を使用', ko:'모든 프리셋 강조색 사용', fr:'Utilisez toutes les couleurs prédéfinies', de:'Verwenden Sie alle voreingestellten Akzentfarben', es:'Usa todos los colores de acento preestablecidos', ru:'Используйте все предустановленные цвета акцента', it:'Usa tutti i colori accento preimpostati', pt:'Use todas as cores de destaque predefinidas' },
+            'ach-all-sounds': { zh:'音效收藏家', en:'Sound Collector', ja:'効果音コレクター', ko:'효과음 수집가', fr:'Collectionneur de sons', de:'Sammler von Klängen', es:'Coleccionista de Sonidos', ru:'Коллекционер звуков', it:'Collezionista di Suoni', pt:'Colecionador de Sons' },
+            'ach-all-sounds-desc': { zh:'尝试过所有12种音效风格', en:'Try all 12 sound styles', ja:'12種類の効果音スタイルすべてを試す', ko:'12가지 효과음 스타일 모두 사용', fr:'Essayez les 12 styles sonores', de:'Probieren Sie alle 12 Tonstile aus', es:'Prueba los 12 estilos de sonido', ru:'Попробуйте все 12 стилей звука', it:'Prova tutti i 12 stili audio', pt:'Experimente os 12 estilos de som' },
+            'ach-all-modes': { zh:'模式探索者', en:'Mode Explorer', ja:'モード探検家', ko:'모드 탐험가', fr:'Explorateur de modes', de:'Modus-Entdecker', es:'Explorador de Modos', ru:'Исследователь режимов', it:'Esploratore di Modalità', pt:'Explorador de Modos' },
+            'ach-all-modes-desc': { zh:'玩过全部4种游戏模式', en:'Play all 4 game modes', ja:'4つのゲームモードすべてをプレイ', ko:'4가지 게임 모드 모두 플레이', fr:'Jouez les 4 modes de jeu', de:'Spielen Sie alle 4 Spielmodi', es:'Juega los 4 modos de juego', ru:'Сыграйте во все 4 режима', it:'Gioca tutte le 4 modalità', pt:'Jogue os 4 modos de jogo' },
+            'ach-all-battles': { zh:'对战专家', en:'Battle Expert', ja:'対戦エキスパート', ko:'대전 전문가', fr:'Expert en combats', de:'Kampf-Experte', es:'Experto en Batallas', ru:'Эксперт по боям', it:'Esperto di Battaglie', pt:'Especialista em Batalhas' },
+            'ach-all-battles-desc': { zh:'玩过全部3种对战方式', en:'Play all 3 battle modes', ja:'3つの対戦方式すべてをプレイ', ko:'3가지 대전 방식 모두 플레이', fr:'Jouez les 3 modes de combat', de:'Spielen Sie alle 3 Kampfarten', es:'Juega los 3 modos de batalla', ru:'Сыграйте во все 3 режима боя', it:'Gioca tutti i 3 modi di battaglia', pt:'Jogue os 3 modos de batalha' },
+            'ach-ttt-master': { zh:'井字棋大师', en:'TTT Master', ja:'三目マスター', ko:'틱택토 마스터', fr:'Maître du Morpion', de:'TTT-Meister', es:'Maestro del TTT', ru:'Мастер Крестики-нолики', it:'Maestro del Tris', pt:'Mestre do Jogo da velha' },
+            'ach-ttt-master-desc': { zh:'在井字棋模式中累计获胜50场', en:'Win 50 Tic-Tac-Toe matches', ja:'三目並べで累計50勝', ko:'틱택토에서 총 50승', fr:'50 victoires au Morpion', de:'50 Tic-Tac-Toe-Siege', es:'50 victorias en Tres en raya', ru:'50 побед в Крестики-нолики', it:'50 vittorie a Tris', pt:'50 vitórias no Jogo da velha' },
+            'ach-c4-master': { zh:'四子棋大师', en:'Connect 4 Master', ja:'四目マスター', ko:'사목 마스터', fr:'Maître du Puissance 4', de:'Vier-gewinnt-Meister', es:'Maestro del Conecta 4', ru:'Мастер 4 в ряд', it:'Maestro del Forza 4', pt:'Mestre do Ligue 4' },
+            'ach-c4-master-desc': { zh:'在四子棋模式中累计获胜50场', en:'Win 50 Connect Four matches', ja:'四目並べで累計50勝', ko:'사목에서 총 50승', fr:'50 victoires au Puissance 4', de:'50 Vier-gewinnt-Siege', es:'50 victorias en Conecta 4', ru:'50 побед в 4 в ряд', it:'50 vittorie a Forza 4', pt:'50 vitórias no Ligue 4' },
+            'ach-gmk-master': { zh:'五子棋大师', en:'Gomoku Master', ja:'五目マスター', ko:'오목 마스터', fr:'Maître du Gomoku', de:'Gomoku-Meister', es:'Maestro del Gomoku', ru:'Мастер Гомоку', it:'Maestro del Gomoku', pt:'Mestre do Gomoku' },
+            'ach-gmk-master-desc': { zh:'在五子棋模式中累计获胜50场', en:'Win 50 Gomoku matches', ja:'五目並べで累計50勝', ko:'오목에서 총 50승', fr:'50 victoires au Gomoku', de:'50 Gomoku-Siege', es:'50 victorias en Gomoku', ru:'50 побед в Гомоку', it:'50 vittorie a Gomoku', pt:'50 vitórias no Gomoku' },
+            'ach-custom-master': { zh:'自定义大师', en:'Custom Master', ja:'カスタムマスター', ko:'사용자 지정 마스터', fr:'Maître du Perso', de:'Benutzerdef.-Meister', es:'Maestro del Personalizado', ru:'Мастер Своя игра', it:'Maestro del Personalizzato', pt:'Mestre do Personalizado' },
+            'ach-custom-master-desc': { zh:'在自定义模式中累计获胜50场', en:'Win 50 Custom matches', ja:'カスタムで累計50勝', ko:'사용자 지정에서 총 50승', fr:'50 victoires en Perso', de:'50 Benutzerdef.-Siege', es:'50 victorias en Personalizado', ru:'50 побед в Своя игра', it:'50 vittorie in Personalizzato', pt:'50 vitórias no Personalizado' },
+            'ach-speed-run': { zh:'速战速决', en:'Speed Run', ja:'速戦速決', ko:'속전속결', fr:'Course rapide', de:'Schnelllauf', es:'Carrera rápida', ru:'Скоростной забег', it:'Corsa veloce', pt:'Corrida rápida' },
+            'ach-speed-run-desc': { zh:'在30秒内击败AI', en:'Beat the AI within 30 seconds', ja:'30秒以内にAIを倒す', ko:'30초 이내에 AI 격파', fr:'Battez l\'IA en 30 secondes', de:'Besiegen Sie die KI in 30 Sekunden', es:'Vence a la IA en 30 segundos', ru:'Победите ИИ за 30 секунд', it:'Batti l\'AI in 30 secondi', pt:'Vença a IA em 30 segundos' },
+            'ach-perfect-opening': { zh:'完美开局', en:'Perfect Opening', ja:'完璧な開始', ko:'완벽한 시작', fr:'Ouverture parfaite', de:'Perfekte Eröffnung', es:'Apertura perfecta', ru:'Идеальное начало', it:'Apertura perfetta', pt:'Abertura perfeita' },
+            'ach-perfect-opening-desc': { zh:'在井字棋人机模式中首步走中心并获胜', en:'Win a TTT match with center as first move', ja:'三目並べで中央に最初の手を打って勝利', ko:'틱택토에서 중앙에 첫 수를 두고 승리', fr:'Gagnez au Morpion avec le centre comme premier coup', de:'Gewinnen Sie TTT mit der Mitte als erstem Zug', es:'Gana en TTT con el centro como primer movimiento', ru:'Победите в Крестики-нолики с центром как первый ход', it:'Vinci a Tris con il centro come prima mossa', pt:'Vença no Jogo da velha com o centro como primeiro movimento' },
+            'ach-centurion': { zh:'百折不挠', en:'Centurion', ja:'百折不撓', ko:'백절불굴', fr:'Centurion', de:'Zenturio', es:'Centurión', ru:'Центурион', it:'Centurione', pt:'Centurião' },
+            'ach-centurion-desc': { zh:'累计进行100局游戏', en:'Play 100 games in total', ja:'累計100局ゲームをプレイ', ko:'총 100판 게임 진행', fr:'Jouez 100 parties au total', de:'Spielen Sie insgesamt 100 Spiele', es:'Juega 100 partidas en total', ru:'Сыграйте 100 партий всего', it:'Gioca 100 partite in totale', pt:'Jogue 100 partidas no total' },
+            'ach-grandmaster': { zh:'全能冠军', en:'Grandmaster', ja:'グランドマスター', ko:'그랜드마스터', fr:'Grand Maître', de:'Großmeister', es:'Gran Maestro', ru:'Гроссмейстер', it:'Gran Maestro', pt:'Grão-Mestre' },
+            'ach-grandmaster-desc': { zh:'在所有4种模式的困难难度下击败AI', en:'Beat Hard AI in all 4 modes', ja:'4つのモードすべての難易度「難しい」でAIに勝利', ko:'4가지 모드 모두 어려움 난이도에서 AI 격파', fr:'Battez l\'IA en Difficile dans les 4 modes', de:'Besiegen Sie die KI auf Schwer in allen 4 Modi', es:'Vence a la IA en Difícil en los 4 modos', ru:'Победите ИИ на Сложно во всех 4 режимах', it:'Batti l\'AI in Difficile in tutte e 4 le modalità', pt:'Vença a IA no Difícil em todos os 4 modos' },
+            'setting-timer': { zh:'对战计时器', en:'Battle Timer', ja:'対戦タイマー', ko:'대전 타이머', fr:'Chronomètre', de:'Zeituhr', es:'Cronómetro', ru:'Таймер', it:'Timer', pt:'Cronômetro' },
+            'setting-timer-toggle': { zh:'启用计时', en:'Enable Timer', ja:'タイマー有効', ko:'타이머 활성화', fr:'Activer', de:'Aktivieren', es:'Activar', ru:'Включить', it:'Attiva', pt:'Ativar' },
+            'setting-timer-duration': { zh:'每方时长', en:'Time per Player', ja:'双方の持ち時間', ko:'각자 시간', fr:'Temps par joueur', de:'Zeit pro Spieler', es:'Tiempo por jugador', ru:'Время на игрока', it:'Tempo a giocatore', pt:'Tempo por jogador' },
+            'timer-1m': { zh:'1分', en:'1m', ja:'1分', ko:'1분', fr:'1m', de:'1m', es:'1m', ru:'1м', it:'1m', pt:'1m' },
+            'timer-3m': { zh:'3分', en:'3m', ja:'3分', ko:'3분', fr:'3m', de:'3m', es:'3m', ru:'3м', it:'3m', pt:'3m' },
+            'timer-5m': { zh:'5分', en:'5m', ja:'5分', ko:'5분', fr:'5m', de:'5m', es:'5m', ru:'5м', it:'5m', pt:'5m' },
+            'timer-10m': { zh:'10分', en:'10m', ja:'10分', ko:'10분', fr:'10m', de:'10m', es:'10m', ru:'10м', it:'10m', pt:'10m' },
+            'timer-out': { zh:'时间到', en:'Time Out', ja:'時間切れ', ko:'시간 초과', fr:'Temps écoulé', de:'Zeit abgelaufen', es:'Se acabó el tiempo', ru:'Время вышло', it:'Tempo scaduto', pt:'Tempo esgotado' },
+            'hotkey-title': { zh:'键盘快捷键', en:'Keyboard Shortcuts', ja:'キーボードショートカット', ko:'키보드 단축키', fr:'Raccourcis clavier', de:'Tastenkürzel', es:'Atajos de teclado', ru:'Горячие клавиши', it:'Scorciatoie da tastiera', pt:'Atalhos do teclado' },
+            'hotkey-gameplay': { zh:'对局操作', en:'Gameplay', ja:'ゲームプレイ', ko:'게임플레이', fr:'Jeu', de:'Spiel', es:'Juego', ru:'Игровой процесс', it:'Gameplay', pt:'Jogabilidade' },
+            'hotkey-global': { zh:'全局快捷键', en:'Global Shortcuts', ja:'グローバルショートカット', ko:'전역 단축키', fr:'Raccourcis globaux', de:'Globale Kürzel', es:'Atajos globales', ru:'Глобальные клавиши', it:'Scorciatoie globali', pt:'Atalhos globais' },
+            'hotkey-nav': { zh:'方向键', en:'Arrow Keys', ja:'方向キー', ko:'방향키', fr:'Flèches', de:'Pfeiltasten', es:'Flechas', ru:'Стрелки', it:'Frecce', pt:'Setas' },
+            'hotkey-nav-desc': { zh:'在棋盘格子间移动焦点', en:'Move focus across board cells', ja:'盤面のマス間でフォーカス移動', ko:'보드 칸 간 포커스 이동', fr:'Déplacer le focus entre les cellules', de:'Fokus über Zellen bewegen', es:'Mover foco entre celdas', ru:'Перемещать фокус по ячейкам', it:'Sposta il fuoco tra le celle', pt:'Mover foco entre células' },
+            'hotkey-enter': { zh:'回车 / 空格', en:'Enter / Space', ja:'Enter / スペース', ko:'Enter / 스페이스', fr:'Entrée / Espace', de:'Eingabe / Leertaste', es:'Intro / Espacio', ru:'Enter / Пробел', it:'Invio / Spazio', pt:'Enter / Espaço' },
+            'hotkey-enter-desc': { zh:'在焦点格落子', en:'Play at focused cell', ja:'フォーカスのマスに着手', ko:'포커스 칸에 플레이', fr:'Jouer sur la cellule focus', de:'Auf fokussierter Zelle spielen', es:'Jugar en celda enfocada', ru:'Сходить в ячейку с фокусом', it:'Gioca sulla cella a fuoco', pt:'Jogar na célula em foco' },
+            'hotkey-numbers': { zh:'数字键 1-9', en:'Number Keys 1-9', ja:'数字キー 1-9', ko:'숫자 키 1-9', fr:'Chiffres 1-9', de:'Ziffern 1-9', es:'Números 1-9', ru:'Цифры 1-9', it:'Numeri 1-9', pt:'Números 1-9' },
+            'hotkey-numbers-desc': { zh:'快速选择对应格子（井字棋/四子棋）', en:'Quick select cell (TTT / Connect 4)', ja:'対応マスを選択（三目/四目）', ko:'해당 칸 빠르게 선택 (틱택토/사목)', fr:'Sélection rapide (Morpion / Puissance 4)', de:'Schnellauswahl (TTT / Vier gewinnt)', es:'Selección rápida (TTT / Conecta 4)', ru:'Быстрый выбор ячейки', it:'Selezione rapida (Tris / Forza 4)', pt:'Seleção rápida (Jogo da velha / Ligue 4)' },
+            'hotkey-r': { zh:'R', en:'R', ja:'R', ko:'R', fr:'R', de:'R', es:'R', ru:'R', it:'R', pt:'R' },
+            'hotkey-r-desc': { zh:'重新开始对局', en:'Restart game', ja:'ゲームをリスタート', ko:'게임 다시 시작', fr:'Rejouer', de:'Neustart', es:'Reiniciar', ru:'Заново', it:'Ricomincia', pt:'Reiniciar' },
+            'hotkey-u': { zh:'U', en:'U', ja:'U', ko:'U', fr:'U', de:'U', es:'U', ru:'U', it:'U', pt:'U' },
+            'hotkey-u-desc': { zh:'悔棋', en:'Undo move', ja:'待った', ko:'무르기', fr:'Annuler', de:'Rückgängig', es:'Deshacer', ru:'Отменить', it:'Annulla', pt:'Desfazer' },
+            'hotkey-h': { zh:'H', en:'H', ja:'H', ko:'H', fr:'H', de:'H', es:'H', ru:'H', it:'H', pt:'H' },
+            'hotkey-h-desc': { zh:'打开对局历史', en:'Open game history', ja:'対局履歴を開く', ko:'대국 기록 열기', fr:'Ouvrir l\'historique', de:'Verlauf öffnen', es:'Abrir historial', ru:'Открыть историю', it:'Apri cronologia', pt:'Abrir histórico' },
+            'hotkey-a': { zh:'A', en:'A', ja:'A', ko:'A', fr:'A', de:'A', es:'A', ru:'A', it:'A', pt:'A' },
+            'hotkey-a-desc': { zh:'打开成就面板', en:'Open achievements', ja:'実績を開く', ko:'업적 열기', fr:'Ouvrir les succès', de:'Erfolge öffnen', es:'Abrir logros', ru:'Открыть достижения', it:'Apri obiettivi', pt:'Abrir conquistas' },
+            'hotkey-c': { zh:'C', en:'C', ja:'C', ko:'C', fr:'C', de:'C', es:'C', ru:'C', it:'C', pt:'C' },
+            'hotkey-c-desc': { zh:'打开更新公告', en:'Open changelog', ja:'更新履歴を開く', ko:'업데이트 공지 열기', fr:'Ouvrir le journal', de:'Änderungen öffnen', es:'Abrir actualizaciones', ru:'Открыть обновления', it:'Apri aggiornamenti', pt:'Abrir atualizações' },
+            'hotkey-s': { zh:'S', en:'S', ja:'S', ko:'S', fr:'S', de:'S', es:'S', ru:'S', it:'S', pt:'S' },
+            'hotkey-s-desc': { zh:'打开设置', en:'Open settings', ja:'設定を開く', ko:'설정 열기', fr:'Ouvrir les paramètres', de:'Einstellungen öffnen', es:'Abrir ajustes', ru:'Открыть настройки', it:'Apri impostazioni', pt:'Abrir configurações' },
+            'hotkey-question': { zh:'?', en:'?', ja:'?', ko:'?', fr:'?', de:'?', es:'?', ru:'?', it:'?', pt:'?' },
+            'hotkey-question-desc': { zh:'打开此快捷键帮助', en:'Open this help panel', ja:'このヘルプを開く', ko:'이 도움말 열기', fr:'Ouvrir ce panneau d\'aide', de:'Dieses Hilfefenster öffnen', es:'Abrir este panel de ayuda', ru:'Открыть эту справку', it:'Apri questo pannello aiuto', pt:'Abrir este painel de ajuda' },
+            'hotkey-esc': { zh:'Esc', en:'Esc', ja:'Esc', ko:'Esc', fr:'Esc', de:'Esc', es:'Esc', ru:'Esc', it:'Esc', pt:'Esc' },
+            'hotkey-esc-desc': { zh:'关闭弹窗/抽屉', en:'Close modal or drawer', ja:'ポップアップ/ドロワーを閉じる', ko:'팝업/서랍 닫기', fr:'Fermer la modale/le tiroir', de:'Modal/Drawer schließen', es:'Cerrar modal o cajón', ru:'Закрыть модалку/панель', it:'Chiudi modale o cassetto', pt:'Fechar modal ou gaveta' },
+            'hotkey-ctrl-z': { zh:'Ctrl + Z', en:'Ctrl + Z', ja:'Ctrl + Z', ko:'Ctrl + Z', fr:'Ctrl + Z', de:'Ctrl + Z', es:'Ctrl + Z', ru:'Ctrl + Z', it:'Ctrl + Z', pt:'Ctrl + Z' },
+            'hotkey-ctrl-z-desc': { zh:'悔棋', en:'Undo move', ja:'待った', ko:'무르기', fr:'Annuler', de:'Rückgängig', es:'Deshacer', ru:'Отменить', it:'Annulla', pt:'Desfazer' },
         };
         const out = {};
         for (const [key, langs] of Object.entries(c)) {
@@ -318,6 +438,54 @@
 
     /* ===== Changelog Data ===== */
     const changelogData = [
+        {
+            version: '0.7.1',
+            date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
+            items: {
+                zh: ['修复 Tab 焦点陷阱遗漏成就面板的问题，确保成就抽屉打开时焦点不会逃逸', '修复计时器回合切换后滴答声首次延迟的 bug（lastTickSoundTime 未重置）', '清理 CSS 中重复的 cell:focus-visible 规则，统一为增强版键盘导航焦点环'],
+                en: ['Fixed Tab focus trap missing achievements drawer, ensuring focus stays inside when open', 'Fixed timer tick sound first-delay bug after turn switch (lastTickSoundTime not reset)', 'Cleaned up duplicate cell:focus-visible CSS rules, unified to enhanced keyboard nav focus ring'],
+                ja: ['Tab フォーカストラップが実績ドロワーを見落とす問題を修正、開いた時にフォーカスが外れないように','ターン切替後のタイマー tick 音初回遅延バグを修正（lastTickSoundTime 未リセット）','CSS の重複 cell:focus-visible ルールを整理、キーボードナビ用フォーカスリングを統一'],
+                ko: ['Tab 포커스 트랩이 업적 서랍을 누락한 문제 수정, 열릴 때 포커스가 탈출하지 않도록','턴 전환 후 타이머 tick 소리 첫 지연 버그 수정(lastTickSoundTime 미초기화)','CSS 중복 cell:focus-visible 규칙 정리, 키보드 낵용 포커스 링 통일'],
+                fr: ['Correction piège focus Tab manquant pour tiroir succès, empêche fuite du focus','Correction délai premier tick minuteur après changement tour (lastTickSoundTime non réinitialisé)','Nettoyage règles CSS cell:focus-visible dupliquées, unifié en anneau focus nav. clavier renforcé'],
+                de: ['Korrigiert: Tab-Fokusfalle verpasst Erfolgs-Schublade, Fokus bleibt beim Öffnen','Korrigiert: Timer-Tick-Verzögerung nach Zugwechsel (lastTickSoundTime nicht zurückgesetzt)','Bereinigung doppelter CSS cell:focus-visible-Regeln, vereinheitlicht zu Tastaturnav.-Fokusring'],
+                es: ['Corregido trampa foco Tab omitiendo cajón logros, evitando fuga de foco','Corregido retardo primer tick temporizador tras cambio turno (lastTickSoundTime no reiniciado)','Limpieza reglas CSS cell:focus-visible duplicadas, unificadas a anillo foco nav. teclado'],
+                ru: ['Исправлено: ловушка фокуса Tab пропускала панель достижений, фокус больше не уходит','Исправлена задержка первого тика таймера после смены хода (lastTickSoundTime не сбрасывался)','Очищены дублирующие CSS-правила cell:focus-visible, унифицированы в усиленное кольцо фокуса'],
+                it: ['Corretto trappola fuoco Tab che saltava cassetto obiettivi, fuoco non fugge più','Corretto ritardo primo tick timer dopo cambio turno (lastTickSoundTime non reimpostato)','Pulizia regole CSS cell:focus-visible duplicate, unificate ad anello fuoco nav. tastiera'],
+                pt: ['Corrigido armadilha foco Tab ignorando gaveta conquistas, foco não escapa mais','Corrigido atraso primeiro tick temporizador após troca turno (lastTickSoundTime não redefinido)','Limpeza regras CSS cell:focus-visible duplicadas, unificadas em anel foco nav. teclado'],
+            }
+        },
+        {
+            version: '0.7.0',
+            date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
+            items: {
+                zh: ['新增全局键盘快捷键系统：R/U/H/A/C/S/? 快速操作，? 打开快捷键帮助面板', '新增棋盘键盘导航：方向键移动焦点，Enter/Space 落子，数字键快速选格（TTT/C4）', '新增快捷键帮助弹窗，分类展示所有快捷键，支持 10 语言', 'Esc 支持层级栈式关闭所有弹窗/抽屉，Tab 焦点陷阱覆盖所有面板'],
+                en: ['Added global keyboard shortcuts: R/U/H/A/C/S/? for quick actions, ? opens help panel', 'Added board keyboard navigation: arrow keys move focus, Enter/Space to play, number keys quick-select (TTT/C4)', 'Added hotkey help modal with categorized shortcuts, supports 10 languages', 'Esc now closes modals/drawers in stacked order, Tab focus trap covers all panels'],
+                ja: ['グローバルキーボードショートカット追加：R/U/H/A/C/S/? クイック操作、? でヘルプ','盤面キーボードナビ追加：方向キー移動、Enter/Space 着手、数字キー選択（三目/四目）','キーボードショートカットヘルプ追加、分類表示、10言語対応','Esc で全モーダル/ドロワーを階層的に閉じる、Tab フォーカストラップが全パネルに対応'],
+                ko: ['전역 키보드 단축키 추가: R/U/H/A/C/S/? 빠른 조작, ? 로 도움말','보드 키보드 낵 추가: 방향키 이동, Enter/스페이스 플레이, 숫자키 선택(틱택토/사목)','키보드 단축키 도움말 추가, 분류 표시, 10개 언어 지원','Esc 로 모든 팝업/서랍 계층적 닫기, Tab 포커스 트랩이 모든 패널 지원'],
+                fr: ['Raccourcis clavier globaux : R/U/H/A/C/S/? actions rapides, ? ouvre l\'aide','Navigation clavier plateau : flèches déplacent focus, Entrée/Espace joue, chiffres sélection rapide','Panneau d\'aide raccourcis avec catégories, 10 langues','Esc ferme modales/tiroirs en pile, piège focus Tab couvre tous panneaux'],
+                de: ['Globale Tastenkürzel: R/U/H/A/C/S/? schnelle Aktionen, ? öffnet Hilfe','Tastaturnavigation Brett: Pfeile bewegen Fokus, Eingabe/Leertaste spielen, Ziffern schnellwahl','Tastenkürzel-Hilfefenster mit Kategorien, 10 Sprachen','Esc schließt Modale/Drawer gestapelt, Tab-Fokusfalle für alle Panels'],
+                es: ['Atajos globales: R/U/H/A/C/S/? acciones rápidas, ? abre ayuda','Navegación teclado tablero: flechas mueven foco, Intro/Espacio juega, números selección rápida','Panel ayuda atajos categorizado, 10 idiomas','Esc cierra modales/cajones apilados, trampa foco Tab cubre todos paneles'],
+                ru: ['Глобальные горячие клавиши: R/U/H/A/C/S/? быстрые действия, ? открывает справку','Навигация клавиатурой по доске: стрелки двигают фокус, Enter/Пробел ход, цифры выбор','Панель справки по горячим клавишам с категориями, 10 языков','Esc закрывает модалки/панели по стеку, ловушка фокуса Tab охватывает все панели'],
+                it: ['Scorciatoie globali: R/U/H/A/C/S/? azioni rapide, ? apre aiuto','Navigazione tastiera scacchiera: frecce spostano fuoco, Invio/Spazio gioca, numeri selezione','Pannello aiuto scorciatoie categorizzato, 10 lingue','Esc chiude modali/cassetti a stack, trappola fuoco Tab copre tutti i pannelli'],
+                pt: ['Atalhos globais: R/U/H/A/C/S/? ações rápidas, ? abre ajuda','Navegação teclado tabuleiro: setas movem foco, Enter/Espaço joga, números seleção','Painel ajuda atalhos categorizado, 10 idiomas','Esc fecha modais/gavetas empilhados, armadilha foco Tab cobre todos painéis'],
+            }
+        },
+        {
+            version: '0.6.3',
+            date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
+            items: {
+                zh: ['新增对战计时器系统：支持 1/3/5/10 分钟四档预设，PVE 仅计玩家时间', '计时器支持 active/danger/paused 状态与脉冲动画，10 秒以下播放滴答警示音', '超时自动判负并播放特殊音效，弹窗显示 ⏰「时间到」标题', '设置面板新增计时器开关与时长分段选择，完整支持 10 语言'],
+                en: ['Added battle timer: 1/3/5/10 min presets, PVE only counts player time','Timer supports active/danger/paused states with pulse animation, tick warning under 10s','Auto-forfeit on timeout with special sound effect, modal shows ⏰ "Time Out" title','Settings drawer added timer toggle and duration segmented picker, full 10-language support'],
+                ja: ['対戦タイマー追加：1/3/5/10 分プリセット、PvE はプレイヤー時間のみ','タイマーは active/danger/paused 状態とパルスアニメーション、10秒以下で警告音','時間切れで自動負け、特殊効果音、モーダルに ⏰「時間切れ」表示','設定にタイマーON/OFFと時間選択追加、10言語対応'],
+                ko: ['대전 타이머 추가: 1/3/5/10분 프리셋, PvE 는 플레이어 시간만','타이머 active/danger/paused 상태 및 펄스 애니메이션, 10초 이하 경고음','시간 초과 시 자동 패배, 특수 효과음, 모달에 ⏰「시간 초과」표시','설정에 타이머 토글과 시간 선택 추가, 10개 언어 지원'],
+                fr: ['Chronomètre ajouté : préréglages 1/3/5/10 min, PvE compte temps joueur uniquement','Minuteur active/danger/paused avec animation pulsation, bip avertissement sous 10 s','Forfait auto. temps écoulé + effet sonore spécial, modale affiche ⏰ "Temps écoulé"','Paramètres : toggle chronomètre et sélecteur durée, support 10 langues'],
+                de: ['Zeituhr hinzugefügt: Voreinstellungen 1/3/5/10 min, PvE zählt nur Spielerzeit','Zeituhr active/danger/paused mit Pulsanimation, Warnung unter 10 s','Automatische Niederlage bei Zeitablauf + Spezialeffekt, Modal zeigt ⏰ "Zeit abgelaufen"','Einstellungen: Zeituhr-Umschaltung und Dauer-Auswahl, 10 Sprachen'],
+                es: ['Cronómetro añadido: preajustes 1/3/5/10 min, PvE solo cuenta tiempo jugador','Temporizador active/danger/paused con animación pulso, aviso bajo 10 s','Derrota automática al acabarse tiempo + efecto especial, modal muestra ⏰ "Se acabó"','Ajustes: interruptor cronómetro y selector duración, 10 idiomas'],
+                ru: ['Добавлен таймер: предустановки 1/3/5/10 мин, PvE считает только время игрока','Таймер active/danger/paused с пульсирующей анимацией, предупреждение менее 10 с','Автоматическое поражение при истечении + спецэффект, модалка показывает ⏰ "Время вышло"','Настройки: переключатель таймера и выбор длительности, 10 языков'],
+                it: ['Timer aggiunto: preset 1/3/5/10 min, PvE conta solo tempo giocatore','Timer active/danger/paused con animazione pulsazione, avviso sotto 10 s','Sconfitta automatica al tempo scaduto + effetto speciale, modale mostra ⏰ "Tempo scaduto"','Impostazioni: interruttore timer e selettore durata, 10 lingue'],
+                pt: ['Cronômetro adicionado: predefinições 1/3/5/10 min, PvE conta apenas tempo jogador','Temporizador active/danger/paused com animação pulso, aviso abaixo de 10 s','Derrota automática no tempo esgotado + efeito especial, modal mostra ⏰ "Tempo esgotado"','Configurações: interruptor cronômetro e seletor duração, 10 idiomas'],
+            }
+        },
         {
             version: '0.6.2',
             date: { zh:'2026-04-28', en:'Apr 28, 2026', ja:'2026年4月28日', ko:'2026년 4월 28일', fr:'28 avr. 2026', de:'28. Apr. 2026', es:'28 abr. 2026', ru:'28 апр. 2026', it:'28 apr. 2026', pt:'28 de abr. de 2026' },
@@ -688,6 +856,8 @@
                 if (typeof s.soundVolume === 'number' && s.soundVolume >= 0 && s.soundVolume <= 100) settings.soundVolume = s.soundVolume;
                 if (['easy','medium','hard'].includes(s.difficulty)) settings.difficulty = s.difficulty;
                 if (['3','5','7','10','15','custom'].includes(s.customBoardSize)) settings.customBoardSize = s.customBoardSize;
+                if (typeof s.timerEnabled === 'boolean') settings.timerEnabled = s.timerEnabled;
+                if (typeof s.timerDuration === 'number' && [60, 180, 300, 600].includes(s.timerDuration)) settings.timerDuration = s.timerDuration;
             }
             if (parsed.customConfig && typeof parsed.customConfig === 'object') {
                 const c = parsed.customConfig;
@@ -774,6 +944,10 @@
         customBoardWInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.w = clamp(isNaN(v) ? 15 : v, 3, 20); validateCustomConfig(); customBoardWInput.value = customConfig.w; saveSettings(); if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); } });
         customBoardHInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.h = clamp(isNaN(v) ? 15 : v, 3, 20); validateCustomConfig(); customBoardHInput.value = customConfig.h; saveSettings(); if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); } });
 
+        timerToggle.addEventListener('change', e => { setTimerEnabled(e.target.checked); });
+        document.querySelectorAll('#timer-segmented .seg-btn').forEach(btn =>
+            btn.addEventListener('click', () => setTimerDuration(parseInt(btn.dataset.timer, 10))));
+
         changelogBtn.addEventListener('click', openChangelog);
         changelogClose.addEventListener('click', closeChangelog);
         changelogModal.addEventListener('click', e => { if (e.target === changelogModal) closeChangelog(); });
@@ -791,6 +965,13 @@
         replayPlay.addEventListener('click', toggleReplayPlay);
         replayNext.addEventListener('click', stepReplayForward);
 
+        achievementsBtn.addEventListener('click', openAchievements);
+        achievementsClose.addEventListener('click', closeAchievements);
+        achievementsOverlay.addEventListener('click', closeAchievements);
+
+        hotkeyClose.addEventListener('click', closeHotkeyModal);
+        hotkeyModal.addEventListener('click', e => { if (e.target === hotkeyModal) closeHotkeyModal(); });
+
         const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
         if (backToLobbyBtn) backToLobbyBtn.addEventListener('click', () => { window.location.href = 'https://haazargames.com'; });
 
@@ -807,7 +988,9 @@
 
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
-                if (replayModal.classList.contains('show')) { closeReplay(); }
+                if (hotkeyModal.classList.contains('show')) { closeHotkeyModal(); }
+                else if (replayModal.classList.contains('show')) { closeReplay(); }
+                else if (achievementsDrawer.classList.contains('show')) { closeAchievements(); }
                 else if (historyDrawer.classList.contains('show')) { closeHistory(); }
                 else if (drawer.classList.contains('show')) { closeDrawer(); }
                 else if (changelogModal.classList.contains('show')) { closeChangelog(); }
@@ -815,10 +998,12 @@
             }
             if (e.key === 'Tab') {
                 const activeModal = replayModal.classList.contains('show') ? replayModal :
+                    achievementsDrawer.classList.contains('show') ? achievementsDrawer :
                     historyDrawer.classList.contains('show') ? historyDrawer :
                     modal.classList.contains('show') ? modal :
                     drawer.classList.contains('show') ? drawer :
-                    changelogModal.classList.contains('show') ? changelogModal : null;
+                    changelogModal.classList.contains('show') ? changelogModal :
+                    hotkeyModal.classList.contains('show') ? hotkeyModal : null;
                 if (!activeModal) return;
                 const focusable = Array.from(activeModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
                 if (focusable.length === 0) return;
@@ -831,16 +1016,34 @@
                 }
             }
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                if (isAnyModalOpen()) return;
                 const tag = document.activeElement.tagName.toLowerCase();
                 if (tag === 'input' || tag === 'textarea' || document.activeElement.isContentEditable) return;
                 e.preventDefault();
                 undoMove();
+            }
+            // Global shortcuts (only when no input/modal is active)
+            if (isInputFocused() || isAnyModalOpen()) return;
+            if (e.key === 'r' || e.key === 'R') { e.preventDefault(); resetGame(); }
+            else if (e.key === 'u' || e.key === 'U') { e.preventDefault(); undoMove(); }
+            else if (e.key === 'h' || e.key === 'H') { e.preventDefault(); openHistory(); }
+            else if (e.key === 'a' || e.key === 'A') { e.preventDefault(); openAchievements(); }
+            else if (e.key === 'c' || e.key === 'C') { e.preventDefault(); openChangelog(); }
+            else if (e.key === 's' || e.key === 'S') { e.preventDefault(); openDrawer(); }
+            else if (e.key === '?') { e.preventDefault(); openHotkeyModal(); }
+            else if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+                navigateBoard(e.key.replace('Arrow', '').toLowerCase());
+            }
+            else if (e.key >= '1' && e.key <= '9') {
+                handleNumberKey(parseInt(e.key, 10), e);
             }
         });
 
         applySettingsUI();
         applyI18n();
         resetGame();
+        initAchievements();
     }
 
     function buildC4Cells() {
@@ -1184,6 +1387,9 @@
         document.documentElement.style.setProperty('--accent-h', hsl.h);
         document.documentElement.style.setProperty('--accent-s', hsl.s + '%');
         document.documentElement.style.setProperty('--accent-l', hsl.l + '%');
+        if (timerToggle) timerToggle.checked = settings.timerEnabled;
+        if (timerPresets) timerPresets.style.display = settings.timerEnabled ? 'block' : 'none';
+        document.querySelectorAll('#timer-segmented .seg-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.timer, 10) === settings.timerDuration));
     }
 
     /* ===== Color Helpers ===== */
@@ -1227,6 +1433,353 @@
 
     function clamp(v, min, max) {
         return Math.max(min, Math.min(max, v));
+    }
+
+    /* ===== Timer System ===== */
+    function formatTimer(ms) {
+        if (ms < 0) ms = 0;
+        const totalSeconds = Math.ceil(ms / 1000);
+        const m = Math.floor(totalSeconds / 60);
+        const s = totalSeconds % 60;
+        return m.toString().padStart(2, '0') + ':' + s.toString().padStart(2, '0');
+    }
+
+    function updateTimerDisplay() {
+        if (!timerXEl || !timerOEl) return;
+        timerXEl.textContent = formatTimer(timerState.X);
+        timerOEl.textContent = formatTimer(timerState.O);
+        timerXEl.classList.remove('active-x', 'active-o', 'danger', 'paused');
+        timerOEl.classList.remove('active-x', 'active-o', 'danger', 'paused');
+        if (!settings.timerEnabled) {
+            timerXEl.textContent = '--:--';
+            timerOEl.textContent = '--:--';
+            return;
+        }
+        const bm = getEffectiveBattleMode();
+        if (bm === 'aivsai') {
+            timerXEl.textContent = '--:--';
+            timerOEl.textContent = '--:--';
+            return;
+        }
+        if (bm === 'pve') {
+            timerOEl.textContent = '∞';
+            if (timerState.running && timerState.activePlayer === PLAYER_X && gameActive) {
+                timerXEl.classList.add('active-x');
+                if (timerState.X <= 10000) timerXEl.classList.add('danger');
+            } else if (!gameActive) {
+                timerXEl.classList.add('paused');
+            }
+            return;
+        }
+        if (timerState.running && gameActive) {
+            if (timerState.activePlayer === PLAYER_X) {
+                timerXEl.classList.add('active-x');
+                if (timerState.X <= 10000) timerXEl.classList.add('danger');
+                timerOEl.classList.add('paused');
+            } else {
+                timerOEl.classList.add('active-o');
+                if (timerState.O <= 10000) timerOEl.classList.add('danger');
+                timerXEl.classList.add('paused');
+            }
+        } else {
+            timerXEl.classList.add('paused');
+            timerOEl.classList.add('paused');
+        }
+    }
+
+    function playTickSound() {
+        initAudio();
+        playOsc(880, 'sine', 0.06, 0.08);
+    }
+
+    function playTimeoutSound() {
+        initAudio();
+        playOsc(200, 'sawtooth', 0.4, 0.12);
+        setTimeout(() => playOsc(150, 'sawtooth', 0.4, 0.12), 120);
+        setTimeout(() => playOsc(100, 'sawtooth', 0.5, 0.12), 240);
+    }
+
+    function checkTimerTimeout() {
+        if (!settings.timerEnabled || !gameActive) return;
+        const bm = getEffectiveBattleMode();
+        if (bm === 'aivsai') return;
+        if (bm === 'pve') {
+            if (timerState.X <= 0) {
+                stopTimer();
+                playTimeoutSound();
+                timerTimeoutFlag = true;
+                if (isC4Mode()) endC4Game(false, PLAYER_O);
+                else if (isGmkMode()) endGmkGame(false, PLAYER_O);
+                else endGame(false, PLAYER_O);
+                timerTimeoutFlag = false;
+            }
+        } else {
+            if (timerState.activePlayer === PLAYER_X && timerState.X <= 0) {
+                stopTimer();
+                playTimeoutSound();
+                timerTimeoutFlag = true;
+                if (isC4Mode()) endC4Game(false, PLAYER_O);
+                else if (isGmkMode()) endGmkGame(false, PLAYER_O);
+                else endGame(false, PLAYER_O);
+                timerTimeoutFlag = false;
+            } else if (timerState.activePlayer === PLAYER_O && timerState.O <= 0) {
+                stopTimer();
+                playTimeoutSound();
+                timerTimeoutFlag = true;
+                if (isC4Mode()) endC4Game(false, PLAYER_X);
+                else if (isGmkMode()) endGmkGame(false, PLAYER_X);
+                else endGame(false, PLAYER_X);
+                timerTimeoutFlag = false;
+            }
+        }
+    }
+
+    function timerTick() {
+        if (!timerState.running || !gameActive) return;
+        const now = Date.now();
+        const elapsed = now - timerState.lastTick;
+        timerState.lastTick = now;
+        if (timerState.activePlayer === PLAYER_X) timerState.X -= elapsed;
+        else if (timerState.activePlayer === PLAYER_O) timerState.O -= elapsed;
+        updateTimerDisplay();
+        // Danger tick sound (last 10 seconds, once per second)
+        if (settings.sound && timerState.activePlayer) {
+            const remaining = timerState.activePlayer === PLAYER_X ? timerState.X : timerState.O;
+            if (remaining <= 10000 && remaining > 0) {
+                if (now - lastTickSoundTime >= 1000) {
+                    lastTickSoundTime = now;
+                    playTickSound();
+                }
+            }
+        }
+        checkTimerTimeout();
+    }
+
+    function startTimer(player) {
+        if (!settings.timerEnabled || !gameActive) return;
+        const bm = getEffectiveBattleMode();
+        if (bm === 'aivsai') return;
+        if (bm === 'pve' && player === PLAYER_O) return;
+        timerState.running = true;
+        timerState.activePlayer = player;
+        timerState.lastTick = Date.now();
+        lastTickSoundTime = 0;
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(timerTick, 100);
+        updateTimerDisplay();
+    }
+
+    function stopTimer() {
+        timerState.running = false;
+        timerState.activePlayer = null;
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        updateTimerDisplay();
+    }
+
+    function switchTimerTo(player) {
+        if (!settings.timerEnabled || !gameActive) return;
+        stopTimer();
+        startTimer(player);
+    }
+
+    function initTimers() {
+        if (!settings.timerEnabled) {
+            stopTimer();
+            timerState.X = 0;
+            timerState.O = 0;
+            updateTimerDisplay();
+            return;
+        }
+        const bm = getEffectiveBattleMode();
+        if (bm === 'aivsai') {
+            stopTimer();
+            timerState.X = 0;
+            timerState.O = 0;
+            updateTimerDisplay();
+            return;
+        }
+        const durationMs = settings.timerDuration * 1000;
+        timerState.X = durationMs;
+        timerState.O = durationMs;
+        timerState.running = false;
+        timerState.activePlayer = null;
+        updateTimerDisplay();
+    }
+
+    function setTimerEnabled(val) {
+        settings.timerEnabled = val;
+        applySettingsUI();
+        if (!val) {
+            stopTimer();
+            timerState.X = 0;
+            timerState.O = 0;
+            updateTimerDisplay();
+        }
+        saveSettings();
+    }
+
+    function setTimerDuration(seconds) {
+        settings.timerDuration = seconds;
+        applySettingsUI();
+        saveSettings();
+    }
+
+    /* ===== Keyboard Navigation ===== */
+    function isInputFocused() {
+        const tag = document.activeElement.tagName.toLowerCase();
+        return tag === 'input' || tag === 'textarea' || document.activeElement.isContentEditable;
+    }
+
+    function isAnyModalOpen() {
+        return modal.classList.contains('show') ||
+            changelogModal.classList.contains('show') ||
+            replayModal.classList.contains('show') ||
+            hotkeyModal.classList.contains('show') ||
+            drawer.classList.contains('show') ||
+            historyDrawer.classList.contains('show') ||
+            achievementsDrawer.classList.contains('show');
+    }
+
+    function getActiveBoardCells() {
+        if (isC4Mode()) return Array.from(document.querySelectorAll('.c4-cell'));
+        if (isGmkMode()) return Array.from(document.querySelectorAll('.gomoku-cell'));
+        return cells;
+    }
+
+    function getCellCoords(cell) {
+        if (isC4Mode()) {
+            return { r: parseInt(cell.dataset.row, 10), c: parseInt(cell.dataset.col, 10) };
+        }
+        if (isGmkMode()) {
+            return { r: parseInt(cell.dataset.row, 10), c: parseInt(cell.dataset.col, 10) };
+        }
+        const idx = parseInt(cell.dataset.index, 10);
+        return { r: Math.floor(idx / 3), c: idx % 3 };
+    }
+
+    function getBoardDimensions() {
+        if (isC4Mode()) return { rows: C4_ROWS, cols: C4_COLS };
+        if (isGmkMode()) {
+            const cfg = getActiveGmkConfig();
+            return { rows: cfg.h, cols: cfg.w };
+        }
+        return { rows: 3, cols: 3 };
+    }
+
+    function navigateBoard(direction) {
+        if (isAnyModalOpen()) return;
+        const activeEl = document.activeElement;
+        const allCells = getActiveBoardCells();
+        if (!allCells.length) return;
+        const isBoardCell = activeEl.classList.contains('cell') ||
+            activeEl.classList.contains('c4-cell') ||
+            activeEl.classList.contains('gomoku-cell');
+        if (!isBoardCell) {
+            const first = allCells.find(c => !c.classList.contains('disabled'));
+            if (first) first.focus();
+            return;
+        }
+        const coords = getCellCoords(activeEl);
+        const dim = getBoardDimensions();
+        let targetR = coords.r, targetC = coords.c;
+        switch (direction) {
+            case 'up': targetR = Math.max(0, coords.r - 1); break;
+            case 'down': targetR = Math.min(dim.rows - 1, coords.r + 1); break;
+            case 'left': targetC = Math.max(0, coords.c - 1); break;
+            case 'right': targetC = Math.min(dim.cols - 1, coords.c + 1); break;
+        }
+        if (targetR === coords.r && targetC === coords.c) return;
+        let targetCell;
+        if (isC4Mode()) {
+            targetCell = allCells.find(c => parseInt(c.dataset.row, 10) === targetR && parseInt(c.dataset.col, 10) === targetC);
+        } else if (isGmkMode()) {
+            const cfg = getActiveGmkConfig();
+            targetCell = allCells[targetR * cfg.w + targetC];
+        } else {
+            targetCell = allCells[targetR * 3 + targetC];
+        }
+        if (targetCell) targetCell.focus();
+    }
+
+    function handleNumberKey(num, e) {
+        if (isAnyModalOpen() || isInputFocused()) return;
+        if (isC4Mode()) {
+            const col = num - 1;
+            if (col < 0 || col >= C4_COLS) return;
+            const cell = document.querySelector(`.c4-cell[data-row="0"][data-col="${col}"]`);
+            if (cell && !cell.classList.contains('disabled')) {
+                cell.focus();
+                e.preventDefault();
+                handleC4CellClick({ currentTarget: cell });
+            }
+        } else if (!isGmkMode()) {
+            const map = { 7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: 8 };
+            const idx = map[num];
+            if (idx === undefined) return;
+            const cell = cells[idx];
+            if (cell && !cell.classList.contains('disabled')) {
+                cell.focus();
+                e.preventDefault();
+                handleCellClick({ currentTarget: cell });
+            }
+        }
+    }
+
+    function openHotkeyModal() {
+        closeDrawer();
+        closeHistory();
+        closeChangelog();
+        closeReplay();
+        closeAchievements();
+        lastFocusedElement = document.activeElement;
+        renderHotkeyHelp();
+        hotkeyModal.classList.add('show');
+        setTimeout(() => { if (hotkeyClose) hotkeyClose.focus(); }, 50);
+    }
+
+    function closeHotkeyModal() {
+        hotkeyModal.classList.remove('show');
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+    }
+
+    function renderHotkeyHelp() {
+        if (!hotkeyBody) return;
+        const sections = [
+            {
+                title: t('hotkey-gameplay'),
+                items: [
+                    { kbd: t('hotkey-nav'), desc: t('hotkey-nav-desc') },
+                    { kbd: t('hotkey-enter'), desc: t('hotkey-enter-desc') },
+                    { kbd: t('hotkey-numbers'), desc: t('hotkey-numbers-desc') },
+                ]
+            },
+            {
+                title: t('hotkey-global'),
+                items: [
+                    { kbd: t('hotkey-r'), desc: t('hotkey-r-desc') },
+                    { kbd: t('hotkey-u'), desc: t('hotkey-u-desc') },
+                    { kbd: t('hotkey-h'), desc: t('hotkey-h-desc') },
+                    { kbd: t('hotkey-a'), desc: t('hotkey-a-desc') },
+                    { kbd: t('hotkey-c'), desc: t('hotkey-c-desc') },
+                    { kbd: t('hotkey-s'), desc: t('hotkey-s-desc') },
+                    { kbd: t('hotkey-question'), desc: t('hotkey-question-desc') },
+                    { kbd: t('hotkey-esc'), desc: t('hotkey-esc-desc') },
+                    { kbd: t('hotkey-ctrl-z'), desc: t('hotkey-ctrl-z-desc') },
+                ]
+            }
+        ];
+        let html = '';
+        sections.forEach(sec => {
+            html += `<div class="hotkey-section"><div class="hotkey-section-title">${sec.title}</div>`;
+            sec.items.forEach(item => {
+                html += `<div class="hotkey-row"><span class="hotkey-kbd">${item.kbd}</span><span class="hotkey-desc">${item.desc}</span></div>`;
+            });
+            html += `</div>`;
+        });
+        hotkeyBody.innerHTML = html;
     }
 
     /* ===== Audio ===== */
@@ -1626,6 +2179,7 @@
             currentPlayer = player === PLAYER_X ? PLAYER_O : PLAYER_X;
             const activeClass = currentPlayer === PLAYER_X ? 'x' : 'o';
             updateStatus(getTurnText(), activeClass);
+            switchTimerTo(currentPlayer);
         }
         updateUndoButton();
     }
@@ -1690,6 +2244,7 @@
             currentPlayer = player === PLAYER_X ? PLAYER_O : PLAYER_X;
             const activeClass = currentPlayer === PLAYER_X ? 'x' : 'o';
             updateStatus(getTurnText(), activeClass);
+            switchTimerTo(currentPlayer);
         }
         updateUndoButton();
     }
@@ -1719,6 +2274,7 @@
 
     function endC4Game(draw, winner, winCells) {
         gameActive = false;
+        stopTimer();
         lockC4Board(true);
         saveGameHistory(draw ? null : winner);
         const bm = getEffectiveBattleMode();
@@ -1736,7 +2292,16 @@
             drawC4WinLine(winCells, winner);
             playWinSound();
             let icon = '🎉', title, msg;
-            if (winner === PLAYER_X) {
+            if (timerTimeoutFlag) {
+                icon = '⏰'; title = t('timer-out');
+                if (winner === PLAYER_X) {
+                    msg = bm === 'aivsai' ? t('modal-ai-x-wins') : (bm === 'pvp' ? t('modal-player1-wins') : t('modal-you-win'));
+                    updateStatus(title, 'x');
+                } else {
+                    msg = bm === 'aivsai' ? t('modal-ai-o-wins') : (bm === 'pvp' ? t('modal-player2-wins') : t('modal-ai-wins'));
+                    updateStatus(title, 'o');
+                }
+            } else if (winner === PLAYER_X) {
                 if (bm === 'aivsai') { title = t('modal-ai-x-wins'); msg = title; icon = '⚡'; }
                 else if (bm === 'pvp') { title = t('modal-player1-wins'); msg = title; }
                 else { title = t('modal-you-win'); msg = title; }
@@ -1995,6 +2560,7 @@
             currentPlayer = player === PLAYER_X ? PLAYER_O : PLAYER_X;
             const activeClass = currentPlayer === PLAYER_X ? 'x' : 'o';
             updateStatus(getTurnText(), activeClass);
+            switchTimerTo(currentPlayer);
         }
         updateUndoButton();
     }
@@ -2034,6 +2600,7 @@
 
     function endGmkGame(draw, winner, winCells) {
         gameActive = false;
+        stopTimer();
         lockGmkBoard(true);
         saveGameHistory(draw ? null : winner);
         const bm = getEffectiveBattleMode();
@@ -2051,7 +2618,16 @@
             drawGmkWinLine(winCells, winner);
             playWinSound();
             let icon = '🎉', title, msg;
-            if (winner === PLAYER_X) {
+            if (timerTimeoutFlag) {
+                icon = '⏰'; title = t('timer-out');
+                if (winner === PLAYER_X) {
+                    msg = bm === 'aivsai' ? t('modal-ai-x-wins') : (bm === 'pvp' ? t('modal-player1-wins') : t('modal-you-win'));
+                    updateStatus(title, 'x');
+                } else {
+                    msg = bm === 'aivsai' ? t('modal-ai-o-wins') : (bm === 'pvp' ? t('modal-player2-wins') : t('modal-ai-wins'));
+                    updateStatus(title, 'o');
+                }
+            } else if (winner === PLAYER_X) {
                 if (bm === 'aivsai') { title = t('modal-ai-x-wins'); msg = title; icon = '⚡'; }
                 else if (bm === 'pvp') { title = t('modal-player1-wins'); msg = title; }
                 else { title = t('modal-you-win'); msg = title; }
@@ -2302,6 +2878,7 @@
 
     function endGame(draw, winner) {
         gameActive = false;
+        stopTimer();
         lockBoard(true);
         saveGameHistory(draw ? null : winner);
 
@@ -2320,7 +2897,16 @@
             playWinSound();
 
             let icon, title, msg;
-            if (winner === PLAYER_X) {
+            if (timerTimeoutFlag) {
+                icon = '⏰'; title = t('timer-out');
+                if (winner === PLAYER_X) {
+                    msg = bm === 'aivsai' ? t('modal-ai-x-wins') : (bm === 'pvp' ? t('modal-player1-wins') : t('modal-you-win'));
+                    updateStatus(title, 'x');
+                } else {
+                    msg = bm === 'aivsai' ? t('modal-ai-o-wins') : (bm === 'pvp' ? t('modal-player2-wins') : t('modal-ai-wins'));
+                    updateStatus(title, 'o');
+                }
+            } else if (winner === PLAYER_X) {
                 title = getWinnerText(winner);
                 icon = bm === 'aivsai' ? '⚡' : '🎉';
                 if (bm === 'aivsai') msg = t('modal-ai-x-wins');
@@ -2340,6 +2926,7 @@
     }
 
     function getWinnerText(winner) {
+        if (timerTimeoutFlag) return t('timer-out');
         const bm = getEffectiveBattleMode();
         if (bm === 'aivsai') return (winner === PLAYER_X ? t('label-player-x-ai') : t('label-player-o-ai')) + ' ' + t('modal-win');
         if (bm === 'pvp') return winner === PLAYER_X ? t('modal-player1-wins') : t('modal-player2-wins');
@@ -2355,6 +2942,8 @@
     function resetGame() {
         clearTimeout(aiTimer); aiTimer = null;
         clearTimeout(replayTimer); replayTimer = null;
+        stopTimer();
+        initTimers();
         gameActive = true;
         currentPlayer = PLAYER_X;
         lastWinData = null;
@@ -2381,10 +2970,12 @@
             const bm = getEffectiveBattleMode();
             if (bm === 'pve') {
                 updateStatus(getTurnText(), 'x');
+                startTimer(PLAYER_X);
             } else if (bm === 'aivsai') {
                 startC4AiVsAi();
             } else {
                 updateStatus(getTurnText(), 'x');
+                startTimer(PLAYER_X);
             }
         } else if (isGmkMode()) {
             if (currentMode === 'custom') {
@@ -2410,10 +3001,12 @@
             const bm = getEffectiveBattleMode();
             if (bm === 'pve') {
                 updateStatus(getTurnText(), 'x');
+                startTimer(PLAYER_X);
             } else if (bm === 'aivsai') {
                 startGmkAiVsAi();
             } else {
                 updateStatus(getTurnText(), 'x');
+                startTimer(PLAYER_X);
             }
         } else {
             gameBoard = Array(9).fill('');
@@ -2424,6 +3017,7 @@
             pushBoardSnapshot();
             updateStatus(getTurnText(), 'x');
             if (battleMode === 'aivsai') startAiVsAi();
+            else startTimer(PLAYER_X);
         }
         updateCellAriaLabels();
         updateUndoButton();
@@ -3142,6 +3736,7 @@
         gomokuWinLine.classList.remove('show');
         currentMoveStartTime = Date.now();
         updateStatus(getTurnText(), currentPlayer === PLAYER_X ? 'x' : 'o');
+        switchTimerTo(currentPlayer);
         updateCellAriaLabels();
         updateUndoButton();
     }
@@ -3150,6 +3745,270 @@
         const canUndo = battleMode !== 'aivsai' && boardSnapshots.length > 1;
         undoBtn.classList.toggle('disabled', !canUndo);
         undoBtn.setAttribute('aria-disabled', String(!canUndo));
+    }
+
+    /* ===== Achievement System ===== */
+    function getDefaultAchievementStats() {
+        return {
+            totalGames: 0,
+            totalDraws: 0,
+            currentStreak: 0,
+            winsByMode: { ttt: 0, connect4: 0, gomoku: 0, custom: 0 },
+            hardWinsByMode: { ttt: 0, connect4: 0, gomoku: 0, custom: 0 },
+            languagesUsed: [],
+            colorsUsed: [],
+            soundsUsed: [],
+            modesPlayed: [],
+            battlesPlayed: [],
+            fastestWin: null,
+        };
+    }
+
+    function loadAchievements() {
+        try {
+            const rawStats = localStorage.getItem(ACHIEVEMENT_STATS_KEY);
+            const rawState = localStorage.getItem(ACHIEVEMENT_KEY);
+            if (rawStats) {
+                const parsed = JSON.parse(rawStats);
+                if (parsed && typeof parsed === 'object') {
+                    achievementStats = { ...getDefaultAchievementStats(), ...parsed };
+                }
+            } else {
+                achievementStats = getDefaultAchievementStats();
+            }
+            if (rawState) {
+                const parsed = JSON.parse(rawState);
+                if (parsed && typeof parsed === 'object') achievementState = parsed;
+                else achievementState = {};
+            } else {
+                achievementState = {};
+            }
+        } catch (e) {
+            achievementStats = getDefaultAchievementStats();
+            achievementState = {};
+        }
+    }
+
+    function saveAchievements() {
+        try {
+            localStorage.setItem(ACHIEVEMENT_STATS_KEY, JSON.stringify(achievementStats));
+            localStorage.setItem(ACHIEVEMENT_KEY, JSON.stringify(achievementState));
+        } catch (e) {}
+    }
+
+    const achievementDefs = [
+        { id: 'first_win_ttt', icon: '🏆', category: 'victory', getProgress: (s) => s.winsByMode.ttt >= 1 ? 1 : 0, target: 1 },
+        { id: 'first_win_c4', icon: '🏆', category: 'victory', getProgress: (s) => s.winsByMode.connect4 >= 1 ? 1 : 0, target: 1 },
+        { id: 'first_win_gmk', icon: '🏆', category: 'victory', getProgress: (s) => s.winsByMode.gomoku >= 1 ? 1 : 0, target: 1 },
+        { id: 'first_win_custom', icon: '🏆', category: 'victory', getProgress: (s) => s.winsByMode.custom >= 1 ? 1 : 0, target: 1 },
+        { id: 'beat_hard', icon: '🎯', category: 'victory', getProgress: (s, r) => (r.bm === 'pve' && r.winner === 'X' && r.difficulty === 'hard') ? 1 : 0, target: 1 },
+        { id: 'streak_3', icon: '🔥', category: 'victory', getProgress: (s, r) => (r.bm === 'pve' && r.winner === 'X' && s.currentStreak >= 3) ? 1 : 0, target: 1 },
+        { id: 'streak_5', icon: '⚡', category: 'victory', getProgress: (s, r) => (r.bm === 'pve' && r.winner === 'X' && s.currentStreak >= 5) ? 1 : 0, target: 1 },
+        { id: 'streak_10', icon: '👑', category: 'victory', getProgress: (s, r) => (r.bm === 'pve' && r.winner === 'X' && s.currentStreak >= 10) ? 1 : 0, target: 1 },
+        { id: 'draw_master', icon: '🤝', category: 'victory', getProgress: (s) => Math.min(s.totalDraws, 10), target: 10 },
+        { id: 'pvp_first', icon: '🎮', category: 'victory', getProgress: (s, r) => (r.bm === 'pvp' && r.winner === 'X') ? 1 : 0, target: 1 },
+        { id: 'aivsai_first', icon: '🤖', category: 'victory', getProgress: (s, r) => r.bm === 'aivsai' ? 1 : 0, target: 1 },
+        { id: 'all_languages', icon: '🌍', category: 'explorer', getProgress: (s) => Math.min(s.languagesUsed.length, 10), target: 10 },
+        { id: 'all_colors', icon: '🎨', category: 'explorer', getProgress: (s) => Math.min(s.colorsUsed.length, 10), target: 10 },
+        { id: 'all_sounds', icon: '🎵', category: 'explorer', getProgress: (s) => Math.min(s.soundsUsed.length, 12), target: 12 },
+        { id: 'all_modes', icon: '🔢', category: 'explorer', getProgress: (s) => Math.min(s.modesPlayed.length, 4), target: 4 },
+        { id: 'all_battles', icon: '⚔️', category: 'explorer', getProgress: (s) => Math.min(s.battlesPlayed.length, 3), target: 3 },
+        { id: 'ttt_master', icon: '🧠', category: 'master', getProgress: (s) => Math.min(s.winsByMode.ttt, 50), target: 50 },
+        { id: 'c4_master', icon: '🔴', category: 'master', getProgress: (s) => Math.min(s.winsByMode.connect4, 50), target: 50 },
+        { id: 'gmk_master', icon: '⚫', category: 'master', getProgress: (s) => Math.min(s.winsByMode.gomoku, 50), target: 50 },
+        { id: 'custom_master', icon: '📐', category: 'master', getProgress: (s) => Math.min(s.winsByMode.custom, 50), target: 50 },
+        { id: 'speed_run', icon: '⏱️', category: 'master', getProgress: (s, r) => (r.bm === 'pve' && r.winner === 'X' && r.duration <= 30000) ? 1 : 0, target: 1 },
+        { id: 'perfect_opening', icon: '🏅', category: 'master', getProgress: (s, r) => (r.mode === 'ttt' && r.bm === 'pve' && r.winner === 'X' && r.firstMoveIndex === 4) ? 1 : 0, target: 1 },
+        { id: 'centurion', icon: '🔄', category: 'master', getProgress: (s) => Math.min(s.totalGames, 100), target: 100 },
+        { id: 'grandmaster', icon: '💎', category: 'master', getProgress: (s) => (s.hardWinsByMode.ttt >= 1 && s.hardWinsByMode.connect4 >= 1 && s.hardWinsByMode.gomoku >= 1 && s.hardWinsByMode.custom >= 1) ? 1 : 0, target: 1 },
+    ];
+
+    function trackAchievementSetting(type, value) {
+        if (!achievementStats) return;
+        const arr = type === 'lang' ? achievementStats.languagesUsed :
+            type === 'color' ? achievementStats.colorsUsed :
+            type === 'sound' ? achievementStats.soundsUsed : null;
+        if (arr && !arr.includes(value)) {
+            arr.push(value);
+            saveAchievements();
+            // Re-check explorer achievements immediately
+            checkExplorerAchievements();
+        }
+    }
+
+    function checkExplorerAchievements() {
+        const newlyUnlocked = [];
+        for (const def of achievementDefs) {
+            if (def.category !== 'explorer') continue;
+            const state = achievementState[def.id] || { unlocked: false, progress: 0, unlockedAt: null };
+            if (state.unlocked) continue;
+            const progress = def.getProgress(achievementStats, {});
+            if (progress >= def.target) {
+                state.unlocked = true;
+                state.progress = progress;
+                state.unlockedAt = Date.now();
+                achievementState[def.id] = state;
+                newlyUnlocked.push(def);
+            } else {
+                state.progress = progress;
+                achievementState[def.id] = state;
+            }
+        }
+        if (newlyUnlocked.length > 0) {
+            saveAchievements();
+            newlyUnlocked.forEach((def, i) => setTimeout(() => showAchievementToast(def), i * 600));
+        }
+    }
+
+    function updateAchievementStats(result) {
+        const s = achievementStats;
+        s.totalGames++;
+        if (!s.modesPlayed.includes(result.mode)) s.modesPlayed.push(result.mode);
+        if (!s.battlesPlayed.includes(result.bm)) s.battlesPlayed.push(result.bm);
+
+        if (result.winner === null) {
+            s.totalDraws++;
+            s.currentStreak = 0;
+        } else if (result.bm === 'pve' && result.winner === 'X') {
+            s.currentStreak++;
+            s.winsByMode[result.mode] = (s.winsByMode[result.mode] || 0) + 1;
+            if (result.difficulty === 'hard') {
+                s.hardWinsByMode[result.mode] = (s.hardWinsByMode[result.mode] || 0) + 1;
+            }
+            if (!s.fastestWin || result.duration < s.fastestWin) {
+                s.fastestWin = result.duration;
+            }
+        } else {
+            s.currentStreak = 0;
+        }
+    }
+
+    function checkAchievements(result) {
+        updateAchievementStats(result);
+        const newlyUnlocked = [];
+        for (const def of achievementDefs) {
+            const state = achievementState[def.id] || { unlocked: false, progress: 0, unlockedAt: null };
+            if (state.unlocked) continue;
+            const progress = def.getProgress(achievementStats, result);
+            if (progress >= def.target) {
+                state.unlocked = true;
+                state.progress = progress;
+                state.unlockedAt = Date.now();
+                achievementState[def.id] = state;
+                newlyUnlocked.push(def);
+            } else {
+                state.progress = progress;
+                achievementState[def.id] = state;
+            }
+        }
+        saveAchievements();
+        newlyUnlocked.forEach((def, i) => setTimeout(() => showAchievementToast(def), i * 600));
+    }
+
+    function formatAchievementDate(ts) {
+        const d = new Date(ts);
+        const pad = n => n.toString().padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    }
+
+    function renderAchievements() {
+        if (!achievementsBody) return;
+        const unlockedCount = achievementDefs.filter(d => (achievementState[d.id] || {}).unlocked).length;
+        const totalCount = achievementDefs.length;
+
+        let html = '';
+
+        // Summary
+        html += `<div class="achievement-summary">
+            <div class="achievement-summary-card">
+                <div class="value">${unlockedCount}/${totalCount}</div>
+                <div class="label">${t('achievements-total')}</div>
+            </div>
+            <div class="achievement-summary-card">
+                <div class="value">${Math.round((unlockedCount / totalCount) * 100)}%</div>
+                <div class="label">${t('achievements-completed')}</div>
+            </div>
+        </div>`;
+
+        const categories = ['victory', 'explorer', 'master'];
+        const catLabels = { victory: 'cat-victory', explorer: 'cat-explorer', master: 'cat-master' };
+
+        for (const cat of categories) {
+            const items = achievementDefs.filter(d => d.category === cat);
+            html += `<div class="achievement-category">
+                <div class="achievement-category-title">${t(catLabels[cat])}</div>`;
+            for (const def of items) {
+                const state = achievementState[def.id] || { unlocked: false, progress: 0 };
+                const isUnlocked = state.unlocked;
+                const progress = isUnlocked ? def.target : (state.progress || 0);
+                const pct = def.target > 1 ? Math.round((progress / def.target) * 100) : (isUnlocked ? 100 : 0);
+                html += `<div class="achievement-item ${isUnlocked ? 'unlocked' : 'locked'}">
+                    <div class="achievement-icon">${def.icon}</div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">${t('ach-' + def.id)}</div>
+                        <div class="achievement-desc">${t('ach-' + def.id + '-desc')}</div>`;
+                if (def.target > 1) {
+                    html += `<div class="achievement-progress-wrap">
+                        <div class="achievement-progress-bar"><div class="achievement-progress-fill" style="width:${pct}%"></div></div>
+                        <div class="achievement-progress-text">${progress}/${def.target}</div>
+                    </div>`;
+                }
+                if (isUnlocked && state.unlockedAt) {
+                    html += `<div class="achievement-unlock-date">${formatAchievementDate(state.unlockedAt)}</div>`;
+                }
+                html += `</div></div>`;
+            }
+            html += `</div>`;
+        }
+
+        achievementsBody.innerHTML = html;
+    }
+
+    function openAchievements() {
+        closeDrawer();
+        closeChangelog();
+        closeHistory();
+        closeReplay();
+        lastFocusedElement = document.activeElement;
+        renderAchievements();
+        achievementsDrawer.classList.add('show');
+        achievementsOverlay.classList.add('show');
+        setTimeout(() => {
+            const focusable = Array.from(achievementsDrawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
+            if (focusable.length) focusable[0].focus();
+        }, 50);
+    }
+
+    function closeAchievements() {
+        achievementsDrawer.classList.remove('show');
+        achievementsOverlay.classList.remove('show');
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+    }
+
+    function showAchievementToast(def) {
+        if (!toastContainer) return;
+        const toast = document.createElement('div');
+        toast.className = 'achievement-toast';
+        toast.innerHTML = `
+            <div class="achievement-toast-icon">${def.icon}</div>
+            <div class="achievement-toast-text">
+                <div class="achievement-toast-title">${t('achievement-unlocked')}</div>
+                <div class="achievement-toast-name">${t('ach-' + def.id)}</div>
+            </div>
+        `;
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('out');
+            setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 400);
+        }, 3500);
+    }
+
+    function initAchievements() {
+        loadAchievements();
+        // Track initial settings
+        trackAchievementSetting('lang', settings.lang);
+        trackAchievementSetting('color', settings.accentColor);
+        trackAchievementSetting('sound', settings.soundStyle);
     }
 
     init();
