@@ -140,6 +140,10 @@
     let lastTickSoundTime = 0;
     let timerTimeoutFlag = false;
 
+    // Game Statistics
+    let gameStats = createEmptyGameStats();
+    const STATS_KEY = 'ttt_game_stats_v1';
+
     const settings = {
         lang: 'zh',
         theme: 'dark',
@@ -395,6 +399,21 @@
             'hotkey-esc-desc': { zh:'关闭弹窗/抽屉', en:'Close modal or drawer', ja:'ポップアップ/ドロワーを閉じる', ko:'팝업/서랍 닫기', fr:'Fermer la modale/le tiroir', de:'Modal/Drawer schließen', es:'Cerrar modal o cajón', ru:'Закрыть модалку/панель', it:'Chiudi modale o cassetto', pt:'Fechar modal ou gaveta' },
             'hotkey-ctrl-z': { zh:'Ctrl + Z', en:'Ctrl + Z', ja:'Ctrl + Z', ko:'Ctrl + Z', fr:'Ctrl + Z', de:'Ctrl + Z', es:'Ctrl + Z', ru:'Ctrl + Z', it:'Ctrl + Z', pt:'Ctrl + Z' },
             'hotkey-ctrl-z-desc': { zh:'悔棋', en:'Undo move', ja:'待った', ko:'무르기', fr:'Annuler', de:'Rückgängig', es:'Deshacer', ru:'Отменить', it:'Annulla', pt:'Desfazer' },
+            'setting-stats': { zh:'游戏统计', en:'Statistics', ja:'ゲーム統計', ko:'게임 통계', fr:'Statistiques', de:'Statistiken', es:'Estadísticas', ru:'Статистика', it:'Statistiche', pt:'Estatísticas' },
+            'stats-reset': { zh:'重置', en:'Reset', ja:'リセット', ko:'초기화', fr:'Réinitialiser', de:'Zurücksetzen', es:'Restablecer', ru:'Сбросить', it:'Reimposta', pt:'Redefinir' },
+            'stats-total': { zh:'总对局', en:'Total', ja:'総対局', ko:'총 대국', fr:'Total', de:'Gesamt', es:'Total', ru:'Всего', it:'Totale', pt:'Total' },
+            'stats-wins': { zh:'胜场', en:'Wins', ja:'勝利', ko:'승리', fr:'Victoires', de:'Siege', es:'Victorias', ru:'Победы', it:'Vittorie', pt:'Vitórias' },
+            'stats-losses': { zh:'败场', en:'Losses', ja:'敗北', ko:'패배', fr:'Défaites', de:'Niederlagen', es:'Derrotas', ru:'Поражения', it:'Sconfitte', pt:'Derrotas' },
+            'stats-draws': { zh:'平局', en:'Draws', ja:'引分', ko:'무승부', fr:'Nuls', de:'Remis', es:'Empates', ru:'Ничьи', it:'Pareggi', pt:'Empates' },
+            'stats-streak': { zh:'连胜', en:'Streak', ja:'連勝', ko:'연승', fr:'Série', de:'Serie', es:'Racha', ru:'Серия', it:'Serie', pt:'Sequência' },
+            'stats-best-streak': { zh:'最高连胜', en:'Best Streak', ja:'最高連勝', ko:'최고 연승', fr:'Meilleure série', de:'Beste Serie', es:'Mejor racha', ru:'Лучшая серия', it:'Migliore serie', pt:'Melhor sequência' },
+            'stats-by-mode': { zh:'各模式', en:'By Mode', ja:'モード別', ko:'모드별', fr:'Par mode', de:'Nach Modus', es:'Por modo', ru:'По режиму', it:'Per modalità', pt:'Por modo' },
+            'stats-by-diff': { zh:'各难度 (PvE)', en:'By Difficulty', ja:'難易度別', ko:'난이도별', fr:'Par difficulté', de:'Nach Schwierigkeit', es:'Por dificultad', ru:'По сложности', it:'Per difficoltà', pt:'Por dificuldade' },
+            'stats-moves': { zh:'总步数', en:'Total Moves', ja:'総手数', ko:'총 수', fr:'Coups totaux', de:'Gesamtzüge', es:'Movimientos totales', ru:'Всего ходов', it:'Mosse totali', pt:'Movimentos totais' },
+            'stats-fastest': { zh:'最快胜利', en:'Fastest Win', ja:'最短勝利', ko:'최단 승리', fr:'Victoire rapide', de:'Schnellster Sieg', es:'Victoria más rápida', ru:'Самая быстрая победа', it:'Vittoria più veloce', pt:'Vitória mais rápida' },
+            'stats-longest': { zh:'最长对局', en:'Longest Game', ja:'最長対局', ko:'최장 대국', fr:'Partie la plus longue', de:'Längstes Spiel', es:'Partida más larga', ru:'Самая долгая игра', it:'Partita più lunga', pt:'Jogo mais longo' },
+            'stats-time': { zh:'总时长', en:'Total Time', ja:'総時間', ko:'총 시간', fr:'Temps total', de:'Gesamtzeit', es:'Tiempo total', ru:'Общее время', it:'Tempo totale', pt:'Tempo total' },
+            'stats-reset-confirm': { zh:'确定要重置所有统计数据吗？此操作不可撤销。', en:'Reset all statistics? This cannot be undone.', ja:'統計をリセットしますか？元に戻せません。', ko:'통계를 초기화하시겠습니까? 되돌릴 수 없습니다.', fr:'Réinitialiser les statistiques ? Irréversible.', de:'Statistiken zurücksetzen? Nicht rückgängig.', es:'¿Restablecer estadísticas? No se puede deshacer.', ru:'Сбросить статистику? Нельзя отменить.', it:'Reimpostare le statistiche? Irreversibile.', pt:'Redefinir estatísticas? Não pode ser desfeito.' },
         };
         const out = {};
         for (const [key, langs] of Object.entries(c)) {
@@ -438,6 +457,22 @@
 
     /* ===== Changelog Data ===== */
     const changelogData = [
+        {
+            version: '0.8.0',
+            date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
+            items: {
+                zh: ['新增游戏统计面板：实时记录总对局、胜/败/平、胜率条、连胜记录，数据持久化到 localStorage', '支持按模式（井字棋/四子棋/五子棋/自定义）和按难度（简单/中等/困难）分别统计胜率', '显示最快胜利、最长对局、总步数、总游戏时间等详细数据', '统计面板支持一键重置（带确认对话框），完整支持 10 种语言', '统计面板 UI 采用卡片+进度条设计，适配移动端响应式布局'],
+                en: ['Added Game Statistics Dashboard: tracks total games, wins/losses/draws, win-rate bar, streak records with localStorage persistence', 'Per-mode stats (TTT/Connect4/Gomoku/Custom) and per-difficulty stats (Easy/Medium/Hard) with win-rate bars', 'Displays fastest win, longest game, total moves, total play time', 'One-click reset with confirmation dialog, full 10-language support', 'Dashboard UI uses cards + progress bars, responsive mobile layout'],
+                ja: ['ゲーム統計パネル追加：総対局、勝敗、胜率バー、連勝記録を localStorage に永続保存','モード別（三目/四目/五目/カスタム）と難易度別（簡単/普通/難しい）統計対応','最短勝利、最長対局、総手数、総時間を表示','確認ダイアログ付きリセット、10言語対応','カード+プログレスバー UI、モバイル対応'],
+                ko: ['게임 통계 패널 추가: 총 대국, 승패, 승률 바, 연승 기록을 localStorage 에 영구 저장','모드별(틱택토/사목/오목/사용자 지정)과 난이도별(쉬움/보통/어려움) 통계','최단 승리, 최장 대국, 총 수, 총 시간 표시','확인 대화상자 포함 초기화, 10개 언어 지원','카드+진행 막대 UI, 모바일 반응형'],
+                fr: ['Panneau statistiques ajouté : parties totales, victoires/défaites/nuls, barre taux victoire, séries persistantes','Stats par mode et par difficulté avec barres taux','Victoire la plus rapide, partie la plus longue, coups totaux, temps total','Réinitialisation avec confirmation, 10 langues','UI cartes + barres de progression, responsive mobile'],
+                de: ['Statistik-Dashboard hinzugefügt: Spiele gesamt, Siege/Niederlagen/Remis, Siegquote, Serien lokal gespeichert','Statistiken nach Modus und Schwierigkeit','Schnellster Sieg, längstes Spiel, Züge gesamt, Zeit gesamt','Zurücksetzen mit Bestätigung, 10 Sprachen','Karten + Fortschrittsbalken UI, responsive'],
+                es: ['Panel estadísticas añadido: partidas totales, victorias/derrotas/empates, barra porcentaje, rachas persistentes','Estadísticas por modo y dificultad','Victoria más rápida, partida más larga, movimientos totales, tiempo total','Restablecimiento con confirmación, 10 idiomas','UI tarjetas + barras progreso, responsive móvil'],
+                ru: ['Добавлена панель статистики: всего игр, победы/поражения/ничьи, полоса побед, серии с сохранением','Статистика по режимам и сложности','Самая быстрая победа, самая долгая игра, всего ходов, общее время','Сброс с подтверждением, 10 языков','UI карточки + прогресс-бары, адаптивный'],
+                it: ['Pannello statistiche aggiunto: partite totali, vittorie/sconfitte/pareggi, barra percentuale, serie persistenti','Statistiche per modalità e difficoltà','Vittoria più veloce, partita più lunga, mosse totali, tempo totale','Reimpostazione con conferma, 10 lingue','UI schede + barre progresso, responsive mobile'],
+                pt: ['Painel estatísticas adicionado: jogos totais, vitórias/derrotas/empates, barra taxa, sequências persistentes','Estatísticas por modo e dificuldade','Vitória mais rápida, jogo mais longo, movimentos totais, tempo total','Redefinição com confirmação, 10 idiomas','UI cartões + barras progresso, responsivo móvel'],
+            }
+        },
         {
             version: '0.7.1',
             date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
@@ -877,8 +912,73 @@
         } catch (e) {}
     }
 
+    function createEmptyGameStats() {
+        return {
+            totalGames: 0, wins: 0, losses: 0, draws: 0,
+            totalMoves: 0, totalTime: 0,
+            fastestWin: 0, longestGame: 0,
+            currentStreak: 0, bestStreak: 0,
+            byMode: {
+                ttt: { games: 0, wins: 0, losses: 0, draws: 0 },
+                connect4: { games: 0, wins: 0, losses: 0, draws: 0 },
+                gomoku: { games: 0, wins: 0, losses: 0, draws: 0 },
+                custom: { games: 0, wins: 0, losses: 0, draws: 0 }
+            },
+            byDifficulty: {
+                easy: { games: 0, wins: 0, losses: 0, draws: 0 },
+                medium: { games: 0, wins: 0, losses: 0, draws: 0 },
+                hard: { games: 0, wins: 0, losses: 0, draws: 0 }
+            }
+        };
+    }
+
+    function loadGameStats() {
+        try {
+            const raw = localStorage.getItem(STATS_KEY);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return;
+            const empty = createEmptyGameStats();
+            gameStats.totalGames = typeof parsed.totalGames === 'number' ? parsed.totalGames : empty.totalGames;
+            gameStats.wins = typeof parsed.wins === 'number' ? parsed.wins : empty.wins;
+            gameStats.losses = typeof parsed.losses === 'number' ? parsed.losses : empty.losses;
+            gameStats.draws = typeof parsed.draws === 'number' ? parsed.draws : empty.draws;
+            gameStats.totalMoves = typeof parsed.totalMoves === 'number' ? parsed.totalMoves : empty.totalMoves;
+            gameStats.totalTime = typeof parsed.totalTime === 'number' ? parsed.totalTime : empty.totalTime;
+            gameStats.fastestWin = typeof parsed.fastestWin === 'number' ? parsed.fastestWin : empty.fastestWin;
+            gameStats.longestGame = typeof parsed.longestGame === 'number' ? parsed.longestGame : empty.longestGame;
+            gameStats.currentStreak = typeof parsed.currentStreak === 'number' ? parsed.currentStreak : empty.currentStreak;
+            gameStats.bestStreak = typeof parsed.bestStreak === 'number' ? parsed.bestStreak : empty.bestStreak;
+            if (parsed.byMode && typeof parsed.byMode === 'object') {
+                for (const k of Object.keys(empty.byMode)) {
+                    if (parsed.byMode[k] && typeof parsed.byMode[k] === 'object') {
+                        gameStats.byMode[k].games = typeof parsed.byMode[k].games === 'number' ? parsed.byMode[k].games : 0;
+                        gameStats.byMode[k].wins = typeof parsed.byMode[k].wins === 'number' ? parsed.byMode[k].wins : 0;
+                        gameStats.byMode[k].losses = typeof parsed.byMode[k].losses === 'number' ? parsed.byMode[k].losses : 0;
+                        gameStats.byMode[k].draws = typeof parsed.byMode[k].draws === 'number' ? parsed.byMode[k].draws : 0;
+                    }
+                }
+            }
+            if (parsed.byDifficulty && typeof parsed.byDifficulty === 'object') {
+                for (const k of Object.keys(empty.byDifficulty)) {
+                    if (parsed.byDifficulty[k] && typeof parsed.byDifficulty[k] === 'object') {
+                        gameStats.byDifficulty[k].games = typeof parsed.byDifficulty[k].games === 'number' ? parsed.byDifficulty[k].games : 0;
+                        gameStats.byDifficulty[k].wins = typeof parsed.byDifficulty[k].wins === 'number' ? parsed.byDifficulty[k].wins : 0;
+                        gameStats.byDifficulty[k].losses = typeof parsed.byDifficulty[k].losses === 'number' ? parsed.byDifficulty[k].losses : 0;
+                        gameStats.byDifficulty[k].draws = typeof parsed.byDifficulty[k].draws === 'number' ? parsed.byDifficulty[k].draws : 0;
+                    }
+                }
+            }
+        } catch (e) {}
+    }
+
+    function saveGameStats() {
+        try { localStorage.setItem(STATS_KEY, JSON.stringify(gameStats)); } catch (e) {}
+    }
+
     function init() {
         loadSettings();
+        loadGameStats();
         buildLangGrid();
         buildColorPicker();
         buildC4Cells();
@@ -974,6 +1074,8 @@
 
         const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
         if (backToLobbyBtn) backToLobbyBtn.addEventListener('click', () => { window.location.href = 'https://haazargames.com'; });
+        const statsResetBtn = document.getElementById('stats-reset-btn');
+        if (statsResetBtn) statsResetBtn.addEventListener('click', resetGameStats);
 
         window.addEventListener('resize', () => {
             if (!lastWinData) return;
@@ -1390,6 +1492,134 @@
         if (timerToggle) timerToggle.checked = settings.timerEnabled;
         if (timerPresets) timerPresets.style.display = settings.timerEnabled ? 'block' : 'none';
         document.querySelectorAll('#timer-segmented .seg-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.timer, 10) === settings.timerDuration));
+        renderStats();
+    }
+
+    function formatDuration(ms) {
+        if (!ms || ms <= 0) return '--';
+        const totalSeconds = Math.floor(ms / 1000);
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+        if (h > 0) return h + 'h ' + m + 'm';
+        if (m > 0) return m + 'm ' + s + 's';
+        return s + 's';
+    }
+
+    function recordGameStats(draw, winner) {
+        if (!gameStats) return;
+        const elapsed = Date.now() - gameStartTime;
+        const mode = currentMode;
+        const bm = getEffectiveBattleMode();
+        const diff = settings.difficulty;
+        const moves = moveHistory.length;
+
+        gameStats.totalGames++;
+        gameStats.totalTime += elapsed;
+        if (moves > 0) gameStats.totalMoves += moves;
+
+        if (draw) {
+            gameStats.draws++;
+            gameStats.currentStreak = 0;
+        } else if (winner === PLAYER_X) {
+            gameStats.wins++;
+            gameStats.currentStreak = gameStats.currentStreak >= 0 ? gameStats.currentStreak + 1 : 1;
+            if (gameStats.currentStreak > gameStats.bestStreak) gameStats.bestStreak = gameStats.currentStreak;
+            if (gameStats.fastestWin === 0 || elapsed < gameStats.fastestWin) gameStats.fastestWin = elapsed;
+        } else {
+            gameStats.losses++;
+            gameStats.currentStreak = gameStats.currentStreak <= 0 ? gameStats.currentStreak - 1 : -1;
+        }
+        if (elapsed > gameStats.longestGame) gameStats.longestGame = elapsed;
+
+        if (gameStats.byMode[mode]) {
+            gameStats.byMode[mode].games++;
+            if (draw) gameStats.byMode[mode].draws++;
+            else if (winner === PLAYER_X) gameStats.byMode[mode].wins++;
+            else gameStats.byMode[mode].losses++;
+        }
+        if (bm === 'pve' && gameStats.byDifficulty[diff]) {
+            gameStats.byDifficulty[diff].games++;
+            if (draw) gameStats.byDifficulty[diff].draws++;
+            else if (winner === PLAYER_X) gameStats.byDifficulty[diff].wins++;
+            else gameStats.byDifficulty[diff].losses++;
+        }
+        saveGameStats();
+    }
+
+    function renderStats() {
+        const totalEl = document.getElementById('stats-total');
+        const winsEl = document.getElementById('stats-wins');
+        const lossesEl = document.getElementById('stats-losses');
+        const drawsEl = document.getElementById('stats-draws');
+        const barWins = document.getElementById('stats-bar-wins');
+        const barLosses = document.getElementById('stats-bar-losses');
+        const barDraws = document.getElementById('stats-bar-draws');
+        const winrateEl = document.getElementById('stats-winrate');
+        const streakEl = document.getElementById('stats-streak');
+        const bestStreakEl = document.getElementById('stats-best-streak');
+        const modeList = document.getElementById('stats-mode-list');
+        const diffList = document.getElementById('stats-diff-list');
+        const totalMovesEl = document.getElementById('stats-total-moves');
+        const fastestEl = document.getElementById('stats-fastest');
+        const longestEl = document.getElementById('stats-longest');
+        const totalTimeEl = document.getElementById('stats-total-time');
+        if (!totalEl) return;
+
+        const s = gameStats;
+        totalEl.textContent = s.totalGames;
+        winsEl.textContent = s.wins;
+        lossesEl.textContent = s.losses;
+        drawsEl.textContent = s.draws;
+
+        const total = s.totalGames || 1;
+        barWins.style.width = (s.wins / total * 100) + '%';
+        barLosses.style.width = (s.losses / total * 100) + '%';
+        barDraws.style.width = (s.draws / total * 100) + '%';
+
+        const winRate = s.totalGames > 0 ? Math.round(s.wins / s.totalGames * 1000) / 10 : 0;
+        winrateEl.textContent = winRate + '%';
+
+        streakEl.textContent = s.currentStreak;
+        bestStreakEl.textContent = s.bestStreak;
+
+        const modeNames = { ttt: t('mode-ttt'), connect4: t('mode-connect4'), gomoku: t('mode-gomoku'), custom: t('mode-custom') };
+        let modeHtml = '';
+        for (const [key, data] of Object.entries(s.byMode)) {
+            if (data.games === 0) continue;
+            const rate = Math.round(data.wins / data.games * 100);
+            modeHtml += `<div class="stats-list-row">
+                <span class="stats-list-name">${modeNames[key] || key}</span>
+                <div class="stats-list-bar-wrap"><div class="stats-list-bar-fill" style="width:${rate}%"></div></div>
+                <span class="stats-list-rate">${rate}%</span>
+            </div>`;
+        }
+        modeList.innerHTML = modeHtml || `<div class="stats-list-row"><span class="stats-list-name" style="color:var(--text-muted)">${t('history-empty')}</span></div>`;
+
+        const diffNames = { easy: t('diff-easy'), medium: t('diff-medium'), hard: t('diff-hard') };
+        let diffHtml = '';
+        for (const [key, data] of Object.entries(s.byDifficulty)) {
+            if (data.games === 0) continue;
+            const rate = Math.round(data.wins / data.games * 100);
+            diffHtml += `<div class="stats-list-row">
+                <span class="stats-list-name">${diffNames[key] || key}</span>
+                <div class="stats-list-bar-wrap"><div class="stats-list-bar-fill" style="width:${rate}%"></div></div>
+                <span class="stats-list-rate">${rate}%</span>
+            </div>`;
+        }
+        diffList.innerHTML = diffHtml || `<div class="stats-list-row"><span class="stats-list-name" style="color:var(--text-muted)">${t('history-empty')}</span></div>`;
+
+        totalMovesEl.textContent = s.totalMoves;
+        fastestEl.textContent = formatDuration(s.fastestWin);
+        longestEl.textContent = formatDuration(s.longestGame);
+        totalTimeEl.textContent = formatDuration(s.totalTime);
+    }
+
+    function resetGameStats() {
+        if (!confirm(t('stats-reset-confirm'))) return;
+        gameStats = createEmptyGameStats();
+        saveGameStats();
+        renderStats();
     }
 
     /* ===== Color Helpers ===== */
@@ -2277,6 +2507,7 @@
         stopTimer();
         lockC4Board(true);
         saveGameHistory(draw ? null : winner);
+        recordGameStats(draw, winner);
         const bm = getEffectiveBattleMode();
 
         if (draw) {
@@ -2603,6 +2834,7 @@
         stopTimer();
         lockGmkBoard(true);
         saveGameHistory(draw ? null : winner);
+        recordGameStats(draw, winner);
         const bm = getEffectiveBattleMode();
 
         if (draw) {
@@ -2881,6 +3113,7 @@
         stopTimer();
         lockBoard(true);
         saveGameHistory(draw ? null : winner);
+        recordGameStats(draw, winner);
 
         const bm = getEffectiveBattleMode();
         if (draw) {

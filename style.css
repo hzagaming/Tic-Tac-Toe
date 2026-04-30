@@ -2029,6 +2029,209 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     color: var(--text);
 }
 
+/* ===== Statistics ===== */
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-stats-reset {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px solid var(--surface-light);
+    border-radius: 8px;
+    padding: 0.35rem 0.7rem;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    font-family: inherit;
+}
+
+.btn-stats-reset:hover {
+    color: var(--x-color);
+    border-color: rgba(255, 107, 107, 0.35);
+    background: rgba(255, 107, 107, 0.08);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.stats-card {
+    background: var(--surface-light);
+    border-radius: 12px;
+    padding: 0.6rem 0.3rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.stats-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.stats-value.wins { color: var(--x-color); }
+.stats-value.losses { color: var(--o-color); }
+.stats-value.draws { color: var(--text-muted); }
+
+.stats-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stats-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.stats-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--surface-light);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+}
+
+.stats-bar-fill {
+    height: 100%;
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.stats-bar-fill.wins { background: var(--x-color); }
+.stats-bar-fill.losses { background: var(--o-color); }
+.stats-bar-fill.draws { background: var(--text-muted); }
+
+.stats-winrate {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 44px;
+    text-align: right;
+}
+
+.stats-misc {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.stats-misc-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.stats-misc-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.stats-misc-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.stats-misc-value.best { color: var(--accent); }
+
+.stats-divider {
+    height: 1px;
+    background: var(--surface-light);
+    margin: 0.5rem 0;
+}
+
+.stats-section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.4rem;
+}
+
+.stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.stats-list-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+}
+
+.stats-list-name {
+    width: 64px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.stats-list-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: var(--surface-light);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.stats-list-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: var(--accent);
+}
+
+.stats-list-rate {
+    width: 40px;
+    text-align: right;
+    font-weight: 700;
+    color: var(--text);
+    font-size: 0.8rem;
+}
+
+.stats-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+.stats-detail {
+    background: var(--surface-light);
+    border-radius: 10px;
+    padding: 0.6rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.stats-detail-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.stats-detail-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
 /* ===== Responsive Achievements ===== */
 @media (max-width: 400px) {
     .timer { font-size: 0.72rem; }
@@ -2039,4 +2242,8 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     .achievement-icon { font-size: 1.4rem; width: 34px; height: 34px; }
     .achievement-name { font-size: 0.85rem; }
     .achievement-desc { font-size: 0.72rem; }
+    .stats-grid { gap: 0.35rem; }
+    .stats-card { padding: 0.5rem 0.2rem; }
+    .stats-value { font-size: 1rem; }
+    .stats-detail-grid { gap: 0.4rem; }
 }

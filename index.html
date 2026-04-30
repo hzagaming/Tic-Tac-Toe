@@ -343,6 +343,74 @@
                 </div>
             </div>
 
+            <!-- Statistics -->
+            <div class="setting-group" id="stats-group">
+                <div class="stats-header">
+                    <label class="setting-label" data-i18n="setting-stats">游戏统计</label>
+                    <button class="btn-stats-reset" id="stats-reset-btn" data-i18n="stats-reset">重置</button>
+                </div>
+                <div class="stats-grid">
+                    <div class="stats-card">
+                        <span class="stats-value" id="stats-total">0</span>
+                        <span class="stats-label" data-i18n="stats-total">总对局</span>
+                    </div>
+                    <div class="stats-card">
+                        <span class="stats-value wins" id="stats-wins">0</span>
+                        <span class="stats-label" data-i18n="stats-wins">胜场</span>
+                    </div>
+                    <div class="stats-card">
+                        <span class="stats-value losses" id="stats-losses">0</span>
+                        <span class="stats-label" data-i18n="stats-losses">败场</span>
+                    </div>
+                    <div class="stats-card">
+                        <span class="stats-value draws" id="stats-draws">0</span>
+                        <span class="stats-label" data-i18n="stats-draws">平局</span>
+                    </div>
+                </div>
+                <div class="stats-bar-wrap">
+                    <div class="stats-bar-track">
+                        <div class="stats-bar-fill wins" id="stats-bar-wins" style="width:0%"></div>
+                        <div class="stats-bar-fill losses" id="stats-bar-losses" style="width:0%"></div>
+                        <div class="stats-bar-fill draws" id="stats-bar-draws" style="width:0%"></div>
+                    </div>
+                    <span class="stats-winrate" id="stats-winrate">--%</span>
+                </div>
+                <div class="stats-misc">
+                    <div class="stats-misc-row">
+                        <span class="stats-misc-label" data-i18n="stats-streak">连胜</span>
+                        <span class="stats-misc-value" id="stats-streak">0</span>
+                    </div>
+                    <div class="stats-misc-row">
+                        <span class="stats-misc-label" data-i18n="stats-best-streak">最高连胜</span>
+                        <span class="stats-misc-value best" id="stats-best-streak">0</span>
+                    </div>
+                </div>
+                <div class="stats-divider"></div>
+                <div class="stats-section-title" data-i18n="stats-by-mode">各模式</div>
+                <div class="stats-list" id="stats-mode-list"></div>
+                <div class="stats-section-title" data-i18n="stats-by-diff">各难度 (PvE)</div>
+                <div class="stats-list" id="stats-diff-list"></div>
+                <div class="stats-divider"></div>
+                <div class="stats-detail-grid">
+                    <div class="stats-detail">
+                        <span class="stats-detail-label" data-i18n="stats-moves">总步数</span>
+                        <span class="stats-detail-value" id="stats-total-moves">0</span>
+                    </div>
+                    <div class="stats-detail">
+                        <span class="stats-detail-label" data-i18n="stats-fastest">最快胜利</span>
+                        <span class="stats-detail-value" id="stats-fastest">--</span>
+                    </div>
+                    <div class="stats-detail">
+                        <span class="stats-detail-label" data-i18n="stats-longest">最长对局</span>
+                        <span class="stats-detail-value" id="stats-longest">--</span>
+                    </div>
+                    <div class="stats-detail">
+                        <span class="stats-detail-label" data-i18n="stats-time">总时长</span>
+                        <span class="stats-detail-value" id="stats-total-time">--</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- About -->
             <div class="setting-group" id="about-group">
                 <label class="setting-label" data-i18n="setting-about">关于</label>
