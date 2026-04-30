@@ -417,6 +417,16 @@
             'stats-time': { zh:'总时长', en:'Total Time', ja:'総時間', ko:'총 시간', fr:'Temps total', de:'Gesamtzeit', es:'Tiempo total', ru:'Общее время', it:'Tempo totale', pt:'Tempo total' },
             'stats-reset-confirm': { zh:'确定要重置所有统计数据吗？此操作不可撤销。', en:'Reset all statistics? This cannot be undone.', ja:'統計をリセットしますか？元に戻せません。', ko:'통계를 초기화하시겠습니까? 되돌릴 수 없습니다.', fr:'Réinitialiser les statistiques ? Irréversible.', de:'Statistiken zurücksetzen? Nicht rückgängig.', es:'¿Restablecer estadísticas? No se puede deshacer.', ru:'Сбросить статистику? Нельзя отменить.', it:'Reimpostare le statistiche? Irreversibile.', pt:'Redefinir estatísticas? Não pode ser desfeito.' },
             'setting-ripple': { zh:'落子波纹', en:'Move Ripple', ja:'着手リップル', ko:'돌 리플', fr:'Onde de placement', de:'Zug-Ripple', es:'Onda al colocar', ru:'Рипл хода', it:'Ondata mossa', pt:'Onda de jogada' },
+            'setting-data': { zh:'数据管理', en:'Data Management', ja:'データ管理', ko:'데이터 관리', fr:'Gestion des données', de:'Datenverwaltung', es:'Gestión de datos', ru:'Управление данными', it:'Gestione dati', pt:'Gerenciamento de dados' },
+            'data-export': { zh:'导出数据', en:'Export', ja:'エクスポート', ko:'낸 내기', fr:'Exporter', de:'Exportieren', es:'Exportar', ru:'Экспорт', it:'Esporta', pt:'Exportar' },
+            'data-import': { zh:'导入数据', en:'Import', ja:'インポート', ko:'가져오기', fr:'Importer', de:'Importieren', es:'Importar', ru:'Импорт', it:'Importa', pt:'Importar' },
+            'data-copy': { zh:'复制', en:'Copy', ja:'コピー', ko:'복사', fr:'Copier', de:'Kopieren', es:'Copiar', ru:'Копировать', it:'Copia', pt:'Copiar' },
+            'data-import-confirm': { zh:'确认导入', en:'Confirm Import', ja:'インポート確認', ko:'가져오기 확인', fr:'Confirmer import', de:'Import bestätigen', es:'Confirmar importación', ru:'Подтвердить импорт', it:'Conferma importazione', pt:'Confirmar importação' },
+            'data-import-placeholder': { zh:'在此处粘贴导出的 JSON 数据...', en:'Paste exported JSON data here...', ja:'エクスポートしたJSONをここに貼り付け...', ko:'낸 JSON 데이터를 여기에 붙여넣기...', fr:'Collez les données JSON ici...', de:'Exportierte JSON-Daten hier einfügen...', es:'Pegue los datos JSON exportados aquí...', ru:'Вставьте экспортированные JSON-данные сюда...', it:'Incolla i dati JSON esportati qui...', pt:'Cole os dados JSON exportados aqui...' },
+            'data-import-invalid': { zh:'数据格式无效，请检查 JSON 内容。', en:'Invalid data format. Please check the JSON content.', ja:'データ形式が無効です。JSONを確認してください。', ko:'데이터 형식이 잘못되었습니다. JSON을 확인하세요.', fr:'Format de données invalide. Vérifiez le contenu JSON.', de:'Ungültiges Datenformat. Bitte JSON-Inhalt prüfen.', es:'Formato de datos inválido. Verifique el contenido JSON.', ru:'Неверный формат данных. Проверьте содержимое JSON.', it:'Formato dati non valido. Controlla il contenuto JSON.', pt:'Formato de dados inválido. Verifique o conteúdo JSON.' },
+            'data-import-confirm': { zh:'导入将覆盖当前所有本地数据（设置、历史、成就、统计），确定继续吗？', en:'Import will overwrite all current local data (settings, history, achievements, stats). Continue?', ja:'インポートは現在のローカルデータを上書きします。続行しますか？', ko:'가져오기는 현재 모든 로컬 데이터를 덮어씁니다. 계속하시겠습니까?', fr:'L\'import écrasera toutes les données locales. Continuer ?', de:'Import überschreibt alle lokalen Daten. Fortfahren?', es:'La importación sobrescribirá todos los datos locales. ¿Continuar?', ru:'Импорт перезапишет все локальные данные. Продолжить?', it:'L\'importazione sovrascriverà tutti i dati locali. Continuare?', pt:'A importação substituirá todos os dados locais. Continuar?' },
+            'data-import-success': { zh:'导入成功！页面即将刷新。', en:'Import successful! Page will refresh.', ja:'インポート成功！ページを更新します。', ko:'가져오기 성공! 페이지를 새로고침합니다.', fr:'Import réussi ! La page va se rafraîchir.', de:'Import erfolgreich! Seite wird aktualisiert.', es:'¡Importación exitosa! La página se actualizará.', ru:'Импорт успешен! Страница будет обновлена.', it:'Importazione riuscita! La pagina verrà aggiornata.', pt:'Importação bem-sucedida! A página será atualizada.' },
+            'data-import-fail': { zh:'导入失败，数据可能已损坏。', en:'Import failed. Data may be corrupted.', ja:'インポート失敗。データが破損している可能性があります。', ko:'가져오기 실패. 데이터가 손상되었을 수 있습니다.', fr:'Échec de l\'import. Les données peuvent être corrompues.', de:'Import fehlgeschlagen. Daten möglicherweise beschädigt.', es:'Importación fallida. Los datos pueden estar corruptos.', ru:'Импорт не удался. Данные могут быть повреждены.', it:'Importazione fallita. I dati potrebbero essere corrotti.', pt:'Importação falhou. Os dados podem estar corrompidos.' },
         };
         const out = {};
         for (const [key, langs] of Object.entries(c)) {
@@ -460,6 +470,22 @@
 
     /* ===== Changelog Data ===== */
     const changelogData = [
+        {
+            version: '0.8.2',
+            date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
+            items: {
+                zh: ['新增数据备份与迁移功能：一键导出所有本地数据（设置/历史/成就/统计）为 JSON', '支持导入 JSON 数据恢复游戏进度，换设备或防丢失一键搞定', '导入时完整验证数据格式与版本，覆盖前弹出确认对话框，导入成功后自动刷新页面', 'i18n 系统新增 placeholder 国际化支持，所有提示文本完整支持 10 语言'],
+                en: ['Added Data Backup & Migration: one-click export all local data (settings, history, achievements, stats) as JSON', 'Import JSON to restore game progress across devices or after data loss', 'Full validation on import with version check, confirmation dialog before overwrite, auto page refresh on success', 'i18n system now supports placeholder internationalization, all hint text fully supports 10 languages'],
+                ja: ['データバックアップ・移行機能追加：設定/履歴/実績/統計をJSONで一括エクスポート','JSONインポートでゲーム進行を復元、機種変更やデータ消失時に対応','インポート時に形式とバージョンを検証、上書き前に確認ダイアログ、成功後自動更新','placeholder の国際化対応追加、全ヒントテキストが10言語対応'],
+                ko: ['데이터 백업 및 마이그레이션 추가: 설정/기록/업적/통계를 JSON으로 일괄 낸 내기','JSON 가져오기로 게임 진행 복원, 기기 변경 및 데이터 유실 대응','가져오기 시 형식과 버전 검증, 덮어쓰기 전 확인 대화상자, 성공 후 자동 새로고침','placeholder 국제화 지원 추가, 모든 힌트 텍스트 10개 언어 지원'],
+                fr: ['Sauvegarde et migration ajoutées : export JSON en un clic (paramètres, historique, succès, stats)','Import JSON pour restaurer la progression sur un autre appareil','Validation complète à l\'import, dialogue de confirmation, rafraîchissement auto','Support placeholder i18n, tous les textes d\'aide en 10 langues'],
+                de: ['Datensicherung & Migration hinzugefügt: Ein-Klick-Export aller Daten als JSON','JSON-Import zur Wiederherstellung auf anderem Gerät','Vollständige Validierung beim Import, Bestätigungsdialog, Auto-Aktualisierung','Placeholder-Internationalisierung, alle Hinweistexte in 10 Sprachen'],
+                es: ['Respaldo y migración añadidos: exportar todos los datos como JSON en un clic','Importar JSON para restaurar el progreso en otro dispositivo','Validación completa al importar, diálogo de confirmación, actualización automática','Soporte placeholder i18n, todos los textos de ayuda en 10 idiomas'],
+                ru: ['Добавлено резервное копирование и миграция: экспорт всех данных в JSON одним кликом','Импорт JSON для восстановления прогресса на другом устройстве','Полная валидация при импорте, диалог подтверждения, автообновление','Поддержка placeholder i18n, все подсказки на 10 языках'],
+                it: ['Backup e migrazione aggiunti: esportazione JSON con un clic di tutti i dati','Importazione JSON per ripristinare i progressi su un altro dispositivo','Validazione completa all\'importazione, dialogo di conferma, aggiornamento automatico','Supporto placeholder i18n, tutti i testi di aiuto in 10 lingue'],
+                pt: ['Backup e migração adicionados: exportar todos os dados como JSON em um clique','Importar JSON para restaurar o progresso em outro dispositivo','Validação completa na importação, caixa de diálogo de confirmação, atualização automática','Suporte a placeholder i18n, todos os textos de ajuda em 10 idiomas'],
+            }
+        },
         {
             version: '0.8.1',
             date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
@@ -848,6 +874,11 @@
             const tr = t(key);
             if (tr) el.setAttribute('aria-label', tr);
         });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            const tr = t(key);
+            if (tr) el.setAttribute('placeholder', tr);
+        });
         updateCellAriaLabels();
         updateScoreLabels();
         updateStatus(getTurnText(), currentPlayer === PLAYER_X ? 'x' : 'o');
@@ -996,6 +1027,58 @@
         try { localStorage.setItem(STATS_KEY, JSON.stringify(gameStats)); } catch (e) {}
     }
 
+    function exportGameData() {
+        const dataExportArea = document.getElementById('data-export-area');
+        if (!dataExportArea) return;
+        const payload = {
+            version: 'ttt-backup-v1',
+            exportedAt: new Date().toISOString(),
+            settings: null, history: null, achievements: null, achievementStats: null, stats: null
+        };
+        try { payload.settings = localStorage.getItem(SETTINGS_KEY); } catch (e) {}
+        try { payload.history = localStorage.getItem(HISTORY_KEY); } catch (e) {}
+        try { payload.achievements = localStorage.getItem(ACHIEVEMENT_KEY); } catch (e) {}
+        try { payload.achievementStats = localStorage.getItem(ACHIEVEMENT_STATS_KEY); } catch (e) {}
+        try { payload.stats = localStorage.getItem(STATS_KEY); } catch (e) {}
+        const json = JSON.stringify(payload, null, 2);
+        dataExportArea.value = json;
+        dataExportArea.select();
+    }
+
+    function copyExportData() {
+        const dataExportArea = document.getElementById('data-export-area');
+        if (!dataExportArea) return;
+        dataExportArea.select();
+        try {
+            navigator.clipboard.writeText(dataExportArea.value);
+            const btn = document.getElementById('data-copy-btn');
+            if (btn) { const orig = btn.textContent; btn.textContent = '✓'; setTimeout(() => btn.textContent = orig, 1200); }
+        } catch (e) {}
+    }
+
+    function importGameData() {
+        const dataImportArea = document.getElementById('data-import-area');
+        if (!dataImportArea) return;
+        const raw = dataImportArea.value.trim();
+        if (!raw) return;
+        let payload;
+        try {
+            payload = JSON.parse(raw);
+        } catch (e) { alert(t('data-import-invalid')); return; }
+        if (!payload || typeof payload !== 'object') { alert(t('data-import-invalid')); return; }
+        if (payload.version !== 'ttt-backup-v1') { alert(t('data-import-invalid')); return; }
+        if (!confirm(t('data-import-confirm'))) return;
+        try {
+            if (payload.settings) localStorage.setItem(SETTINGS_KEY, payload.settings);
+            if (payload.history) localStorage.setItem(HISTORY_KEY, payload.history);
+            if (payload.achievements) localStorage.setItem(ACHIEVEMENT_KEY, payload.achievements);
+            if (payload.achievementStats) localStorage.setItem(ACHIEVEMENT_STATS_KEY, payload.achievementStats);
+            if (payload.stats) localStorage.setItem(STATS_KEY, payload.stats);
+            alert(t('data-import-success'));
+            window.location.reload();
+        } catch (e) { alert(t('data-import-fail')); }
+    }
+
     function init() {
         loadSettings();
         loadGameStats();
@@ -1097,6 +1180,18 @@
         if (backToLobbyBtn) backToLobbyBtn.addEventListener('click', () => { window.location.href = 'https://haazargames.com'; });
         const statsResetBtn = document.getElementById('stats-reset-btn');
         if (statsResetBtn) statsResetBtn.addEventListener('click', resetGameStats);
+        const dataExportBtn = document.getElementById('data-export-btn');
+        const dataImportBtn = document.getElementById('data-import-btn');
+        const dataExportWrap = document.getElementById('data-export-wrap');
+        const dataImportWrap = document.getElementById('data-import-wrap');
+        const dataExportArea = document.getElementById('data-export-area');
+        const dataImportArea = document.getElementById('data-import-area');
+        const dataCopyBtn = document.getElementById('data-copy-btn');
+        const dataImportConfirmBtn = document.getElementById('data-import-confirm-btn');
+        if (dataExportBtn) dataExportBtn.addEventListener('click', () => { dataImportWrap.classList.remove('show'); dataExportWrap.classList.add('show'); exportGameData(); });
+        if (dataImportBtn) dataImportBtn.addEventListener('click', () => { dataExportWrap.classList.remove('show'); dataImportWrap.classList.add('show'); dataImportArea.focus(); });
+        if (dataCopyBtn) dataCopyBtn.addEventListener('click', copyExportData);
+        if (dataImportConfirmBtn) dataImportConfirmBtn.addEventListener('click', importGameData);
 
         window.addEventListener('resize', () => {
             if (!lastWinData) return;

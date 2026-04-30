@@ -2256,6 +2256,89 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     100% { transform: scale(12); opacity: 0; }
 }
 
+/* ===== Data Management ===== */
+.data-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-data {
+    flex: 1;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface-light);
+    border: 1px solid var(--surface-hover);
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+    font-family: inherit;
+    text-align: center;
+}
+
+.btn-data:hover {
+    background: var(--surface-hover);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+
+.btn-data-copy {
+    color: var(--accent);
+    border-color: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.35);
+}
+
+.btn-data-copy:hover {
+    background: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.1);
+}
+
+.btn-data-confirm {
+    color: var(--x-color);
+    border-color: rgba(255, 107, 107, 0.35);
+}
+
+.btn-data-confirm:hover {
+    background: rgba(255, 107, 107, 0.08);
+}
+
+.data-textarea-wrap {
+    display: none;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    animation: fade-in-up calc(0.25s * var(--anim-scale)) ease-out both;
+}
+
+.data-textarea-wrap.show {
+    display: flex;
+}
+
+.data-textarea {
+    width: 100%;
+    min-height: 120px;
+    max-height: 200px;
+    background: var(--bg);
+    border: 1px solid var(--surface-light);
+    border-radius: 10px;
+    padding: 0.6rem 0.75rem;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.7rem;
+    line-height: 1.4;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.data-textarea:focus {
+    border-color: var(--accent);
+}
+
+.data-textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
 /* ===== Responsive Achievements ===== */
 @media (max-width: 400px) {
     .timer { font-size: 0.72rem; }

@@ -418,6 +418,23 @@
                 </div>
             </div>
 
+            <!-- Data Management -->
+            <div class="setting-group" id="data-group">
+                <label class="setting-label" data-i18n="setting-data">数据管理</label>
+                <div class="data-actions">
+                    <button class="btn-data" id="data-export-btn" data-i18n="data-export">导出数据</button>
+                    <button class="btn-data" id="data-import-btn" data-i18n="data-import">导入数据</button>
+                </div>
+                <div class="data-textarea-wrap" id="data-export-wrap" style="display:none;">
+                    <textarea class="data-textarea" id="data-export-area" readonly></textarea>
+                    <button class="btn-data btn-data-copy" id="data-copy-btn" data-i18n="data-copy">复制</button>
+                </div>
+                <div class="data-textarea-wrap" id="data-import-wrap" style="display:none;">
+                    <textarea class="data-textarea" id="data-import-area" data-i18n-placeholder="data-import-placeholder"></textarea>
+                    <button class="btn-data btn-data-confirm" id="data-import-confirm-btn" data-i18n="data-import-confirm">确认导入</button>
+                </div>
+            </div>
+
             <!-- About -->
             <div class="setting-group" id="about-group">
                 <label class="setting-label" data-i18n="setting-about">关于</label>
