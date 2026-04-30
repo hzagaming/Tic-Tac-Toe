@@ -47,6 +47,7 @@
     const animToggle = document.getElementById('toggle-animations');
     const soundToggle = document.getElementById('toggle-sound');
     const toggle3d = document.getElementById('toggle-3d');
+    const toggleRipple = document.getElementById('toggle-ripple');
     const contrastSlider = document.getElementById('contrast-slider');
     const contrastValue = document.getElementById('contrast-value');
     const customColorInput = document.getElementById('custom-color-input');
@@ -162,7 +163,8 @@
         difficulty: 'hard',
         customBoardSize: 'custom',
         timerEnabled: false,
-        timerDuration: 180
+        timerDuration: 180,
+        rippleEnabled: true
     };
 
     const langMap = {
@@ -414,6 +416,7 @@
             'stats-longest': { zh:'最长对局', en:'Longest Game', ja:'最長対局', ko:'최장 대국', fr:'Partie la plus longue', de:'Längstes Spiel', es:'Partida más larga', ru:'Самая долгая игра', it:'Partita più lunga', pt:'Jogo mais longo' },
             'stats-time': { zh:'总时长', en:'Total Time', ja:'総時間', ko:'총 시간', fr:'Temps total', de:'Gesamtzeit', es:'Tiempo total', ru:'Общее время', it:'Tempo totale', pt:'Tempo total' },
             'stats-reset-confirm': { zh:'确定要重置所有统计数据吗？此操作不可撤销。', en:'Reset all statistics? This cannot be undone.', ja:'統計をリセットしますか？元に戻せません。', ko:'통계를 초기화하시겠습니까? 되돌릴 수 없습니다.', fr:'Réinitialiser les statistiques ? Irréversible.', de:'Statistiken zurücksetzen? Nicht rückgängig.', es:'¿Restablecer estadísticas? No se puede deshacer.', ru:'Сбросить статистику? Нельзя отменить.', it:'Reimpostare le statistiche? Irreversibile.', pt:'Redefinir estatísticas? Não pode ser desfeito.' },
+            'setting-ripple': { zh:'落子波纹', en:'Move Ripple', ja:'着手リップル', ko:'돌 리플', fr:'Onde de placement', de:'Zug-Ripple', es:'Onda al colocar', ru:'Рипл хода', it:'Ondata mossa', pt:'Onda de jogada' },
         };
         const out = {};
         for (const [key, langs] of Object.entries(c)) {
@@ -457,6 +460,22 @@
 
     /* ===== Changelog Data ===== */
     const changelogData = [
+        {
+            version: '0.8.1',
+            date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
+            items: {
+                zh: ['新增落子波纹反馈：点击棋盘任意格子时，从点击位置产生扩散的圆形波纹，颜色与当前玩家匹配', '波纹动画速度与全局动画速度联动（慢/中/快），动画关闭时自动禁用', '设置面板新增「落子波纹」独立开关，可单独控制而不影响其他动画'],
+                en: ['Added Move Ripple Effect: circular ripple expands from click position on any board cell, color matches current player', 'Ripple animation speed syncs with global animation speed (slow/normal/fast), auto-disabled when animations are off', 'Settings drawer added independent "Move Ripple" toggle, can be controlled separately from other animations'],
+                ja: ['着手リップル追加：盤面クリック時にクリック位置から円形リップルが拡散、色は手番と一致','リップル速度は全局アニメ速度と連動（遅/中/速）、アニメOFF時は自動無効','設定に「着手リップル」独立トグル追加、他アニメと個別制御可能'],
+                ko: ['돌 리플 효과 추가: 보드 클릭 시 클릭 위치에서 원형 리플 확산, 색상은 현재 플레이어와 일치','리플 속도는 전역 애니메이션 속도와 연동(느림/보통/빠름), 애니메이션 OFF 시 자동 비활성화','설정에 「돌 리플」독립 토글 추가, 다른 애니메이션과 별도 제어 가능'],
+                fr: ['Effet onde de placement ajouté : onde circulaire depuis la position du clic, couleur correspond au joueur','Vitesse synchronisée avec vitesse animation globale, auto-désactivé si animations désactivées','Toggle indépendant "Onde de placement" dans les paramètres'],
+                de: ['Zug-Ripple-Effekt hinzugefügt: kreisförmiges Ripple ab Klickposition, Farbe passt zum Spieler','Geschwindigkeit synchronisiert mit globaler Animationsgeschwindigkeit, auto-deaktiviert','Unabhängiger "Zug-Ripple"-Schalter in Einstellungen'],
+                es: ['Efecto onda al colocar añadido: onda circular desde posición del clic, color coincide con jugador','Velocidad sincronizada con velocidad animación global, auto-desactivado','Interruptor independiente "Onda al colocar" en ajustes'],
+                ru: ['Добавлен эффект рипла хода: круглый рипл от позиции клика, цвет соответствует игроку','Скорость синхронизирована с глобальной скоростью анимации, автоотключение','Независимый переключатель "Рипл хода" в настройках'],
+                it: ['Effetto ondata mossa aggiunto: onda circolare dalla posizione del clic, colore corrisponde al giocatore','Velocità sincronizzata con velocità animazione globale, auto-disattivato','Interruttore indipendente "Ondata mossa" nelle impostazioni'],
+                pt: ['Efeito onda de jogada adicionado: onda circular da posição do clique, cor corresponde ao jogador','Velocidade sincronizada com velocidade animação global, auto-desativado','Interruptor independente "Onda de jogada" nas configurações'],
+            }
+        },
         {
             version: '0.8.0',
             date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
@@ -893,6 +912,7 @@
                 if (['3','5','7','10','15','custom'].includes(s.customBoardSize)) settings.customBoardSize = s.customBoardSize;
                 if (typeof s.timerEnabled === 'boolean') settings.timerEnabled = s.timerEnabled;
                 if (typeof s.timerDuration === 'number' && [60, 180, 300, 600].includes(s.timerDuration)) settings.timerDuration = s.timerDuration;
+                if (typeof s.rippleEnabled === 'boolean') settings.rippleEnabled = s.rippleEnabled;
             }
             if (parsed.customConfig && typeof parsed.customConfig === 'object') {
                 const c = parsed.customConfig;
@@ -1020,6 +1040,7 @@
         animToggle.addEventListener('change', e => { setAnimations(e.target.checked); saveSettings(); });
         soundToggle.addEventListener('change', e => { setSound(e.target.checked); saveSettings(); });
         toggle3d.addEventListener('change', e => { set3d(e.target.checked); saveSettings(); });
+        if (toggleRipple) toggleRipple.addEventListener('change', e => { settings.rippleEnabled = e.target.checked; saveSettings(); });
         contrastSlider.addEventListener('input', e => setContrast(e.target.value));
         contrastSlider.addEventListener('change', () => saveSettings());
         customColorInput.addEventListener('input', e => setAccentColor(e.target.value, true));
@@ -1492,7 +1513,24 @@
         if (timerToggle) timerToggle.checked = settings.timerEnabled;
         if (timerPresets) timerPresets.style.display = settings.timerEnabled ? 'block' : 'none';
         document.querySelectorAll('#timer-segmented .seg-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.timer, 10) === settings.timerDuration));
+        if (toggleRipple) toggleRipple.checked = settings.rippleEnabled;
         renderStats();
+    }
+
+    function createRipple(e, player) {
+        if (!settings.rippleEnabled || !settings.animations) return;
+        const cell = e.currentTarget;
+        if (!cell) return;
+        const rect = cell.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple ' + (player === PLAYER_X ? 'x-ripple' : 'o-ripple');
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        cell.appendChild(ripple);
+        const scale = settings.animSpeed === 'slow' ? 1.8 : settings.animSpeed === 'fast' ? 0.4 : 1;
+        setTimeout(() => { if (ripple.parentNode) ripple.remove(); }, 650 * scale);
     }
 
     function formatDuration(ms) {
@@ -2371,6 +2409,7 @@
         if (bm === 'pve' && currentPlayer !== PLAYER_X) return;
 
         const player = currentPlayer;
+        createRipple(e, player);
         makeMove(index, player);
 
         if (gameActive && bm === 'pve') {
@@ -2425,6 +2464,7 @@
         if (row === -1) return;
 
         const player = currentPlayer;
+        createRipple(e, player);
         makeC4Move(row, col, player);
 
         if (gameActive && bm === 'pve') {
@@ -2740,6 +2780,7 @@
         const col = parseInt(e.currentTarget.dataset.col, 10);
         const board = getActiveGmkBoard();
         if (board[row][col] !== '') return;
+        createRipple(e, currentPlayer);
 
         const player = currentPlayer;
         makeGmkMove(row, col, player);
