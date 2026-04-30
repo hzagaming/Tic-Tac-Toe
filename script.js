@@ -424,7 +424,7 @@
             'data-import-confirm': { zh:'确认导入', en:'Confirm Import', ja:'インポート確認', ko:'가져오기 확인', fr:'Confirmer import', de:'Import bestätigen', es:'Confirmar importación', ru:'Подтвердить импорт', it:'Conferma importazione', pt:'Confirmar importação' },
             'data-import-placeholder': { zh:'在此处粘贴导出的 JSON 数据...', en:'Paste exported JSON data here...', ja:'エクスポートしたJSONをここに貼り付け...', ko:'낸 JSON 데이터를 여기에 붙여넣기...', fr:'Collez les données JSON ici...', de:'Exportierte JSON-Daten hier einfügen...', es:'Pegue los datos JSON exportados aquí...', ru:'Вставьте экспортированные JSON-данные сюда...', it:'Incolla i dati JSON esportati qui...', pt:'Cole os dados JSON exportados aqui...' },
             'data-import-invalid': { zh:'数据格式无效，请检查 JSON 内容。', en:'Invalid data format. Please check the JSON content.', ja:'データ形式が無効です。JSONを確認してください。', ko:'데이터 형식이 잘못되었습니다. JSON을 확인하세요.', fr:'Format de données invalide. Vérifiez le contenu JSON.', de:'Ungültiges Datenformat. Bitte JSON-Inhalt prüfen.', es:'Formato de datos inválido. Verifique el contenido JSON.', ru:'Неверный формат данных. Проверьте содержимое JSON.', it:'Formato dati non valido. Controlla il contenuto JSON.', pt:'Formato de dados inválido. Verifique o conteúdo JSON.' },
-            'data-import-confirm': { zh:'导入将覆盖当前所有本地数据（设置、历史、成就、统计），确定继续吗？', en:'Import will overwrite all current local data (settings, history, achievements, stats). Continue?', ja:'インポートは現在のローカルデータを上書きします。続行しますか？', ko:'가져오기는 현재 모든 로컬 데이터를 덮어씁니다. 계속하시겠습니까?', fr:'L\'import écrasera toutes les données locales. Continuer ?', de:'Import überschreibt alle lokalen Daten. Fortfahren?', es:'La importación sobrescribirá todos los datos locales. ¿Continuar?', ru:'Импорт перезапишет все локальные данные. Продолжить?', it:'L\'importazione sovrascriverà tutti i dati locali. Continuare?', pt:'A importação substituirá todos os dados locais. Continuar?' },
+            'data-import-confirm-msg': { zh:'导入将覆盖当前所有本地数据（设置、历史、成就、统计），确定继续吗？', en:'Import will overwrite all current local data (settings, history, achievements, stats). Continue?', ja:'インポートは現在のローカルデータを上書きします。続行しますか？', ko:'가져오기는 현재 모든 로컬 데이터를 덮어씁니다. 계속하시겠습니까?', fr:'L\'import écrasera toutes les données locales. Continuer ?', de:'Import überschreibt alle lokalen Daten. Fortfahren?', es:'La importación sobrescribirá todos los datos locales. ¿Continuar?', ru:'Импорт перезапишет все локальные данные. Продолжить?', it:'L\'importazione sovrascriverà tutti i dati locali. Continuare?', pt:'A importação substituirá todos os dados locais. Continuar?' },
             'data-import-success': { zh:'导入成功！页面即将刷新。', en:'Import successful! Page will refresh.', ja:'インポート成功！ページを更新します。', ko:'가져오기 성공! 페이지를 새로고침합니다.', fr:'Import réussi ! La page va se rafraîchir.', de:'Import erfolgreich! Seite wird aktualisiert.', es:'¡Importación exitosa! La página se actualizará.', ru:'Импорт успешен! Страница будет обновлена.', it:'Importazione riuscita! La pagina verrà aggiornata.', pt:'Importação bem-sucedida! A página será atualizada.' },
             'data-import-fail': { zh:'导入失败，数据可能已损坏。', en:'Import failed. Data may be corrupted.', ja:'インポート失敗。データが破損している可能性があります。', ko:'가져오기 실패. 데이터가 손상되었을 수 있습니다.', fr:'Échec de l\'import. Les données peuvent être corrompues.', de:'Import fehlgeschlagen. Daten möglicherweise beschädigt.', es:'Importación fallida. Los datos pueden estar corruptos.', ru:'Импорт не удался. Данные могут быть повреждены.', it:'Importazione fallita. I dati potrebbero essere corrotti.', pt:'Importação falhou. Os dados podem estar corrompidos.' },
         };
@@ -470,6 +470,22 @@
 
     /* ===== Changelog Data ===== */
     const changelogData = [
+        {
+            version: '0.8.3',
+            date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
+            items: {
+                zh: ['修复 i18n 键冲突：data-import-confirm 重复定义导致导入按钮显示长文本而非标签', '修复 TTT 落子波纹被 makeMove 的 innerHTML 瞬间销毁的问题；修复键盘/数字键触发时坐标为 NaN 的 bug', '修复 C4/Gmk 棋盘 overflow:hidden 裁剪波纹的问题：ripple 改为 fixed 定位附在 body 上', '修复 undo 在游戏结束后仍可操作导致统计重复计数的严重 bug', '修复 renderStats 15 处 DOM 元素缺乏 null 检查可能崩溃的问题', '修复 fastestWin 哨兵值 0 被 0ms 胜利破坏的 bug；修复 loadGameStats 允许负数损坏统计', '修复数据导入不验证字段类型可能写入 [object Object] 的 bug；修复 clipboard API 无 fallback 且 Promise 未处理', '统计 load 增加 byMode/byDifficulty 子字段非负校验'],
+                en: ['Fixed i18n key collision: duplicate data-import-confirm caused import button to show full sentence instead of label', 'Fixed TTT ripple destroyed instantly by makeMove innerHTML; fixed NaN coordinates on keyboard/synthetic triggers', 'Fixed C4/Gmk board overflow:hidden clipping ripple: ripple now uses fixed positioning on body', 'Fixed critical bug where undo after game end caused duplicate stat counting', 'Fixed renderStats lacking null checks on 15 DOM elements', 'Fixed fastestWin sentinel 0 broken by 0ms win; fixed loadGameStats accepting negative values', 'Fixed import not validating field types (could write [object Object]); fixed clipboard missing fallback and unhandled Promise', 'Added non-negative validation for byMode/byDifficulty sub-fields in stats load'],
+                ja: ['i18n キー衝突修正：重複 data-import-confirm でボタンが長文表示','TTT リップルが makeMove innerHTML で即破壊される問題を修正、キーボード時の NaN 座標を修正','C4/Gmk overflow:hidden でリップルが切れる問題を修正（fixed 定位）','ゲーム終了後の待ちで統計が重複カウントされる重大バグを修正','renderStats の DOM null チェック不足を修正','fastestWin 哨兵値 0 の問題と loadGameStats の負数許容を修正','インポート時の型検証と clipboard fallback を修正','byMode/byDifficulty 子フィールドの非負検証を追加'],
+                ko: ['i18n 키 충돌 수정: 중복 data-import-confirm 로 버튼에 긴 문장 표시','TTT 리플이 makeMove innerHTML 에 의해 즉시 파괴 수정, 키보드 NaN 좌표 수정','C4/Gmk overflow:hidden 리플 잘림 수정(fixed 위치)','게임 종료 후 무르기로 통계 중복 카운트 심각한 버그 수정','renderStats DOM null 체크 부족 수정','fastestWin 초기값 0 문제와 loadGameStats 음수 허용 수정','가져오기 시 타입 검증과 clipboard fallback 수정','byMode/byDifficulty 하위 필드 비음수 검증 추가'],
+                fr: ['Correction collision clé i18n data-import-confirm','Correction ripple TTT détruit par innerHTML + coordonnées NaN clavier','Correction overflow:hidden C4/Gmk coupant le ripple','Correction undo après fin de partie comptant stats en double','Correction null checks manquants dans renderStats','Correction sentinel fastestWin 0 et valeurs négatives loadGameStats','Correction validation types import + fallback clipboard','Validation non-négative sous-champs byMode/byDifficulty'],
+                de: ['Korrigiert i18n-Schlüsselkonflikt data-import-confirm','Korrigiert TTT-Ripple durch innerHTML zerstört + NaN-Tastatur','Korrigiert overflow:hidden C4/Gmk schneidet Ripple','Korrigiert Undo nach Spielende doppelte Statistik-Zählung','Korrigiert fehlende null-Checks in renderStats','Korrigiert fastestWin-Sentinel 0 und negative Werte loadGameStats','Korrigiert Import-Typvalidierung + Clipboard-Fallback','Nicht-negative Validierung byMode/byDifficulty-Unterfelder'],
+                es: ['Corregida colisión clave i18n data-import-confirm','Corregido ripple TTT destruido por innerHTML + coordenadas NaN teclado','Corregido overflow:hidden C4/Gmk recortando ripple','Corregido undo tras final duplicando estadísticas','Corregidas comprobaciones nulas faltantes en renderStats','Corregido sentinel fastestWin 0 y valores negativos loadGameStats','Corregida validación tipos import + fallback clipboard','Validación no negativa subcampos byMode/byDifficulty'],
+                ru: ['Исправлен конфликт ключа i18n data-import-confirm','Исправлено: ripple TTT уничтожается innerHTML + NaN координаты клавиатуры','Исправлено: overflow:hidden C4/Gmk обрезает ripple','Исправлено: undo после окончания игры дублирует статистику','Исправлены отсутствующие проверки null в renderStats','Исправлен sentinel fastestWin 0 и отрицательные значения loadGameStats','Исправлена валидация типов импорта + fallback буфера обмена','Добавлена неотрицательная валидация подполей byMode/byDifficulty'],
+                it: ['Corretto conflitto chiave i18n data-import-confirm','Corretto ripple TTT distrutto da innerHTML + coordinate NaN tastiera','Corretto overflow:hidden C4/Gmk che taglia ripple','Corretto undo dopo fine partita che duplica statistiche','Corretti controlli null mancanti in renderStats','Corretto sentinel fastestWin 0 e valori negativi loadGameStats','Corretta validazione tipi import + fallback clipboard','Validazione non negativa sottocampi byMode/byDifficulty'],
+                pt: ['Corrigido conflito chave i18n data-import-confirm','Corrigido ripple TTT destruído por innerHTML + coordenadas NaN teclado','Corrigido overflow:hidden C4/Gmk cortando ripple','Corrigido undo após fim do jogo duplicando estatísticas','Corrigidas verificações nulas ausentes em renderStats','Corrigido sentinel fastestWin 0 e valores negativos loadGameStats','Corrigida validação tipos import + fallback clipboard','Validação não negativa subcampos byMode/byDifficulty'],
+            }
+        },
         {
             version: '0.8.2',
             date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
@@ -967,7 +983,7 @@
         return {
             totalGames: 0, wins: 0, losses: 0, draws: 0,
             totalMoves: 0, totalTime: 0,
-            fastestWin: 0, longestGame: 0,
+            fastestWin: -1, longestGame: 0,
             currentStreak: 0, bestStreak: 0,
             byMode: {
                 ttt: { games: 0, wins: 0, losses: 0, draws: 0 },
@@ -990,33 +1006,35 @@
             const parsed = JSON.parse(raw);
             if (!parsed || typeof parsed !== 'object') return;
             const empty = createEmptyGameStats();
-            gameStats.totalGames = typeof parsed.totalGames === 'number' ? parsed.totalGames : empty.totalGames;
-            gameStats.wins = typeof parsed.wins === 'number' ? parsed.wins : empty.wins;
-            gameStats.losses = typeof parsed.losses === 'number' ? parsed.losses : empty.losses;
-            gameStats.draws = typeof parsed.draws === 'number' ? parsed.draws : empty.draws;
-            gameStats.totalMoves = typeof parsed.totalMoves === 'number' ? parsed.totalMoves : empty.totalMoves;
-            gameStats.totalTime = typeof parsed.totalTime === 'number' ? parsed.totalTime : empty.totalTime;
-            gameStats.fastestWin = typeof parsed.fastestWin === 'number' ? parsed.fastestWin : empty.fastestWin;
-            gameStats.longestGame = typeof parsed.longestGame === 'number' ? parsed.longestGame : empty.longestGame;
+            gameStats.totalGames = typeof parsed.totalGames === 'number' && parsed.totalGames >= 0 ? parsed.totalGames : empty.totalGames;
+            gameStats.wins = typeof parsed.wins === 'number' && parsed.wins >= 0 ? parsed.wins : empty.wins;
+            gameStats.losses = typeof parsed.losses === 'number' && parsed.losses >= 0 ? parsed.losses : empty.losses;
+            gameStats.draws = typeof parsed.draws === 'number' && parsed.draws >= 0 ? parsed.draws : empty.draws;
+            gameStats.totalMoves = typeof parsed.totalMoves === 'number' && parsed.totalMoves >= 0 ? parsed.totalMoves : empty.totalMoves;
+            gameStats.totalTime = typeof parsed.totalTime === 'number' && parsed.totalTime >= 0 ? parsed.totalTime : empty.totalTime;
+            gameStats.fastestWin = typeof parsed.fastestWin === 'number' && parsed.fastestWin >= -1 ? parsed.fastestWin : empty.fastestWin;
+            gameStats.longestGame = typeof parsed.longestGame === 'number' && parsed.longestGame >= 0 ? parsed.longestGame : empty.longestGame;
             gameStats.currentStreak = typeof parsed.currentStreak === 'number' ? parsed.currentStreak : empty.currentStreak;
-            gameStats.bestStreak = typeof parsed.bestStreak === 'number' ? parsed.bestStreak : empty.bestStreak;
+            gameStats.bestStreak = typeof parsed.bestStreak === 'number' && parsed.bestStreak >= 0 ? parsed.bestStreak : empty.bestStreak;
             if (parsed.byMode && typeof parsed.byMode === 'object') {
                 for (const k of Object.keys(empty.byMode)) {
                     if (parsed.byMode[k] && typeof parsed.byMode[k] === 'object') {
-                        gameStats.byMode[k].games = typeof parsed.byMode[k].games === 'number' ? parsed.byMode[k].games : 0;
-                        gameStats.byMode[k].wins = typeof parsed.byMode[k].wins === 'number' ? parsed.byMode[k].wins : 0;
-                        gameStats.byMode[k].losses = typeof parsed.byMode[k].losses === 'number' ? parsed.byMode[k].losses : 0;
-                        gameStats.byMode[k].draws = typeof parsed.byMode[k].draws === 'number' ? parsed.byMode[k].draws : 0;
+                        const vg = parsed.byMode[k].games, vw = parsed.byMode[k].wins, vl = parsed.byMode[k].losses, vd = parsed.byMode[k].draws;
+                        gameStats.byMode[k].games = typeof vg === 'number' && vg >= 0 ? vg : 0;
+                        gameStats.byMode[k].wins = typeof vw === 'number' && vw >= 0 ? vw : 0;
+                        gameStats.byMode[k].losses = typeof vl === 'number' && vl >= 0 ? vl : 0;
+                        gameStats.byMode[k].draws = typeof vd === 'number' && vd >= 0 ? vd : 0;
                     }
                 }
             }
             if (parsed.byDifficulty && typeof parsed.byDifficulty === 'object') {
                 for (const k of Object.keys(empty.byDifficulty)) {
                     if (parsed.byDifficulty[k] && typeof parsed.byDifficulty[k] === 'object') {
-                        gameStats.byDifficulty[k].games = typeof parsed.byDifficulty[k].games === 'number' ? parsed.byDifficulty[k].games : 0;
-                        gameStats.byDifficulty[k].wins = typeof parsed.byDifficulty[k].wins === 'number' ? parsed.byDifficulty[k].wins : 0;
-                        gameStats.byDifficulty[k].losses = typeof parsed.byDifficulty[k].losses === 'number' ? parsed.byDifficulty[k].losses : 0;
-                        gameStats.byDifficulty[k].draws = typeof parsed.byDifficulty[k].draws === 'number' ? parsed.byDifficulty[k].draws : 0;
+                        const vg = parsed.byDifficulty[k].games, vw = parsed.byDifficulty[k].wins, vl = parsed.byDifficulty[k].losses, vd = parsed.byDifficulty[k].draws;
+                        gameStats.byDifficulty[k].games = typeof vg === 'number' && vg >= 0 ? vg : 0;
+                        gameStats.byDifficulty[k].wins = typeof vw === 'number' && vw >= 0 ? vw : 0;
+                        gameStats.byDifficulty[k].losses = typeof vl === 'number' && vl >= 0 ? vl : 0;
+                        gameStats.byDifficulty[k].draws = typeof vd === 'number' && vd >= 0 ? vd : 0;
                     }
                 }
             }
@@ -1049,11 +1067,15 @@
         const dataExportArea = document.getElementById('data-export-area');
         if (!dataExportArea) return;
         dataExportArea.select();
-        try {
-            navigator.clipboard.writeText(dataExportArea.value);
-            const btn = document.getElementById('data-copy-btn');
-            if (btn) { const orig = btn.textContent; btn.textContent = '✓'; setTimeout(() => btn.textContent = orig, 1200); }
-        } catch (e) {}
+        const btn = document.getElementById('data-copy-btn');
+        const showCheck = () => { if (btn) { const orig = btn.textContent; btn.textContent = '✓'; setTimeout(() => btn.textContent = orig, 1200); } };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(dataExportArea.value).then(showCheck).catch(() => {
+                try { document.execCommand('copy'); showCheck(); } catch (e2) {}
+            });
+        } else {
+            try { document.execCommand('copy'); showCheck(); } catch (e) {}
+        }
     }
 
     function importGameData() {
@@ -1067,7 +1089,13 @@
         } catch (e) { alert(t('data-import-invalid')); return; }
         if (!payload || typeof payload !== 'object') { alert(t('data-import-invalid')); return; }
         if (payload.version !== 'ttt-backup-v1') { alert(t('data-import-invalid')); return; }
-        if (!confirm(t('data-import-confirm'))) return;
+        if (!confirm(t('data-import-confirm-msg'))) return;
+        const validString = v => typeof v === 'string' && v.length > 0;
+        if (payload.settings && !validString(payload.settings)) { alert(t('data-import-invalid')); return; }
+        if (payload.history && !validString(payload.history)) { alert(t('data-import-invalid')); return; }
+        if (payload.achievements && !validString(payload.achievements)) { alert(t('data-import-invalid')); return; }
+        if (payload.achievementStats && !validString(payload.achievementStats)) { alert(t('data-import-invalid')); return; }
+        if (payload.stats && !validString(payload.stats)) { alert(t('data-import-invalid')); return; }
         try {
             if (payload.settings) localStorage.setItem(SETTINGS_KEY, payload.settings);
             if (payload.history) localStorage.setItem(HISTORY_KEY, payload.history);
@@ -1616,20 +1644,22 @@
         if (!settings.rippleEnabled || !settings.animations) return;
         const cell = e.currentTarget;
         if (!cell) return;
-        const rect = cell.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const cellRect = cell.getBoundingClientRect();
+        const hasCoords = typeof e.clientX === 'number' && typeof e.clientY === 'number';
+        const x = hasCoords ? e.clientX : cellRect.left + cellRect.width / 2;
+        const y = hasCoords ? e.clientY : cellRect.top + cellRect.height / 2;
         const ripple = document.createElement('span');
         ripple.className = 'ripple ' + (player === PLAYER_X ? 'x-ripple' : 'o-ripple');
+        ripple.style.position = 'fixed';
         ripple.style.left = x + 'px';
         ripple.style.top = y + 'px';
-        cell.appendChild(ripple);
+        document.body.appendChild(ripple);
         const scale = settings.animSpeed === 'slow' ? 1.8 : settings.animSpeed === 'fast' ? 0.4 : 1;
         setTimeout(() => { if (ripple.parentNode) ripple.remove(); }, 650 * scale);
     }
 
     function formatDuration(ms) {
-        if (!ms || ms <= 0) return '--';
+        if (!ms || ms <= 0 || ms < 0) return '--';
         const totalSeconds = Math.floor(ms / 1000);
         const h = Math.floor(totalSeconds / 3600);
         const m = Math.floor((totalSeconds % 3600) / 60);
@@ -1658,7 +1688,7 @@
             gameStats.wins++;
             gameStats.currentStreak = gameStats.currentStreak >= 0 ? gameStats.currentStreak + 1 : 1;
             if (gameStats.currentStreak > gameStats.bestStreak) gameStats.bestStreak = gameStats.currentStreak;
-            if (gameStats.fastestWin === 0 || elapsed < gameStats.fastestWin) gameStats.fastestWin = elapsed;
+            if (gameStats.fastestWin < 0 || elapsed < gameStats.fastestWin) gameStats.fastestWin = elapsed;
         } else {
             gameStats.losses++;
             gameStats.currentStreak = gameStats.currentStreak <= 0 ? gameStats.currentStreak - 1 : -1;
@@ -1697,7 +1727,7 @@
         const fastestEl = document.getElementById('stats-fastest');
         const longestEl = document.getElementById('stats-longest');
         const totalTimeEl = document.getElementById('stats-total-time');
-        if (!totalEl) return;
+        if (!totalEl || !winsEl || !lossesEl || !drawsEl || !barWins || !barLosses || !barDraws || !winrateEl || !streakEl || !bestStreakEl || !modeList || !diffList || !totalMovesEl || !fastestEl || !longestEl || !totalTimeEl) return;
 
         const s = gameStats;
         totalEl.textContent = s.totalGames;
@@ -4059,6 +4089,7 @@
     function undoMove() {
         if (undoBtn.classList.contains('disabled')) return;
         if (battleMode === 'aivsai') return;
+        if (!gameActive) return;
 
         if (battleMode === 'pve') {
             if (playerHistory.length === 0) return;
