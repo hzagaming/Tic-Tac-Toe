@@ -124,6 +124,11 @@
                     <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
                 </svg>
             </button>
+            <button class="btn btn-tactics" id="tactics-btn" data-i18n-aria="aria-tactics" aria-label="Tactics">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+            </button>
             <button class="btn btn-changelog" id="changelog-btn" data-i18n-aria="aria-changelog" aria-label="Changelog">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -501,6 +506,67 @@
         </div>
         <div class="drawer-body" id="achievements-body"></div>
     </aside>
+
+    <!-- Tactics Drawer -->
+    <div class="drawer-overlay" id="tactics-overlay"></div>
+    <aside class="tactics-drawer" id="tactics-drawer" role="dialog" aria-modal="true" data-i18n-aria="tactics-title" aria-label="Tactics">
+        <div class="drawer-header">
+            <h2 data-i18n="tactics-title">战术训练</h2>
+            <button class="drawer-close" id="tactics-close" data-i18n-aria="aria-close" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="drawer-body" id="tactics-body">
+            <div class="tactics-summary" id="tactics-summary"></div>
+            <div class="tactics-filter" id="tactics-filter">
+                <button class="tactics-filter-btn active" data-filter="all" data-i18n="tactics-filter-all">全部</button>
+                <button class="tactics-filter-btn" data-filter="easy" data-i18n="tactics-filter-easy">简单</button>
+                <button class="tactics-filter-btn" data-filter="medium" data-i18n="tactics-filter-medium">中等</button>
+                <button class="tactics-filter-btn" data-filter="hard" data-i18n="tactics-filter-hard">困难</button>
+            </div>
+            <div class="tactics-grid" id="tactics-grid"></div>
+        </div>
+    </aside>
+
+    <!-- Tactics Training Modal -->
+    <div class="modal" id="tactics-modal" role="dialog" aria-modal="true" aria-labelledby="tactics-modal-title">
+        <div class="modal-content tactics-content">
+            <div class="tactics-modal-header">
+                <div>
+                    <h2 id="tactics-modal-title" data-i18n="tactics-modal-title">战术挑战</h2>
+                    <p class="tactics-meta" id="tactics-meta"></p>
+                </div>
+                <button class="drawer-close" id="tactics-modal-close" data-i18n-aria="aria-close" aria-label="Close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="tactics-instruction" id="tactics-instruction"></div>
+            <div class="tactics-board-wrap">
+                <div class="board tactics-board" id="tactics-board">
+                    <div class="cell" data-index="0"></div>
+                    <div class="cell" data-index="1"></div>
+                    <div class="cell" data-index="2"></div>
+                    <div class="cell" data-index="3"></div>
+                    <div class="cell" data-index="4"></div>
+                    <div class="cell" data-index="5"></div>
+                    <div class="cell" data-index="6"></div>
+                    <div class="cell" data-index="7"></div>
+                    <div class="cell" data-index="8"></div>
+                </div>
+            </div>
+            <div class="tactics-feedback" id="tactics-feedback" aria-live="polite" aria-atomic="true"></div>
+            <div class="tactics-actions">
+                <button class="btn btn-tactics-skip" id="tactics-skip-btn" data-i18n="tactics-skip">跳过</button>
+                <button class="btn btn-tactics-next" id="tactics-next-btn" style="display:none;" data-i18n="tactics-next">下一题</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Replay Modal -->
     <div class="modal" id="replay-modal" role="dialog" aria-modal="true" aria-labelledby="replay-title">

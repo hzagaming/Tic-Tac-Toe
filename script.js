@@ -5,7 +5,7 @@
     const c4CellsContainer = document.getElementById('c4-cells');
     const gomokuBoard = document.getElementById('gomoku-board');
     const gomokuCellsContainer = document.getElementById('gomoku-cells');
-    const cells = Array.from(document.querySelectorAll('.cell'));
+    const cells = Array.from(document.querySelectorAll('#board .cell'));
     const statusText = document.getElementById('status-text');
     const statusBar = document.querySelector('.status-bar');
     const winLine = document.getElementById('win-line');
@@ -96,6 +96,24 @@
     const achievementsBody = document.getElementById('achievements-body');
     const toastContainer = document.getElementById('achievement-toast-container');
 
+    const tacticsBtn = document.getElementById('tactics-btn');
+    const tacticsDrawer = document.getElementById('tactics-drawer');
+    const tacticsOverlay = document.getElementById('tactics-overlay');
+    const tacticsClose = document.getElementById('tactics-close');
+    const tacticsBody = document.getElementById('tactics-body');
+    const tacticsGrid = document.getElementById('tactics-grid');
+    const tacticsSummary = document.getElementById('tactics-summary');
+    const tacticsFilter = document.getElementById('tactics-filter');
+    const tacticsModal = document.getElementById('tactics-modal');
+    const tacticsModalClose = document.getElementById('tactics-modal-close');
+    const tacticsMeta = document.getElementById('tactics-meta');
+    const tacticsInstruction = document.getElementById('tactics-instruction');
+    const tacticsBoard = document.getElementById('tactics-board');
+    const tacticsFeedback = document.getElementById('tactics-feedback');
+    const tacticsSkipBtn = document.getElementById('tactics-skip-btn');
+    const tacticsNextBtn = document.getElementById('tactics-next-btn');
+    const tacticCells = Array.from(document.querySelectorAll('#tactics-board .cell'));
+
     const PLAYER_X = 'X';
     const PLAYER_O = 'O';
 
@@ -145,6 +163,12 @@
     let gameStats = createEmptyGameStats();
     const STATS_KEY = 'ttt_game_stats_v1';
 
+    // Tactics Trainer state
+    let tacticsProgress = { completed: [], streak: 0, bestStreak: 0 };
+    let currentTactic = null;
+    let tacticSolved = false;
+    const TACTICS_KEY = 'ttt_tactics_v1';
+
     const settings = {
         lang: 'zh',
         theme: 'dark',
@@ -172,6 +196,14 @@
         fr: 'Français', de: 'Deutsch', es: 'Español', ru: 'Русский',
         it: 'Italiano', pt: 'Português'
     };
+
+    /* ===== Tactics Trainer Database ===== */
+    const tacticsDB = [
+        { id: 'ttt_t1', mode: 'ttt', difficulty: 'easy', stars: 1, board: ['X','X','','','O','','','','O'], player: 'X', correctMoves: [2], titleKey: 'tactic_t1_title', descKey: 'tactic_t1_desc' },
+        { id: 'ttt_t2', mode: 'ttt', difficulty: 'easy', stars: 1, board: ['O','O','','','X','','','','X'], player: 'X', correctMoves: [2], titleKey: 'tactic_t2_title', descKey: 'tactic_t2_desc' },
+        { id: 'ttt_t3', mode: 'ttt', difficulty: 'medium', stars: 2, board: ['X','','O','','X','','','','O'], player: 'X', correctMoves: [6], titleKey: 'tactic_t3_title', descKey: 'tactic_t3_desc' },
+        { id: 'ttt_t4', mode: 'ttt', difficulty: 'medium', stars: 2, board: ['','','','','','','','',''], player: 'X', correctMoves: [4], titleKey: 'tactic_t4_title', descKey: 'tactic_t4_desc' }
+    ];
 
     const colorPresets = [
         { id: 'violet', hex: '#7b68ee' },
@@ -311,6 +343,7 @@
             'history-confirm-delete': { zh:'确定要删除这条对局记录吗？', en:'Delete this game record?', ja:'この記録を削除しますか？', ko:'이 기록을 삭제하시겠습니까?', fr:'Supprimer cette partie ?', de:'Diesen Eintrag löschen?', es:'¿Eliminar esta partida?', ru:'Удалить эту запись?', it:'Eliminare questa partita?', pt:'Excluir este registro?' },
             'aria-undo': { zh:'悔棋', en:'Undo', ja:'待った', ko:'무르기', fr:'Annuler', de:'Rückgängig', es:'Deshacer', ru:'Отменить', it:'Annulla', pt:'Desfazer' },
             'aria-achievements': { zh:'成就', en:'Achievements', ja:'実績', ko:'업적', fr:'Succès', de:'Erfolge', es:'Logros', ru:'Достижения', it:'Obiettivi', pt:'Conquistas' },
+            'aria-tactics': { zh:'战术训练', en:'Tactics', ja:'戦術', ko:'전술', fr:'Tactique', de:'Taktik', es:'Táctica', ru:'Тактика', it:'Tattica', pt:'Tática' },
             'achievements-title': { zh:'成就', en:'Achievements', ja:'実績', ko:'업적', fr:'Succès', de:'Erfolge', es:'Logros', ru:'Достижения', it:'Obiettivi', pt:'Conquistas' },
             'achievement-unlocked': { zh:'成就解锁', en:'Achievement Unlocked', ja:'実績解除', ko:'업적 해제', fr:'Succès débloqué', de:'Erfolg freigeschaltet', es:'Logro desbloqueado', ru:'Достижение разблокировано', it:'Obiettivo sbloccato', pt:'Conquista desbloqueada' },
             'achievements-total': { zh:'总成就', en:'Total', ja:'総数', ko:'총 업적', fr:'Total', de:'Gesamt', es:'Total', ru:'Всего', it:'Totale', pt:'Total' },
@@ -397,6 +430,8 @@
             'hotkey-s-desc': { zh:'打开设置', en:'Open settings', ja:'設定を開く', ko:'설정 열기', fr:'Ouvrir les paramètres', de:'Einstellungen öffnen', es:'Abrir ajustes', ru:'Открыть настройки', it:'Apri impostazioni', pt:'Abrir configurações' },
             'hotkey-question': { zh:'?', en:'?', ja:'?', ko:'?', fr:'?', de:'?', es:'?', ru:'?', it:'?', pt:'?' },
             'hotkey-question-desc': { zh:'打开此快捷键帮助', en:'Open this help panel', ja:'このヘルプを開く', ko:'이 도움말 열기', fr:'Ouvrir ce panneau d\'aide', de:'Dieses Hilfefenster öffnen', es:'Abrir este panel de ayuda', ru:'Открыть эту справку', it:'Apri questo pannello aiuto', pt:'Abrir este painel de ajuda' },
+            'hotkey-t': { zh:'T', en:'T', ja:'T', ko:'T', fr:'T', de:'T', es:'T', ru:'T', it:'T', pt:'T' },
+            'hotkey-t-desc': { zh:'打开战术训练', en:'Open Tactics Trainer', ja:'戦術トレーニングを開く', ko:'전술 훈련 열기', fr:'Ouvrir entraînement tactique', de:'Taktik-Training öffnen', es:'Abrir entrenamiento táctico', ru:'Открыть тактический тренажер', it:'Apri allenamento tattico', pt:'Abrir treinamento tático' },
             'hotkey-esc': { zh:'Esc', en:'Esc', ja:'Esc', ko:'Esc', fr:'Esc', de:'Esc', es:'Esc', ru:'Esc', it:'Esc', pt:'Esc' },
             'hotkey-esc-desc': { zh:'关闭弹窗/抽屉', en:'Close modal or drawer', ja:'ポップアップ/ドロワーを閉じる', ko:'팝업/서랍 닫기', fr:'Fermer la modale/le tiroir', de:'Modal/Drawer schließen', es:'Cerrar modal o cajón', ru:'Закрыть модалку/панель', it:'Chiudi modale o cassetto', pt:'Fechar modal ou gaveta' },
             'hotkey-ctrl-z': { zh:'Ctrl + Z', en:'Ctrl + Z', ja:'Ctrl + Z', ko:'Ctrl + Z', fr:'Ctrl + Z', de:'Ctrl + Z', es:'Ctrl + Z', ru:'Ctrl + Z', it:'Ctrl + Z', pt:'Ctrl + Z' },
@@ -431,6 +466,28 @@
             'data-copy-success': { zh:'已复制', en:'Copied', ja:'コピー済', ko:'복사 완료', fr:'Copié', de:'Kopiert', es:'Copiado', ru:'Скопировано', it:'Copiato', pt:'Copiado' },
             'data-export-empty': { zh:'暂无数据可导出。请先进行几局游戏。', en:'No data to export yet. Play a few games first.', ja:'エクスポートするデータがありません。', ko:'낸 내용이 없습니다.', fr:'Aucune donnée à exporter.', de:'Keine Daten zum Exportieren.', es:'Sin datos para exportar.', ru:'Нет данных для экспорта.', it:'Nessun dato da esportare.', pt:'Sem dados para exportar.' },
             'data-import-too-large': { zh:'导入数据过大（超过 2MB），请检查数据内容。', en:'Import data too large (over 2MB). Please check the data.', ja:'インポートデータが大きすぎます（2MB超）。', ko:'가져오기 데이터가 너무 큽니다(2MB 초과).', fr:'Données d\'import trop volumineuses (> 2 Mo).', de:'Importdaten zu groß (> 2 MB).', es:'Datos de importación demasiado grandes (> 2 MB).', ru:'Данные для импорта слишком большие (> 2 МБ).', it:'Dati di importazione troppo grandi (> 2 MB).', pt:'Dados de importação muito grandes (> 2 MB).' },
+            'tactics-title': { zh:'战术训练', en:'Tactics Trainer', ja:'戦術トレーニング', ko:'전술 훈련', fr:'Entraînement tactique', de:'Taktik-Training', es:'Entrenamiento táctico', ru:'Тактический тренажер', it:'Allenamento tattico', pt:'Treinamento tático' },
+            'tactics-modal-title': { zh:'战术挑战', en:'Tactic Challenge', ja:'戦術チャレンジ', ko:'전술 도전', fr:'Défi tactique', de:'Taktik-Herausforderung', es:'Desafío táctico', ru:'Тактическая задача', it:'Sfida tattica', pt:'Desafio tático' },
+            'tactics-filter-all': { zh:'全部', en:'All', ja:'すべて', ko:'전체', fr:'Tout', de:'Alle', es:'Todo', ru:'Все', it:'Tutti', pt:'Todos' },
+            'tactics-filter-easy': { zh:'简单', en:'Easy', ja:'簡単', ko:'쉬움', fr:'Facile', de:'Einfach', es:'Fácil', ru:'Легкий', it:'Facile', pt:'Fácil' },
+            'tactics-filter-medium': { zh:'中等', en:'Medium', ja:'普通', ko:'보통', fr:'Moyen', de:'Mittel', es:'Medio', ru:'Средний', it:'Medio', pt:'Médio' },
+            'tactics-filter-hard': { zh:'困难', en:'Hard', ja:'難しい', ko:'어려움', fr:'Difficile', de:'Schwer', es:'Difícil', ru:'Сложный', it:'Difficile', pt:'Difícil' },
+            'tactics-skip': { zh:'跳过', en:'Skip', ja:'スキップ', ko:'걍 넘기기', fr:'Passer', de:'Überspringen', es:'Saltar', ru:'Пропустить', it:'Salta', pt:'Pular' },
+            'tactics-next': { zh:'下一题', en:'Next', ja:'次へ', ko:'다음', fr:'Suivant', de:'Weiter', es:'Siguiente', ru:'Далее', it:'Avanti', pt:'Próximo' },
+            'tactics-correct': { zh:'回答正确！', en:'Correct!', ja:'正解！', ko:'정답!', fr:'Correct !', de:'Richtig!', es:'¡Correcto!', ru:'Верно!', it:'Corretto!', pt:'Correto!' },
+            'tactics-wrong': { zh:'回答错误，请再试一次。', en:'Incorrect. Try again.', ja:'不正解。もう一度挑戦してください。', ko:'오답. 다시 시도하세요.', fr:'Incorrect. Réessayez.', de:'Falsch. Versuchen Sie es erneut.', es:'Incorrecto. Inténtalo de nuevo.', ru:'Неверно. Попробуйте ещё.', it:'Sbagliato. Riprova.', pt:'Incorreto. Tente novamente.' },
+            'tactics-completed': { zh:'已完成', en:'Completed', ja:'完了', ko:'완료', fr:'Terminé', de:'Abgeschlossen', es:'Completado', ru:'Выполнено', it:'Completato', pt:'Concluído' },
+            'tactics-remaining': { zh:'剩余', en:'Remaining', ja:'残り', ko:'남음', fr:'Restant', de:'Verbleibend', es:'Restante', ru:'Осталось', it:'Rimanente', pt:'Restante' },
+            'tactics-streak': { zh:'连胜', en:'Streak', ja:'連勝', ko:'연승', fr:'Série', de:'Serie', es:'Racha', ru:'Серия', it:'Serie', pt:'Sequência' },
+            'tactics-best-streak': { zh:'最高连胜', en:'Best Streak', ja:'最高連勝', ko:'최고 연승', fr:'Meilleure série', de:'Beste Serie', es:'Mejor racha', ru:'Лучшая серия', it:'Migliore serie', pt:'Melhor sequência' },
+            'tactic_t1_title': { zh:'一步获胜', en:'Win in One', ja:'一撃必勝', ko:'한 방에 승리', fr:'Gagner en un', de:'Sieg in einem', es:'Ganar en uno', ru:'Победа за ход', it:'Vittoria in uno', pt:'Vitória em um' },
+            'tactic_t1_desc': { zh:'X的回合，找出制胜的一步。', en:'X to move. Find the winning move.', ja:'X no turn', ko:'X turn', fr:'X plays', de:'X turn', es:'X turn', ru:'X turn', it:'X turn', pt:'X turn' },
+            'tactic_t2_title': { zh:'阻止对手', en:'Block', ja:'Block', ko:'Block', fr:'Block', de:'Block', es:'Block', ru:'Block', it:'Block', pt:'Block' },
+            'tactic_t2_desc': { zh:'O即将获胜，X必须阻止。', en:'O is about to win. Block them!', ja:'Block desc', ko:'Block desc', fr:'Block desc', de:'Block desc', es:'Block desc', ru:'Block desc', it:'Block desc', pt:'Block desc' },
+            'tactic_t3_title': { zh:'制造双杀', en:'Fork', ja:'Fork', ko:'Fork', fr:'Fork', de:'Fork', es:'Fork', ru:'Fork', it:'Fork', pt:'Fork' },
+            'tactic_t3_desc': { zh:'制造两条制胜线，让O无法同时防守。', en:'Create two threats at once.', ja:'Fork desc', ko:'Fork desc', fr:'Fork desc', de:'Fork desc', es:'Fork desc', ru:'Fork desc', it:'Fork desc', pt:'Fork desc' },
+            'tactic_t4_title': { zh:'控制中心', en:'Center', ja:'Center', ko:'Center', fr:'Center', de:'Center', es:'Center', ru:'Center', it:'Center', pt:'Center' },
+            'tactic_t4_desc': { zh:'空盘开局，最佳第一步在哪里？', en:'Best opening move on an empty board.', ja:'Center desc', ko:'Center desc', fr:'Center desc', de:'Center desc', es:'Center desc', ru:'Center desc', it:'Center desc', pt:'Center desc' },
         };
         const out = {};
         for (const [key, langs] of Object.entries(c)) {
@@ -908,6 +965,7 @@
         else if (currentMode === 'gomoku') subtitle.textContent = bm === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
         else subtitle.textContent = bm === 'pvp' ? getCustomSubtitle() + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? getCustomSubtitle() + ' — ' + t('subtitle-aivsai') : getCustomSubtitle();
         renderChangelog();
+        if (tacticsDrawer && tacticsDrawer.classList.contains('show')) renderTacticsList();
     }
 
     /* ===== Settings UI Builders ===== */
@@ -1061,6 +1119,7 @@
         try { const v = localStorage.getItem(ACHIEVEMENT_KEY); if (v) payload.achievements = v; } catch (e) {}
         try { const v = localStorage.getItem(ACHIEVEMENT_STATS_KEY); if (v) payload.achievementStats = v; } catch (e) {}
         try { const v = localStorage.getItem(STATS_KEY); if (v) payload.stats = v; } catch (e) {}
+        try { const v = localStorage.getItem(TACTICS_KEY); if (v) payload.tactics = v; } catch (e) {}
         if (Object.keys(payload).length <= 2) {
             dataExportArea.value = t('data-export-empty');
             return;
@@ -1104,12 +1163,14 @@
         if (payload.achievements && !validString(payload.achievements)) { alert(t('data-import-invalid')); return; }
         if (payload.achievementStats && !validString(payload.achievementStats)) { alert(t('data-import-invalid')); return; }
         if (payload.stats && !validString(payload.stats)) { alert(t('data-import-invalid')); return; }
+        if (payload.tactics && !validString(payload.tactics)) { alert(t('data-import-invalid')); return; }
         try {
             if (payload.settings) localStorage.setItem(SETTINGS_KEY, payload.settings);
             if (payload.history) localStorage.setItem(HISTORY_KEY, payload.history);
             if (payload.achievements) localStorage.setItem(ACHIEVEMENT_KEY, payload.achievements);
             if (payload.achievementStats) localStorage.setItem(ACHIEVEMENT_STATS_KEY, payload.achievementStats);
             if (payload.stats) localStorage.setItem(STATS_KEY, payload.stats);
+            if (payload.tactics) localStorage.setItem(TACTICS_KEY, payload.tactics);
             alert(t('data-import-success'));
             window.location.reload();
         } catch (e) { alert(t('data-import-fail')); }
@@ -1209,6 +1270,28 @@
         achievementsClose.addEventListener('click', closeAchievements);
         achievementsOverlay.addEventListener('click', closeAchievements);
 
+        if (tacticsBtn) tacticsBtn.addEventListener('click', openTactics);
+        if (tacticsClose) tacticsClose.addEventListener('click', closeTactics);
+        if (tacticsOverlay) tacticsOverlay.addEventListener('click', closeTactics);
+        if (tacticsModalClose) tacticsModalClose.addEventListener('click', () => { tacticsModal.classList.remove('show'); resetTacticModalState(); });
+        if (tacticsModal) tacticsModal.addEventListener('click', e => { if (e.target === tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); } });
+        if (tacticsSkipBtn) tacticsSkipBtn.addEventListener('click', () => { tacticsModal.classList.remove('show'); resetTacticModalState(); });
+        if (tacticsFilter) {
+            tacticsFilter.querySelectorAll('.tactics-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tacticsFilter.querySelectorAll('.tactics-filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderTacticsList(btn.dataset.filter);
+                });
+            });
+        }
+        tacticCells.forEach(cell => {
+            cell.addEventListener('click', () => {
+                const idx = parseInt(cell.dataset.index, 10);
+                validateTacticMove(idx);
+            });
+        });
+
         hotkeyClose.addEventListener('click', closeHotkeyModal);
         hotkeyModal.addEventListener('click', e => { if (e.target === hotkeyModal) closeHotkeyModal(); });
 
@@ -1242,8 +1325,10 @@
 
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
-                if (hotkeyModal.classList.contains('show')) { closeHotkeyModal(); }
+                if (tacticsModal.classList.contains('show')) { tacticsModal.classList.remove('show'); }
+                else if (hotkeyModal.classList.contains('show')) { closeHotkeyModal(); }
                 else if (replayModal.classList.contains('show')) { closeReplay(); }
+                else if (tacticsDrawer.classList.contains('show')) { closeTactics(); }
                 else if (achievementsDrawer.classList.contains('show')) { closeAchievements(); }
                 else if (historyDrawer.classList.contains('show')) { closeHistory(); }
                 else if (drawer.classList.contains('show')) { closeDrawer(); }
@@ -1251,7 +1336,9 @@
                 else if (modal.classList.contains('show')) { hideModal(); }
             }
             if (e.key === 'Tab') {
-                const activeModal = replayModal.classList.contains('show') ? replayModal :
+                const activeModal = tacticsModal.classList.contains('show') ? tacticsModal :
+                    replayModal.classList.contains('show') ? replayModal :
+                    tacticsDrawer.classList.contains('show') ? tacticsDrawer :
                     achievementsDrawer.classList.contains('show') ? achievementsDrawer :
                     historyDrawer.classList.contains('show') ? historyDrawer :
                     modal.classList.contains('show') ? modal :
@@ -1282,6 +1369,7 @@
             else if (e.key === 'u' || e.key === 'U') { e.preventDefault(); undoMove(); }
             else if (e.key === 'h' || e.key === 'H') { e.preventDefault(); openHistory(); }
             else if (e.key === 'a' || e.key === 'A') { e.preventDefault(); openAchievements(); }
+            else if (e.key === 't' || e.key === 'T') { e.preventDefault(); openTactics(); }
             else if (e.key === 'c' || e.key === 'C') { e.preventDefault(); openChangelog(); }
             else if (e.key === 's' || e.key === 'S') { e.preventDefault(); openDrawer(); }
             else if (e.key === '?') { e.preventDefault(); openHotkeyModal(); }
@@ -1298,6 +1386,8 @@
         applyI18n();
         resetGame();
         initAchievements();
+        loadTacticsProgress();
+        checkTacticAchievements();
     }
 
     function buildC4Cells() {
@@ -1817,6 +1907,150 @@
         renderStats();
     }
 
+    /* ===== Tactics Trainer Core ===== */
+    function loadTacticsProgress() {
+        try {
+            const raw = localStorage.getItem(TACTICS_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object') {
+                    tacticsProgress.completed = Array.isArray(parsed.completed) ? parsed.completed : [];
+                    tacticsProgress.streak = typeof parsed.streak === 'number' ? parsed.streak : 0;
+                    tacticsProgress.bestStreak = typeof parsed.bestStreak === 'number' ? parsed.bestStreak : 0;
+                }
+            }
+        } catch (e) {}
+    }
+    function saveTacticsProgress() {
+        try { localStorage.setItem(TACTICS_KEY, JSON.stringify(tacticsProgress)); } catch (e) {}
+    }
+    function openTactics() {
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements();
+        if (tacticsModal) tacticsModal.classList.remove('show');
+        resetTacticModalState();
+        lastFocusedElement = document.activeElement;
+        renderTacticsList();
+        tacticsDrawer.classList.add('show');
+        tacticsOverlay.classList.add('show');
+        setTimeout(() => {
+            const focusable = tacticsDrawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusable.length) focusable[0].focus();
+        }, 50);
+    }
+    function closeTactics() {
+        tacticsDrawer.classList.remove('show');
+        tacticsOverlay.classList.remove('show');
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+    }
+    function resetTacticModalState() {
+        currentTactic = null;
+        tacticSolved = false;
+        if (tacticsFeedback) { tacticsFeedback.textContent = ''; tacticsFeedback.className = 'tactics-feedback'; }
+        if (tacticsSkipBtn) tacticsSkipBtn.style.display = 'inline-block';
+        if (tacticsNextBtn) tacticsNextBtn.style.display = 'none';
+        tacticCells.forEach(cell => { cell.classList.remove('hint-correct', 'hint-wrong'); });
+    }
+    function renderTacticsList(filter) {
+        if (!tacticsGrid || !tacticsSummary) return;
+        const completed = tacticsProgress.completed || [];
+        const total = tacticsDB.length;
+        const done = completed.length;
+        tacticsSummary.innerHTML = `<div class="tactics-summary-card"><div class="value">${done}/${total}</div><div class="label">${t('tactics-completed')}</div></div><div class="tactics-summary-card"><div class="value">${tacticsProgress.streak}</div><div class="label">${t('tactics-streak')}</div></div><div class="tactics-summary-card"><div class="value">${tacticsProgress.bestStreak}</div><div class="label">${t('tactics-best-streak')}</div></div>`;
+        let items = tacticsDB;
+        if (filter && filter !== 'all') items = items.filter(t => t.difficulty === filter);
+        let html = '';
+        for (const puzzle of items) {
+            const isDone = completed.includes(puzzle.id);
+            const diffLabel = puzzle.difficulty === 'easy' ? t('tactics-filter-easy') : puzzle.difficulty === 'medium' ? t('tactics-filter-medium') : t('tactics-filter-hard');
+            let stars = '';
+            for (let i = 1; i <= 3; i++) stars += `<span class="star ${i <= puzzle.stars ? 'active' : ''}">★</span>`;
+            html += `<div class="tactics-card ${isDone ? 'completed' : ''}" data-id="${puzzle.id}" tabindex="0" role="button" aria-pressed="false"><div class="tactics-card-difficulty">${stars}</div><div class="tactics-card-title">${t(puzzle.titleKey)}</div><div class="tactics-card-desc">${t(puzzle.descKey)}</div><div class="tactics-card-mode">${diffLabel}</div></div>`;
+        }
+        tacticsGrid.innerHTML = html || `<div style="color:var(--text-muted);text-align:center;padding:2rem 0;">${t('history-empty')}</div>`;
+        tacticsGrid.querySelectorAll('.tactics-card').forEach(card => {
+            card.addEventListener('click', () => startTactic(card.dataset.id));
+            card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startTactic(card.dataset.id); } });
+        });
+    }
+    function startTactic(id) {
+        const tactic = tacticsDB.find(t => t.id === id);
+        if (!tactic) return;
+        currentTactic = tactic;
+        tacticSolved = false;
+        if (tacticsMeta) tacticsMeta.textContent = t(tactic.titleKey) + ' · ' + (tactic.difficulty === 'easy' ? t('tactics-filter-easy') : tactic.difficulty === 'medium' ? t('tactics-filter-medium') : t('tactics-filter-hard'));
+        if (tacticsInstruction) tacticsInstruction.textContent = t(tactic.descKey);
+        if (tacticsFeedback) { tacticsFeedback.textContent = ''; tacticsFeedback.className = 'tactics-feedback'; }
+        if (tacticsSkipBtn) tacticsSkipBtn.style.display = 'inline-block';
+        if (tacticsNextBtn) tacticsNextBtn.style.display = 'none';
+        renderTacticBoard();
+        tacticsModal.classList.add('show');
+        setTimeout(() => {
+            const firstEmpty = tacticCells.find(c => !c.classList.contains('disabled'));
+            if (firstEmpty) firstEmpty.focus();
+            else if (tacticsSkipBtn) tacticsSkipBtn.focus();
+        }, 50);
+    }
+    function renderTacticBoard() {
+        if (!currentTactic || !tacticsBoard) return;
+        tacticCells.forEach((cell, i) => {
+            cell.innerHTML = '';
+            cell.classList.remove('disabled', 'hint-correct', 'hint-wrong');
+            const mark = currentTactic.board[i];
+            if (mark === 'X' || mark === 'O') {
+                cell.appendChild(createMarkSvg(mark));
+                cell.classList.add('disabled');
+            }
+        });
+    }
+    function validateTacticMove(index) {
+        if (!currentTactic || tacticSolved) return;
+        const cell = tacticCells[index];
+        if (!cell || cell.classList.contains('disabled')) return;
+        if (currentTactic.correctMoves.includes(index)) {
+            tacticSolved = true;
+            cell.appendChild(createMarkSvg(currentTactic.player));
+            cell.classList.add('hint-correct');
+            if (tacticsFeedback) { tacticsFeedback.textContent = t('tactics-correct'); tacticsFeedback.className = 'tactics-feedback correct'; }
+            if (!tacticsProgress.completed.includes(currentTactic.id)) {
+                tacticsProgress.completed.push(currentTactic.id);
+                tacticsProgress.streak++;
+                if (tacticsProgress.streak > tacticsProgress.bestStreak) tacticsProgress.bestStreak = tacticsProgress.streak;
+                saveTacticsProgress();
+                checkTacticAchievements();
+            }
+            if (tacticsSkipBtn) tacticsSkipBtn.style.display = 'none';
+            if (tacticsNextBtn) {
+                const nextIdx = tacticsDB.findIndex(t => t.id === currentTactic.id) + 1;
+                tacticsNextBtn.style.display = nextIdx < tacticsDB.length ? 'inline-block' : 'none';
+                tacticsNextBtn.onclick = () => { tacticsModal.classList.remove('show'); setTimeout(() => startTactic(tacticsDB[nextIdx].id), 300); };
+            }
+            playWinSound();
+        } else {
+            cell.classList.add('hint-wrong');
+            if (tacticsFeedback) { tacticsFeedback.textContent = t('tactics-wrong'); tacticsFeedback.className = 'tactics-feedback wrong'; }
+            tacticsProgress.streak = 0;
+            saveTacticsProgress();
+            setTimeout(() => cell.classList.remove('hint-wrong'), 600);
+        }
+    }
+    function checkTacticAchievements() {
+        const completed = tacticsProgress.completed || [];
+        if (completed.length >= 1) checkSingleAchievement('tactic_first');
+        const easyIds = tacticsDB.filter(t => t.difficulty === 'easy').map(t => t.id);
+        const allEasyDone = easyIds.every(id => completed.includes(id));
+        if (allEasyDone) checkSingleAchievement('tactic_all_easy');
+        if (tacticsProgress.bestStreak >= 3) checkSingleAchievement('tactic_streak_3');
+    }
+    function checkSingleAchievement(id) {
+        const def = achievementDefs.find(d => d.id === id);
+        if (!def) return;
+        const state = achievementState[id] || { unlocked: false, progress: 0, unlockedAt: null };
+        if (state.unlocked) return;
+        state.unlocked = true; state.progress = def.target; state.unlockedAt = Date.now();
+        achievementState[id] = state; saveAchievements();
+        showAchievementToast(def);
+    }
+
     /* ===== Color Helpers ===== */
     function hexToRgb(hex) {
         if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) hex = '#7b68ee';
@@ -2065,7 +2299,9 @@
             hotkeyModal.classList.contains('show') ||
             drawer.classList.contains('show') ||
             historyDrawer.classList.contains('show') ||
-            achievementsDrawer.classList.contains('show');
+            achievementsDrawer.classList.contains('show') ||
+            tacticsDrawer.classList.contains('show') ||
+            tacticsModal.classList.contains('show');
     }
 
     function getActiveBoardCells() {
@@ -2130,7 +2366,14 @@
     }
 
     function handleNumberKey(num, e) {
-        if (isAnyModalOpen() || isInputFocused()) return;
+        if (isInputFocused()) return;
+        if (tacticsModal.classList.contains('show')) {
+            const map = { 7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: 8 };
+            const idx = map[num];
+            if (idx !== undefined) { e.preventDefault(); validateTacticMove(idx); }
+            return;
+        }
+        if (isAnyModalOpen()) return;
         if (isC4Mode()) {
             const col = num - 1;
             if (col < 0 || col >= C4_COLS) return;
@@ -2188,6 +2431,7 @@
                     { kbd: t('hotkey-u'), desc: t('hotkey-u-desc') },
                     { kbd: t('hotkey-h'), desc: t('hotkey-h-desc') },
                     { kbd: t('hotkey-a'), desc: t('hotkey-a-desc') },
+                    { kbd: t('hotkey-t'), desc: t('hotkey-t-desc') },
                     { kbd: t('hotkey-c'), desc: t('hotkey-c-desc') },
                     { kbd: t('hotkey-s'), desc: t('hotkey-s-desc') },
                     { kbd: t('hotkey-question'), desc: t('hotkey-question-desc') },
@@ -4232,6 +4476,13 @@
     }
 
     const achievementDefs = [
+        { id: 'tactic_first', icon: '🧩', category: 'explorer', getProgress: () => (tacticsProgress.completed || []).length >= 1 ? 1 : 0, target: 1 },
+        { id: 'tactic_all_easy', icon: '🎯', category: 'explorer', getProgress: () => {
+            const done = tacticsProgress.completed || [];
+            const easyIds = tacticsDB.filter(t => t.difficulty === 'easy').map(t => t.id);
+            return easyIds.every(id => done.includes(id)) ? 1 : 0;
+        }, target: 1 },
+        { id: 'tactic_streak_3', icon: '🔥', category: 'explorer', getProgress: () => (tacticsProgress.bestStreak || 0) >= 3 ? 1 : 0, target: 1 },
         { id: 'first_win_ttt', icon: '🏆', category: 'victory', getProgress: (s) => s.winsByMode.ttt >= 1 ? 1 : 0, target: 1 },
         { id: 'first_win_c4', icon: '🏆', category: 'victory', getProgress: (s) => s.winsByMode.connect4 >= 1 ? 1 : 0, target: 1 },
         { id: 'first_win_gmk', icon: '🏆', category: 'victory', getProgress: (s) => s.winsByMode.gomoku >= 1 ? 1 : 0, target: 1 },
@@ -4380,8 +4631,8 @@
                 html += `<div class="achievement-item ${isUnlocked ? 'unlocked' : 'locked'}">
                     <div class="achievement-icon">${def.icon}</div>
                     <div class="achievement-info">
-                        <div class="achievement-name">${t('ach-' + def.id)}</div>
-                        <div class="achievement-desc">${t('ach-' + def.id + '-desc')}</div>`;
+                        <div class="achievement-name">${t('ach-' + def.id.replace(/_/g, '-'))}</div>
+                        <div class="achievement-desc">${t('ach-' + def.id.replace(/_/g, '-') + '-desc')}</div>`;
                 if (def.target > 1) {
                     html += `<div class="achievement-progress-wrap">
                         <div class="achievement-progress-bar"><div class="achievement-progress-fill" style="width:${pct}%"></div></div>
@@ -4428,7 +4679,7 @@
             <div class="achievement-toast-icon">${def.icon}</div>
             <div class="achievement-toast-text">
                 <div class="achievement-toast-title">${t('achievement-unlocked')}</div>
-                <div class="achievement-toast-name">${t('ach-' + def.id)}</div>
+                <div class="achievement-toast-name">${t('ach-' + def.id.replace(/_/g, '-'))}</div>
             </div>
         `;
         toastContainer.appendChild(toast);
