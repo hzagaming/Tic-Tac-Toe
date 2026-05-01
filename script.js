@@ -408,6 +408,7 @@
             'stats-losses': { zh:'败场', en:'Losses', ja:'敗北', ko:'패배', fr:'Défaites', de:'Niederlagen', es:'Derrotas', ru:'Поражения', it:'Sconfitte', pt:'Derrotas' },
             'stats-draws': { zh:'平局', en:'Draws', ja:'引分', ko:'무승부', fr:'Nuls', de:'Remis', es:'Empates', ru:'Ничьи', it:'Pareggi', pt:'Empates' },
             'stats-streak': { zh:'连胜', en:'Streak', ja:'連勝', ko:'연승', fr:'Série', de:'Serie', es:'Racha', ru:'Серия', it:'Serie', pt:'Sequência' },
+            'stats-losing-streak': { zh:'连败', en:'Losing Streak', ja:'連敗', ko:'연패', fr:'Série de défaites', de:'Niederlagenserie', es:'Racha de derrotas', ru:'Серия поражений', it:'Seria di sconfitte', pt:'Sequência de derrotas' },
             'stats-best-streak': { zh:'最高连胜', en:'Best Streak', ja:'最高連勝', ko:'최고 연승', fr:'Meilleure série', de:'Beste Serie', es:'Mejor racha', ru:'Лучшая серия', it:'Migliore serie', pt:'Melhor sequência' },
             'stats-by-mode': { zh:'各模式', en:'By Mode', ja:'モード別', ko:'모드별', fr:'Par mode', de:'Nach Modus', es:'Por modo', ru:'По режиму', it:'Per modalità', pt:'Por modo' },
             'stats-by-diff': { zh:'各难度 (PvE)', en:'By Difficulty', ja:'難易度別', ko:'난이도별', fr:'Par difficulté', de:'Nach Schwierigkeit', es:'Por dificultad', ru:'По сложности', it:'Per difficoltà', pt:'Por dificuldade' },
@@ -427,6 +428,9 @@
             'data-import-confirm-msg': { zh:'导入将覆盖当前所有本地数据（设置、历史、成就、统计），确定继续吗？', en:'Import will overwrite all current local data (settings, history, achievements, stats). Continue?', ja:'インポートは現在のローカルデータを上書きします。続行しますか？', ko:'가져오기는 현재 모든 로컬 데이터를 덮어씁니다. 계속하시겠습니까?', fr:'L\'import écrasera toutes les données locales. Continuer ?', de:'Import überschreibt alle lokalen Daten. Fortfahren?', es:'La importación sobrescribirá todos los datos locales. ¿Continuar?', ru:'Импорт перезапишет все локальные данные. Продолжить?', it:'L\'importazione sovrascriverà tutti i dati locali. Continuare?', pt:'A importação substituirá todos os dados locais. Continuar?' },
             'data-import-success': { zh:'导入成功！页面即将刷新。', en:'Import successful! Page will refresh.', ja:'インポート成功！ページを更新します。', ko:'가져오기 성공! 페이지를 새로고침합니다.', fr:'Import réussi ! La page va se rafraîchir.', de:'Import erfolgreich! Seite wird aktualisiert.', es:'¡Importación exitosa! La página se actualizará.', ru:'Импорт успешен! Страница будет обновлена.', it:'Importazione riuscita! La pagina verrà aggiornata.', pt:'Importação bem-sucedida! A página será atualizada.' },
             'data-import-fail': { zh:'导入失败，数据可能已损坏。', en:'Import failed. Data may be corrupted.', ja:'インポート失敗。データが破損している可能性があります。', ko:'가져오기 실패. 데이터가 손상되었을 수 있습니다.', fr:'Échec de l\'import. Les données peuvent être corrompues.', de:'Import fehlgeschlagen. Daten möglicherweise beschädigt.', es:'Importación fallida. Los datos pueden estar corruptos.', ru:'Импорт не удался. Данные могут быть повреждены.', it:'Importazione fallita. I dati potrebbero essere corrotti.', pt:'Importação falhou. Os dados podem estar corrompidos.' },
+            'data-copy-success': { zh:'已复制', en:'Copied', ja:'コピー済', ko:'복사 완료', fr:'Copié', de:'Kopiert', es:'Copiado', ru:'Скопировано', it:'Copiato', pt:'Copiado' },
+            'data-export-empty': { zh:'暂无数据可导出。请先进行几局游戏。', en:'No data to export yet. Play a few games first.', ja:'エクスポートするデータがありません。', ko:'낸 내용이 없습니다.', fr:'Aucune donnée à exporter.', de:'Keine Daten zum Exportieren.', es:'Sin datos para exportar.', ru:'Нет данных для экспорта.', it:'Nessun dato da esportare.', pt:'Sem dados para exportar.' },
+            'data-import-too-large': { zh:'导入数据过大（超过 2MB），请检查数据内容。', en:'Import data too large (over 2MB). Please check the data.', ja:'インポートデータが大きすぎます（2MB超）。', ko:'가져오기 데이터가 너무 큽니다(2MB 초과).', fr:'Données d\'import trop volumineuses (> 2 Mo).', de:'Importdaten zu groß (> 2 MB).', es:'Datos de importación demasiado grandes (> 2 MB).', ru:'Данные для импорта слишком большие (> 2 МБ).', it:'Dati di importazione troppo grandi (> 2 MB).', pt:'Dados de importação muito grandes (> 2 MB).' },
         };
         const out = {};
         for (const [key, langs] of Object.entries(c)) {
@@ -1014,7 +1018,7 @@
             gameStats.totalTime = typeof parsed.totalTime === 'number' && parsed.totalTime >= 0 ? parsed.totalTime : empty.totalTime;
             gameStats.fastestWin = typeof parsed.fastestWin === 'number' && parsed.fastestWin >= -1 ? parsed.fastestWin : empty.fastestWin;
             gameStats.longestGame = typeof parsed.longestGame === 'number' && parsed.longestGame >= 0 ? parsed.longestGame : empty.longestGame;
-            gameStats.currentStreak = typeof parsed.currentStreak === 'number' ? parsed.currentStreak : empty.currentStreak;
+            gameStats.currentStreak = typeof parsed.currentStreak === 'number' && parsed.currentStreak >= -999 ? parsed.currentStreak : empty.currentStreak;
             gameStats.bestStreak = typeof parsed.bestStreak === 'number' && parsed.bestStreak >= 0 ? parsed.bestStreak : empty.bestStreak;
             if (parsed.byMode && typeof parsed.byMode === 'object') {
                 for (const k of Object.keys(empty.byMode)) {
@@ -1050,14 +1054,17 @@
         if (!dataExportArea) return;
         const payload = {
             version: 'ttt-backup-v1',
-            exportedAt: new Date().toISOString(),
-            settings: null, history: null, achievements: null, achievementStats: null, stats: null
+            exportedAt: new Date().toISOString()
         };
-        try { payload.settings = localStorage.getItem(SETTINGS_KEY); } catch (e) {}
-        try { payload.history = localStorage.getItem(HISTORY_KEY); } catch (e) {}
-        try { payload.achievements = localStorage.getItem(ACHIEVEMENT_KEY); } catch (e) {}
-        try { payload.achievementStats = localStorage.getItem(ACHIEVEMENT_STATS_KEY); } catch (e) {}
-        try { payload.stats = localStorage.getItem(STATS_KEY); } catch (e) {}
+        try { const v = localStorage.getItem(SETTINGS_KEY); if (v) payload.settings = v; } catch (e) {}
+        try { const v = localStorage.getItem(HISTORY_KEY); if (v) payload.history = v; } catch (e) {}
+        try { const v = localStorage.getItem(ACHIEVEMENT_KEY); if (v) payload.achievements = v; } catch (e) {}
+        try { const v = localStorage.getItem(ACHIEVEMENT_STATS_KEY); if (v) payload.achievementStats = v; } catch (e) {}
+        try { const v = localStorage.getItem(STATS_KEY); if (v) payload.stats = v; } catch (e) {}
+        if (Object.keys(payload).length <= 2) {
+            dataExportArea.value = t('data-export-empty');
+            return;
+        }
         const json = JSON.stringify(payload, null, 2);
         dataExportArea.value = json;
         dataExportArea.select();
@@ -1068,7 +1075,7 @@
         if (!dataExportArea) return;
         dataExportArea.select();
         const btn = document.getElementById('data-copy-btn');
-        const showCheck = () => { if (btn) { const orig = btn.textContent; btn.textContent = '✓'; setTimeout(() => btn.textContent = orig, 1200); } };
+        const showCheck = () => { if (btn) { const orig = btn.textContent; btn.textContent = t('data-copy-success'); setTimeout(() => btn.textContent = orig, 1200); } };
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(dataExportArea.value).then(showCheck).catch(() => {
                 try { document.execCommand('copy'); showCheck(); } catch (e2) {}
@@ -1083,6 +1090,7 @@
         if (!dataImportArea) return;
         const raw = dataImportArea.value.trim();
         if (!raw) return;
+        if (raw.length > 2_000_000) { alert(t('data-import-too-large')); return; }
         let payload;
         try {
             payload = JSON.parse(raw);
@@ -1372,6 +1380,7 @@
         lastFocusedElement = document.activeElement;
         drawer.classList.add('show');
         drawerOverlay.classList.add('show');
+        renderStats();
         setTimeout(() => {
             const focusable = drawer.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
             if (focusable.length) focusable[0].focus();
@@ -1380,6 +1389,10 @@
     function closeDrawer() {
         drawer.classList.remove('show');
         drawerOverlay.classList.remove('show');
+        const dew = document.getElementById('data-export-wrap');
+        const diw = document.getElementById('data-import-wrap');
+        if (dew) dew.classList.remove('show');
+        if (diw) diw.classList.remove('show');
         if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
     }
 
@@ -1637,17 +1650,20 @@
         if (timerPresets) timerPresets.style.display = settings.timerEnabled ? 'block' : 'none';
         document.querySelectorAll('#timer-segmented .seg-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.timer, 10) === settings.timerDuration));
         if (toggleRipple) toggleRipple.checked = settings.rippleEnabled;
-        renderStats();
     }
 
+    let activeRipples = 0;
+    const MAX_RIPPLES = 6;
     function createRipple(e, player) {
         if (!settings.rippleEnabled || !settings.animations) return;
         const cell = e.currentTarget;
         if (!cell) return;
         const cellRect = cell.getBoundingClientRect();
-        const hasCoords = typeof e.clientX === 'number' && typeof e.clientY === 'number';
-        const x = hasCoords ? e.clientX : cellRect.left + cellRect.width / 2;
-        const y = hasCoords ? e.clientY : cellRect.top + cellRect.height / 2;
+        const hasRealCoords = e instanceof MouseEvent && e.clientX > 0 && e.clientY > 0;
+        const x = hasRealCoords ? e.clientX : cellRect.left + cellRect.width / 2;
+        const y = hasRealCoords ? e.clientY : cellRect.top + cellRect.height / 2;
+        if (activeRipples >= MAX_RIPPLES) return;
+        activeRipples++;
         const ripple = document.createElement('span');
         ripple.className = 'ripple ' + (player === PLAYER_X ? 'x-ripple' : 'o-ripple');
         ripple.style.position = 'fixed';
@@ -1655,11 +1671,12 @@
         ripple.style.top = y + 'px';
         document.body.appendChild(ripple);
         const scale = settings.animSpeed === 'slow' ? 1.8 : settings.animSpeed === 'fast' ? 0.4 : 1;
-        setTimeout(() => { if (ripple.parentNode) ripple.remove(); }, 650 * scale);
+        setTimeout(() => { if (ripple.parentNode) ripple.remove(); activeRipples = Math.max(0, activeRipples - 1); }, 650 * scale);
     }
 
     function formatDuration(ms) {
-        if (!ms || ms <= 0 || ms < 0) return '--';
+        if (ms === null || ms === undefined || ms < 0) return '--';
+        if (ms === 0) return '0s';
         const totalSeconds = Math.floor(ms / 1000);
         const h = Math.floor(totalSeconds / 3600);
         const m = Math.floor((totalSeconds % 3600) / 60);
@@ -1671,7 +1688,8 @@
 
     function recordGameStats(draw, winner) {
         if (!gameStats) return;
-        const elapsed = Date.now() - gameStartTime;
+        if (moveHistory.length === 0) return;
+        const elapsed = Math.max(0, Date.now() - gameStartTime);
         const mode = currentMode;
         const bm = getEffectiveBattleMode();
         const diff = settings.difficulty;
@@ -1679,7 +1697,7 @@
 
         gameStats.totalGames++;
         gameStats.totalTime += elapsed;
-        if (moves > 0) gameStats.totalMoves += moves;
+        gameStats.totalMoves += moves;
 
         if (draw) {
             gameStats.draws++;
@@ -1720,9 +1738,14 @@
         const barDraws = document.getElementById('stats-bar-draws');
         const winrateEl = document.getElementById('stats-winrate');
         const streakEl = document.getElementById('stats-streak');
+        const streakLabelEl = document.getElementById('stats-streak-label');
         const bestStreakEl = document.getElementById('stats-best-streak');
         const modeList = document.getElementById('stats-mode-list');
         const diffList = document.getElementById('stats-diff-list');
+        const modeTitle = document.getElementById('stats-mode-title');
+        const diffTitle = document.getElementById('stats-diff-title');
+        const detailDivider = document.getElementById('stats-detail-divider');
+        const detailGrid = document.getElementById('stats-detail-grid');
         const totalMovesEl = document.getElementById('stats-total-moves');
         const fastestEl = document.getElementById('stats-fastest');
         const longestEl = document.getElementById('stats-longest');
@@ -1736,14 +1759,17 @@
         drawsEl.textContent = s.draws;
 
         const total = s.totalGames || 1;
-        barWins.style.width = (s.wins / total * 100) + '%';
-        barLosses.style.width = (s.losses / total * 100) + '%';
-        barDraws.style.width = (s.draws / total * 100) + '%';
+        const winPct = Math.round(s.wins / total * 1000) / 10;
+        const lossPct = Math.round(s.losses / total * 1000) / 10;
+        barWins.style.width = winPct + '%';
+        barLosses.style.width = lossPct + '%';
+        barDraws.style.width = Math.max(0, 100 - winPct - lossPct) + '%';
 
         const winRate = s.totalGames > 0 ? Math.round(s.wins / s.totalGames * 1000) / 10 : 0;
         winrateEl.textContent = winRate + '%';
 
-        streakEl.textContent = s.currentStreak;
+        streakEl.textContent = Math.abs(s.currentStreak);
+        if (streakLabelEl) streakLabelEl.textContent = s.currentStreak < 0 ? t('stats-losing-streak') : t('stats-streak');
         bestStreakEl.textContent = s.bestStreak;
 
         const modeNames = { ttt: t('mode-ttt'), connect4: t('mode-connect4'), gomoku: t('mode-gomoku'), custom: t('mode-custom') };
@@ -1771,6 +1797,12 @@
             </div>`;
         }
         diffList.innerHTML = diffHtml || `<div class="stats-list-row"><span class="stats-list-name" style="color:var(--text-muted)">${t('history-empty')}</span></div>`;
+
+        const hasGames = s.totalGames > 0;
+        if (modeTitle) modeTitle.style.display = hasGames ? '' : 'none';
+        if (diffTitle) diffTitle.style.display = hasGames ? '' : 'none';
+        if (detailDivider) detailDivider.style.display = hasGames ? '' : 'none';
+        if (detailGrid) detailGrid.style.display = hasGames ? '' : 'none';
 
         totalMovesEl.textContent = s.totalMoves;
         fastestEl.textContent = formatDuration(s.fastestWin);
@@ -2673,6 +2705,7 @@
         lockC4Board(true);
         saveGameHistory(draw ? null : winner);
         recordGameStats(draw, winner);
+        checkAchievements({ mode: currentMode, bm: getEffectiveBattleMode(), winner: draw ? null : winner, difficulty: settings.difficulty, duration: Math.max(0, Date.now() - gameStartTime), moves: moveHistory.length });
         const bm = getEffectiveBattleMode();
 
         if (draw) {
@@ -3001,6 +3034,7 @@
         lockGmkBoard(true);
         saveGameHistory(draw ? null : winner);
         recordGameStats(draw, winner);
+        checkAchievements({ mode: currentMode, bm: getEffectiveBattleMode(), winner: draw ? null : winner, difficulty: settings.difficulty, duration: Math.max(0, Date.now() - gameStartTime), moves: moveHistory.length });
         const bm = getEffectiveBattleMode();
 
         if (draw) {
@@ -3280,6 +3314,7 @@
         lockBoard(true);
         saveGameHistory(draw ? null : winner);
         recordGameStats(draw, winner);
+        checkAchievements({ mode: currentMode, bm: getEffectiveBattleMode(), winner: draw ? null : winner, difficulty: settings.difficulty, duration: Math.max(0, Date.now() - gameStartTime), moves: moveHistory.length });
 
         const bm = getEffectiveBattleMode();
         if (draw) {
