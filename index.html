@@ -58,16 +58,16 @@
 
         <!-- Tic Tac Toe Board -->
         <div class="board" id="board">
-            <div class="cell" data-index="0"></div>
-            <div class="cell" data-index="1"></div>
-            <div class="cell" data-index="2"></div>
-            <div class="cell" data-index="3"></div>
-            <div class="cell" data-index="4"></div>
-            <div class="cell" data-index="5"></div>
-            <div class="cell" data-index="6"></div>
-            <div class="cell" data-index="7"></div>
-            <div class="cell" data-index="8"></div>
-            <svg class="win-line" id="win-line" viewBox="0 0 300 300" preserveAspectRatio="none">
+            <div class="cell" data-index="0" tabindex="0" role="button"></div>
+            <div class="cell" data-index="1" tabindex="0" role="button"></div>
+            <div class="cell" data-index="2" tabindex="0" role="button"></div>
+            <div class="cell" data-index="3" tabindex="0" role="button"></div>
+            <div class="cell" data-index="4" tabindex="0" role="button"></div>
+            <div class="cell" data-index="5" tabindex="0" role="button"></div>
+            <div class="cell" data-index="6" tabindex="0" role="button"></div>
+            <div class="cell" data-index="7" tabindex="0" role="button"></div>
+            <div class="cell" data-index="8" tabindex="0" role="button"></div>
+            <svg aria-hidden="true" focusable="false" class="win-line" id="win-line" viewBox="0 0 300 300" preserveAspectRatio="none">
                 <line x1="0" y1="0" x2="0" y2="0" stroke-width="8" stroke-linecap="round" />
             </svg>
         </div>
@@ -75,7 +75,7 @@
         <!-- Connect Four Board -->
         <div class="connect4-board" id="connect4-board">
             <div class="c4-cells" id="c4-cells"></div>
-            <svg class="c4-win-line" id="c4-win-line" viewBox="0 0 700 600" preserveAspectRatio="none">
+            <svg aria-hidden="true" focusable="false" class="c4-win-line" id="c4-win-line" viewBox="0 0 700 600" preserveAspectRatio="none">
                 <line x1="0" y1="0" x2="0" y2="0" stroke-width="8" stroke-linecap="round" />
             </svg>
         </div>
@@ -83,39 +83,39 @@
         <!-- Gomoku Board -->
         <div class="gomoku-board" id="gomoku-board">
             <div class="gomoku-cells" id="gomoku-cells"></div>
-            <svg class="gomoku-win-line" id="gomoku-win-line" viewBox="0 0 1500 1500" preserveAspectRatio="none">
+            <svg aria-hidden="true" focusable="false" class="gomoku-win-line" id="gomoku-win-line" viewBox="0 0 1500 1500" preserveAspectRatio="none">
                 <line x1="0" y1="0" x2="0" y2="0" stroke-width="6" stroke-linecap="round" />
             </svg>
         </div>
 
         <div class="controls">
             <button class="btn btn-restart" id="restart-btn">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="23 4 23 10 17 10"></polyline>
                     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                 </svg>
                 <span data-i18n="btn-restart">再来一局</span>
             </button>
             <button class="btn btn-undo disabled" id="undo-btn" data-i18n-aria="aria-undo" aria-label="Undo" aria-disabled="true">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 14L4 9l5-5"></path>
                     <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"></path>
                 </svg>
             </button>
             <button class="btn btn-history" id="history-btn" data-i18n-aria="aria-history" aria-label="History">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
             </button>
             <button class="btn btn-settings" id="settings-btn" data-i18n-aria="aria-settings" aria-label="Settings">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
             </button>
             <button class="btn btn-achievements" id="achievements-btn" data-i18n-aria="aria-achievements" aria-label="Achievements">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5h1.5"></path>
                     <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5h-1.5"></path>
                     <path d="M4 22h16"></path>
@@ -125,12 +125,21 @@
                 </svg>
             </button>
             <button class="btn btn-tactics" id="tactics-btn" data-i18n-aria="aria-tactics" aria-label="Tactics">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                 </svg>
             </button>
+            <button class="btn btn-daily" id="daily-btn" data-i18n-aria="aria-daily" aria-label="Daily Challenge" aria-haspopup="dialog">
+                <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span class="daily-badge" id="daily-badge" aria-hidden="true"></span>
+            </button>
             <button class="btn btn-changelog" id="changelog-btn" data-i18n-aria="aria-changelog" aria-label="Changelog">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>
@@ -154,7 +163,7 @@
         <div class="drawer-header">
             <h2 data-i18n="settings-title">设置</h2>
             <button class="drawer-close" id="drawer-close" data-i18n-aria="aria-close" aria-label="Close">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -163,16 +172,16 @@
         <div class="drawer-body">
             <!-- Language -->
             <div class="setting-group">
-                <label class="setting-label" data-i18n="setting-language">语言</label>
+                <span class="setting-label" data-i18n="setting-language">语言</span>
                 <div class="lang-grid" id="lang-grid"></div>
             </div>
 
             <!-- Theme Color -->
             <div class="setting-group">
-                <label class="setting-label" data-i18n="setting-theme-color">主题色</label>
+                <span class="setting-label" data-i18n="setting-theme-color">主题色</span>
                 <div class="color-picker" id="color-picker"></div>
                 <div class="custom-color-row">
-                    <label class="setting-label sub" data-i18n="setting-custom-color">自定义</label>
+                    <label class="setting-label sub" for="custom-color-input" data-i18n="setting-custom-color">自定义</label>
                     <input type="color" id="custom-color-input" value="#7b68ee">
                 </div>
             </div>
@@ -180,7 +189,7 @@
             <!-- Contrast -->
             <div class="setting-group">
                 <div class="slider-header">
-                    <label class="setting-label" data-i18n="setting-contrast">对比度</label>
+                    <label class="setting-label" for="contrast-slider" data-i18n="setting-contrast">对比度</label>
                     <span class="slider-value" id="contrast-value">100%</span>
                 </div>
                 <input type="range" class="range-slider" id="contrast-slider" min="80" max="130" value="100">
@@ -188,7 +197,7 @@
 
             <!-- Font -->
             <div class="setting-group">
-                <label class="setting-label" data-i18n="setting-font">字体</label>
+                <span class="setting-label" data-i18n="setting-font">字体</span>
                 <div class="segmented" id="font-segmented">
                     <button class="seg-btn active" data-font="inter" data-i18n="font-inter">Inter</button>
                     <button class="seg-btn" data-font="serif" data-i18n="font-serif">Serif</button>
@@ -199,7 +208,7 @@
 
             <!-- Dark/Light -->
             <div class="setting-group">
-                <label class="setting-label" data-i18n="setting-theme">外观模式</label>
+                <span class="setting-label" data-i18n="setting-theme">外观模式</span>
                 <div class="segmented" id="theme-segmented">
                     <button class="seg-btn active" data-theme="dark" data-i18n="theme-dark">深色</button>
                     <button class="seg-btn" data-theme="light" data-i18n="theme-light">浅色</button>
@@ -209,32 +218,32 @@
 
             <!-- 3D Board -->
             <div class="setting-row">
-                <span class="setting-label" data-i18n="setting-3d">3D 棋盘</span>
+                <span class="setting-label" id="label-toggle-3d" data-i18n="setting-3d">3D 棋盘</span>
                 <label class="switch">
-                    <input type="checkbox" id="toggle-3d">
+                    <input type="checkbox" id="toggle-3d" aria-labelledby="label-toggle-3d">
                     <span class="slider"></span>
                 </label>
             </div>
 
             <!-- Animations -->
             <div class="setting-row">
-                <span class="setting-label" data-i18n="setting-animations">动画效果</span>
+                <span class="setting-label" id="label-toggle-animations" data-i18n="setting-animations">动画效果</span>
                 <label class="switch">
-                    <input type="checkbox" id="toggle-animations" checked>
+                    <input type="checkbox" id="toggle-animations" checked aria-labelledby="label-toggle-animations">
                     <span class="slider"></span>
                 </label>
             </div>
             <div class="setting-row">
-                <span class="setting-label sub" data-i18n="setting-ripple">落子波纹</span>
+                <span class="setting-label sub" id="label-toggle-ripple" data-i18n="setting-ripple">落子波纹</span>
                 <label class="switch">
-                    <input type="checkbox" id="toggle-ripple" checked>
+                    <input type="checkbox" id="toggle-ripple" checked aria-labelledby="label-toggle-ripple">
                     <span class="slider"></span>
                 </label>
             </div>
 
             <!-- Animation Speed -->
             <div class="setting-group">
-                <label class="setting-label" data-i18n="setting-anim-speed">动画速度</label>
+                <span class="setting-label" data-i18n="setting-anim-speed">动画速度</span>
                 <div class="segmented" id="anim-speed-segmented">
                     <button class="seg-btn" data-speed="slow" data-i18n="speed-slow">慢</button>
                     <button class="seg-btn active" data-speed="normal" data-i18n="speed-normal">中</button>
@@ -244,16 +253,16 @@
 
             <!-- Sound -->
             <div class="setting-row">
-                <span class="setting-label" data-i18n="setting-sound">音效</span>
+                <span class="setting-label" id="label-toggle-sound" data-i18n="setting-sound">音效</span>
                 <label class="switch">
-                    <input type="checkbox" id="toggle-sound" checked>
+                    <input type="checkbox" id="toggle-sound" checked aria-labelledby="label-toggle-sound">
                     <span class="slider"></span>
                 </label>
             </div>
 
             <!-- Sound Style -->
             <div class="setting-group">
-                <label class="setting-label" data-i18n="setting-sound-style">音效风格</label>
+                <span class="setting-label" data-i18n="setting-sound-style">音效风格</span>
                 <div class="segmented" id="sound-style-segmented">
                     <button class="seg-btn active" data-sound="classic" data-i18n="sound-classic">经典</button>
                     <button class="seg-btn" data-sound="electronic" data-i18n="sound-electronic">电子</button>
@@ -274,21 +283,21 @@
             <div class="sound-custom-panel" id="sound-custom-panel">
                 <div class="setting-group">
                     <div class="slider-header">
-                        <label class="setting-label sub" data-i18n="sound-pitch">音高</label>
+                        <label class="setting-label sub" for="pitch-slider" data-i18n="sound-pitch">音高</label>
                         <span class="slider-value" id="pitch-value">0</span>
                     </div>
                     <input type="range" class="range-slider" id="pitch-slider" min="-12" max="12" value="0" step="1">
                 </div>
                 <div class="setting-group">
                     <div class="slider-header">
-                        <label class="setting-label sub" data-i18n="sound-duration">音长</label>
+                        <label class="setting-label sub" for="duration-slider" data-i18n="sound-duration">音长</label>
                         <span class="slider-value" id="duration-value">100%</span>
                     </div>
                     <input type="range" class="range-slider" id="duration-slider" min="50" max="200" value="100">
                 </div>
                 <div class="setting-group">
                     <div class="slider-header">
-                        <label class="setting-label sub" data-i18n="sound-volume">音量</label>
+                        <label class="setting-label sub" for="volume-slider" data-i18n="sound-volume">音量</label>
                         <span class="slider-value" id="volume-value">80%</span>
                     </div>
                     <input type="range" class="range-slider" id="volume-slider" min="0" max="100" value="80">
@@ -298,9 +307,9 @@
 
             <!-- Custom Game Settings -->
             <div class="setting-group" id="custom-game-group">
-                <label class="setting-label" data-i18n="setting-custom-game">自定义游戏</label>
+                <span class="setting-label" data-i18n="setting-custom-game">自定义游戏</span>
                 <div class="custom-game-row">
-                    <label class="setting-label sub" data-i18n="custom-board-size">棋盘大小</label>
+                    <span class="setting-label sub" data-i18n="custom-board-size">棋盘大小</span>
                     <div class="segmented" id="board-size-segmented">
                         <button class="seg-btn" data-size="3">3×3</button>
                         <button class="seg-btn" data-size="5">5×5</button>
@@ -311,22 +320,22 @@
                     </div>
                 </div>
                 <div class="custom-game-row">
-                    <label class="setting-label sub" data-i18n="custom-win-len">连珠数</label>
+                    <label class="setting-label sub" for="custom-win-len" data-i18n="custom-win-len">连珠数</label>
                     <input type="number" class="custom-input" id="custom-win-len" min="3" max="20" value="5">
                 </div>
                 <div class="custom-game-row">
-                    <label class="setting-label sub" data-i18n="custom-board-w">棋盘宽</label>
+                    <label class="setting-label sub" for="custom-board-w" data-i18n="custom-board-w">棋盘宽</label>
                     <input type="number" class="custom-input" id="custom-board-w" min="3" max="20" value="15">
                 </div>
                 <div class="custom-game-row">
-                    <label class="setting-label sub" data-i18n="custom-board-h">棋盘高</label>
+                    <label class="setting-label sub" for="custom-board-h" data-i18n="custom-board-h">棋盘高</label>
                     <input type="number" class="custom-input" id="custom-board-h" min="3" max="20" value="15">
                 </div>
             </div>
 
             <!-- AI Difficulty -->
             <div class="setting-group" id="ai-difficulty-group">
-                <label class="setting-label" data-i18n="setting-difficulty">AI 难度</label>
+                <span class="setting-label" data-i18n="setting-difficulty">AI 难度</span>
                 <div class="segmented" id="difficulty-segmented">
                     <button class="seg-btn" data-diff="easy" data-i18n="diff-easy">简单</button>
                     <button class="seg-btn" data-diff="medium" data-i18n="diff-medium">中等</button>
@@ -336,11 +345,11 @@
 
             <!-- Timer Settings -->
             <div class="setting-group" id="timer-settings-group">
-                <label class="setting-label" data-i18n="setting-timer">对战计时器</label>
+                <span class="setting-label" data-i18n="setting-timer">对战计时器</span>
                 <div class="setting-row">
-                    <span class="setting-label sub" data-i18n="setting-timer-toggle">启用计时</span>
+                    <span class="setting-label sub" id="label-toggle-timer" data-i18n="setting-timer-toggle">启用计时</span>
                     <label class="switch">
-                        <input type="checkbox" id="toggle-timer">
+                        <input type="checkbox" id="toggle-timer" aria-labelledby="label-toggle-timer">
                         <span class="slider"></span>
                     </label>
                 </div>
@@ -358,7 +367,7 @@
             <!-- Statistics -->
             <div class="setting-group" id="stats-group">
                 <div class="stats-header">
-                    <label class="setting-label" data-i18n="setting-stats">游戏统计</label>
+                    <span class="setting-label" data-i18n="setting-stats">游戏统计</span>
                     <button class="btn-stats-reset" id="stats-reset-btn" data-i18n="stats-reset">重置</button>
                 </div>
                 <div class="stats-grid">
@@ -425,7 +434,7 @@
 
             <!-- Data Management -->
             <div class="setting-group" id="data-group">
-                <label class="setting-label" data-i18n="setting-data">数据管理</label>
+                <span class="setting-label" data-i18n="setting-data">数据管理</span>
                 <div class="data-actions">
                     <button class="btn-data" id="data-export-btn" data-i18n="data-export">导出数据</button>
                     <button class="btn-data" id="data-import-btn" data-i18n="data-import">导入数据</button>
@@ -442,7 +451,7 @@
 
             <!-- About -->
             <div class="setting-group" id="about-group">
-                <label class="setting-label" data-i18n="setting-about">关于</label>
+                <span class="setting-label" data-i18n="setting-about">关于</span>
                 <div class="about-links">
                     <a href="https://github.com/28zhong.lecheng/web1" target="_blank" rel="noopener noreferrer" data-i18n="about-repo">仓库地址</a>
                     <a href="https://github.com/28zhong.lecheng" target="_blank" rel="noopener noreferrer" data-i18n="about-github">GitHub 主页</a>
@@ -459,7 +468,7 @@
             <div class="changelog-header">
                 <h2 id="changelog-title" data-i18n="changelog-title">更新公告</h2>
                 <button class="drawer-close" id="changelog-close" data-i18n-aria="aria-close" aria-label="Close">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
@@ -475,7 +484,7 @@
         <div class="drawer-header">
             <h2 data-i18n="history-title">对局历史</h2>
             <button class="drawer-close" id="history-close" data-i18n-aria="aria-close" aria-label="Close">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -483,7 +492,7 @@
         </div>
         <div class="drawer-body" id="history-body">
             <div class="history-empty" id="history-empty">
-                <span class="history-empty-icon">📝</span>
+                <span class="history-empty-icon" role="img" aria-label="Memo">📝</span>
                 <p data-i18n="history-empty">暂无对局记录</p>
                 <p class="history-empty-sub" data-i18n="history-empty-sub">完成一局游戏后，记录将自动保存</p>
             </div>
@@ -498,7 +507,7 @@
         <div class="drawer-header">
             <h2 data-i18n="achievements-title">成就</h2>
             <button class="drawer-close" id="achievements-close" data-i18n-aria="aria-close" aria-label="Close">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -513,7 +522,7 @@
         <div class="drawer-header">
             <h2 data-i18n="tactics-title">战术训练</h2>
             <button class="drawer-close" id="tactics-close" data-i18n-aria="aria-close" aria-label="Close">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -540,7 +549,7 @@
                     <p class="tactics-meta" id="tactics-meta"></p>
                 </div>
                 <button class="drawer-close" id="tactics-modal-close" data-i18n-aria="aria-close" aria-label="Close">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
@@ -549,15 +558,15 @@
             <div class="tactics-instruction" id="tactics-instruction"></div>
             <div class="tactics-board-wrap">
                 <div class="board tactics-board" id="tactics-board">
-                    <div class="cell" data-index="0"></div>
-                    <div class="cell" data-index="1"></div>
-                    <div class="cell" data-index="2"></div>
-                    <div class="cell" data-index="3"></div>
-                    <div class="cell" data-index="4"></div>
-                    <div class="cell" data-index="5"></div>
-                    <div class="cell" data-index="6"></div>
-                    <div class="cell" data-index="7"></div>
-                    <div class="cell" data-index="8"></div>
+                    <div class="cell" data-index="0" tabindex="0" role="button" data-i18n-aria="aria-daily-cell" aria-label="Daily challenge cell"></div>
+                    <div class="cell" data-index="1" tabindex="0" role="button" data-i18n-aria="aria-daily-cell" aria-label="Daily challenge cell"></div>
+                    <div class="cell" data-index="2" tabindex="0" role="button" data-i18n-aria="aria-daily-cell" aria-label="Daily challenge cell"></div>
+                    <div class="cell" data-index="3" tabindex="0" role="button" data-i18n-aria="aria-daily-cell" aria-label="Daily challenge cell"></div>
+                    <div class="cell" data-index="4" tabindex="0" role="button" data-i18n-aria="aria-daily-cell" aria-label="Daily challenge cell"></div>
+                    <div class="cell" data-index="5" tabindex="0" role="button" data-i18n-aria="aria-daily-cell" aria-label="Daily challenge cell"></div>
+                    <div class="cell" data-index="6" tabindex="0" role="button" data-i18n-aria="aria-daily-cell" aria-label="Daily challenge cell"></div>
+                    <div class="cell" data-index="7" tabindex="0" role="button" data-i18n-aria="aria-daily-cell" aria-label="Daily challenge cell"></div>
+                    <div class="cell" data-index="8" tabindex="0" role="button" data-i18n-aria="aria-daily-cell" aria-label="Daily challenge cell"></div>
                 </div>
             </div>
             <div class="tactics-feedback" id="tactics-feedback" aria-live="polite" aria-atomic="true"></div>
@@ -577,7 +586,7 @@
                     <p class="replay-meta" id="replay-meta"></p>
                 </div>
                 <button class="drawer-close" id="replay-close" data-i18n-aria="aria-close" aria-label="Close">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
@@ -603,13 +612,54 @@
             <div class="hotkey-header">
                 <h2 id="hotkey-title" data-i18n="hotkey-title">键盘快捷键</h2>
                 <button class="drawer-close" id="hotkey-close" data-i18n-aria="aria-close" aria-label="Close">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                 </button>
             </div>
             <div class="hotkey-body" id="hotkey-body"></div>
+        </div>
+    </div>
+
+    <!-- Daily Challenge Modal -->
+    <div class="modal" id="daily-modal" role="dialog" aria-modal="true" aria-labelledby="daily-modal-title" aria-describedby="daily-instruction">
+        <div class="modal-content daily-content">
+            <div class="daily-modal-header">
+                <div>
+                    <h2 id="daily-modal-title" data-i18n="daily-modal-title">每日挑战</h2>
+                    <p class="daily-meta" id="daily-meta"></p>
+                </div>
+                <button class="drawer-close" id="daily-modal-close" data-i18n-aria="aria-close" aria-label="Close">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="daily-streak-bar" id="daily-streak-bar">
+                <span class="daily-streak-icon" aria-hidden="true">🔥</span>
+                <span class="daily-streak-text" id="daily-streak-text"></span>
+            </div>
+            <div class="daily-instruction" id="daily-instruction"></div>
+            <div class="daily-board-wrap">
+                <div class="board daily-board" id="daily-board">
+                    <div class="cell" data-index="0" tabindex="0" role="button"></div>
+                    <div class="cell" data-index="1" tabindex="0" role="button"></div>
+                    <div class="cell" data-index="2" tabindex="0" role="button"></div>
+                    <div class="cell" data-index="3" tabindex="0" role="button"></div>
+                    <div class="cell" data-index="4" tabindex="0" role="button"></div>
+                    <div class="cell" data-index="5" tabindex="0" role="button"></div>
+                    <div class="cell" data-index="6" tabindex="0" role="button"></div>
+                    <div class="cell" data-index="7" tabindex="0" role="button"></div>
+                    <div class="cell" data-index="8" tabindex="0" role="button"></div>
+                </div>
+            </div>
+            <div class="daily-feedback" id="daily-feedback" aria-live="polite" aria-atomic="true"></div>
+            <div class="daily-actions">
+                <button class="btn btn-daily-skip" id="daily-skip-btn" data-i18n="daily-skip">跳过</button>
+                <button class="btn btn-daily-share" id="daily-share-btn" style="display:none;" data-i18n="daily-share">分享</button>
+            </div>
         </div>
     </div>
 
