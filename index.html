@@ -101,6 +101,12 @@
                     <path d="M9 14L4 9l5-5"></path>
                     <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"></path>
                 </svg>
+                <span class="undo-tooltip" id="undo-tooltip" data-i18n="undo-tooltip" aria-hidden="true">可撤销 0 步</span>
+            </button>
+            <button class="btn btn-hint disabled" id="hint-btn" data-i18n-aria="aria-hint" aria-label="Hint" aria-disabled="true" style="display:none;">
+                <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
             </button>
             <button class="btn btn-history" id="history-btn" data-i18n-aria="aria-history" aria-label="History">
                 <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -156,6 +162,7 @@
                 </svg>
             </button>
         </div>
+        <div class="sr-only" id="a11y-announcer" aria-live="polite" aria-atomic="true"></div>
     </main>
 
     <!-- Result Modal -->

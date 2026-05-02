@@ -4,6 +4,17 @@
     padding: 0;
     box-sizing: border-box;
 }
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
 
 :root {
     --accent-h: 252; --accent-s: 80%; --accent-l: 67%;
@@ -17,6 +28,7 @@
     --text: #e8e8f0;
     --text-muted: #8888a0;
     --win-glow: rgba(126, 214, 223, 0.4);
+    --hint-line: #7c4dff;
     --shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     --overlay: rgba(0, 0, 0, 0.6);
     --surface-hover: color-mix(in srgb, var(--surface-light) 80%, var(--text) 10%);
@@ -33,6 +45,7 @@
     --text-muted: #6b7280;
     --shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
     --overlay: rgba(0, 0, 0, 0.35);
+    --hint-line: #5e35b1;
 }
 
 @media (prefers-color-scheme: light) {
@@ -44,6 +57,7 @@
         --text-muted: #6b7280;
         --shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
         --overlay: rgba(0, 0, 0, 0.35);
+        --hint-line: #5e35b1;
     }
 }
 
@@ -446,7 +460,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     justify-content: center;
     align-items: center;
     position: relative;
-    transition: transform 0.2s ease, background 0.2s ease;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cell:hover {
@@ -791,7 +805,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     outline-offset: 2px;
 }
 .btn-settings:hover {
-    color: var(--text);
+    color: var(--accent);
     transform: rotate(30deg);
 }
 
@@ -1424,7 +1438,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 .btn-history:hover {
-    color: var(--text);
+    color: var(--accent);
     transform: scale(1.08);
 }
 .btn-history:focus-visible {
@@ -1904,7 +1918,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 
 .btn-undo:not(.disabled):hover {
-    color: var(--text);
+    color: var(--accent);
     transform: scale(1.08);
 }
 
@@ -1917,6 +1931,71 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 .btn-undo:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+}
+#undo-btn {
+    position: relative;
+}
+.undo-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--surface);
+    color: var(--text);
+    padding: 0.4rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--surface-light);
+    z-index: 10;
+}
+#undo-btn:hover .undo-tooltip,
+#undo-btn:focus-visible .undo-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ===== Hint Button ===== */
+.btn-hint {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text-muted);
+    border: 1px solid var(--surface-light);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-hint:not(.disabled):hover {
+    color: var(--accent);
+    transform: scale(1.08);
+}
+.btn-hint.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: default;
+}
+.btn-hint:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+.cell.hint-glow {
+    animation: hint-glow-anim 0.6s ease-in-out 3;
+    background: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.35);
+    box-shadow: inset 0 0 25px var(--hint-line), 0 0 15px var(--hint-line);
+}
+@keyframes hint-glow-anim {
+    0%, 100% { transform: scale(1); box-shadow: inset 0 0 20px var(--hint-line), 0 0 10px var(--hint-line); }
+    50% { transform: scale(1.05); box-shadow: inset 0 0 35px var(--hint-line), 0 0 25px var(--hint-line); }
 }
 
 /* ===== Achievements Button ===== */
@@ -3519,5 +3598,9 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     .daily-board { width: 220px; }
     .rush-board { width: 220px; }
     .editor-board { width: 220px; }
+    .btn-hint { width: 38px; height: 38px; }
+    .btn-undo { width: 38px; height: 38px; }
+    .btn-history { width: 38px; height: 38px; }
+    .btn-settings { width: 38px; height: 38px; }
     .daily-content { padding: 1.5rem; }
 }

@@ -69,8 +69,10 @@
     const changelogBody = document.getElementById('changelog-body');
 
     const SETTINGS_KEY = 'ttt_settings_v1';
+    const a11yAnnouncer = document.getElementById('a11y-announcer');
 
     const undoBtn = document.getElementById('undo-btn');
+    const hintBtn = document.getElementById('hint-btn');
     const historyBtn = document.getElementById('history-btn');
     const historyDrawer = document.getElementById('history-drawer');
     const historyOverlay = document.getElementById('history-overlay');
@@ -206,6 +208,7 @@
     let timerState = { X: 0, O: 0, running: false, activePlayer: null, lastTick: 0 };
     let lastTickSoundTime = 0;
     let timerTimeoutFlag = false;
+    let hintCount = 0;
 
     // Game Statistics
     let gameStats = createEmptyGameStats();
@@ -456,6 +459,9 @@
             'history-confirm-delete': { zh:'确定要删除这条对局记录吗？', en:'Delete this game record?', ja:'この記録を削除しますか？', ko:'이 기록을 삭제하시겠습니까?', fr:'Supprimer cette partie ?', de:'Diesen Eintrag löschen?', es:'¿Eliminar esta partida?', ru:'Удалить эту запись?', it:'Eliminare questa partita?', pt:'Excluir este registro?' },
             'aria-daily-cell': { zh:'每日挑战格子', en:'Daily challenge cell', ja:'デイリーチャレンジのマス', ko:'데일리 챌린지 칸', fr:'Case du défi quotidien', de:'Tägliche Herausforderungs-Zelle', es:'Celda del desafío diario', ru:'Ячейка ежедневного вызова', it:'Cella della sfida quotidiana', pt:'Célula do desafio diário' },
             'aria-undo': { zh:'悔棋', en:'Undo', ja:'待った', ko:'무르기', fr:'Annuler', de:'Rückgängig', es:'Deshacer', ru:'Отменить', it:'Annulla', pt:'Desfazer' },
+            'undo-tooltip': { zh:'可撤销 {count} 步', en:'Undo {count} moves', ja:'{count} 手待った可能', ko:'{count} 수 무르기 가능', fr:'Annuler {count} coups', de:'{count} Züge rückgängig', es:'Deshacer {count} movimientos', ru:'Отменить {count} ходов', it:'Annulla {count} mosse', pt:'Desfazer {count} jogadas' },
+            'aria-hint': { zh:'提示', en:'Hint', ja:'ヒント', ko:'힌트', fr:'Indice', de:'Tipp', es:'Pista', ru:'Подсказка', it:'Suggerimento', pt:'Dica' },
+            'hint-shown': { zh:'已显示提示', en:'Hint shown', ja:'ヒントを表示しました', ko:'힌트 표시됨', fr:'Indice affiché', de:'Tipp angezeigt', es:'Pista mostrada', ru:'Подсказка показана', it:'Suggerimento mostrato', pt:'Dica mostrada' },
             'aria-achievements': { zh:'成就', en:'Achievements', ja:'実績', ko:'업적', fr:'Succès', de:'Erfolge', es:'Logros', ru:'Достижения', it:'Obiettivi', pt:'Conquistas' },
             'aria-tactics': { zh:'战术训练', en:'Tactics', ja:'戦術', ko:'전술', fr:'Tactique', de:'Taktik', es:'Táctica', ru:'Тактика', it:'Tattica', pt:'Tática' },
             'achievements-title': { zh:'成就', en:'Achievements', ja:'実績', ko:'업적', fr:'Succès', de:'Erfolge', es:'Logros', ru:'Достижения', it:'Obiettivi', pt:'Conquistas' },
@@ -541,7 +547,7 @@
             'hotkey-u': { zh:'U', en:'U', ja:'U', ko:'U', fr:'U', de:'U', es:'U', ru:'U', it:'U', pt:'U' },
             'hotkey-u-desc': { zh:'悔棋', en:'Undo move', ja:'待った', ko:'무르기', fr:'Annuler', de:'Rückgängig', es:'Deshacer', ru:'Отменить', it:'Annulla', pt:'Desfazer' },
             'hotkey-h': { zh:'H', en:'H', ja:'H', ko:'H', fr:'H', de:'H', es:'H', ru:'H', it:'H', pt:'H' },
-            'hotkey-h-desc': { zh:'打开对局历史', en:'Open game history', ja:'対局履歴を開く', ko:'대국 기록 열기', fr:'Ouvrir l\'historique', de:'Verlauf öffnen', es:'Abrir historial', ru:'Открыть историю', it:'Apri cronologia', pt:'Abrir histórico' },
+            'hotkey-h-desc': { zh:'提示（人机井字棋可用时）/ 对局历史', en:'Hint (PvE TTT when available) / Open game history', ja:'ヒント（CPU三目並べ利用可能時）/ 対局履歴を開く', ko:'힌트(AI 틱택토 가능 시) / 대국 기록 열기', fr:'Indice (PvE Morpion si disponible) / Ouvrir l\'historique', de:'Tipp (TTT-KI wenn verfügbar) / Verlauf öffnen', es:'Pista (TTT PvE si disponible) / Abrir historial', ru:'Подсказка (PvE Крестики-нолики если доступно) / Открыть историю', it:'Suggerimento (PvE Tris se disponibile) / Apri cronologia', pt:'Dica (PvE Jogo da velha se disponível) / Abrir histórico' },
             'hotkey-a': { zh:'A', en:'A', ja:'A', ko:'A', fr:'A', de:'A', es:'A', ru:'A', it:'A', pt:'A' },
             'hotkey-a-desc': { zh:'打开成就面板', en:'Open achievements', ja:'実績を開く', ko:'업적 열기', fr:'Ouvrir les succès', de:'Erfolge öffnen', es:'Abrir logros', ru:'Открыть достижения', it:'Apri obiettivi', pt:'Abrir conquistas' },
             'hotkey-c': { zh:'C', en:'C', ja:'C', ko:'C', fr:'C', de:'C', es:'C', ru:'C', it:'C', pt:'C' },
@@ -568,6 +574,8 @@
             'editor-invalid': { zh:'局面无效：同一玩家已有三连', en:'Invalid: three in a row already', ja:'無効：すでに三連', ko:'무효: 이미 3연속', fr:'Invalide : trois alignés', de:'Ungültig: Dreierreihe', es:'Inválido: tres en línea', ru:'Недопустимо: три в ряд', it:'Non valido: tris', pt:'Inválido: três em linha' },
             'ach-editor-first': { zh:'造物主', en:'Creator', ja:'創造主', ko:'창조자', fr:'Créateur', de:'Schöpfer', es:'Creador', ru:'Создатель', it:'Creatore', pt:'Criador' },
             'ach-editor-first-desc': { zh:'第一次使用摆盘工坊', en:'Use the Board Editor for the first time', ja:'初めてエディタを使う', ko:'처음으로 에디터 사용', fr:'Utilisez l\'éditeur pour la première fois', de:'Verwenden Sie den Editor zum ersten Mal', es:'Usa el editor por primera vez', ru:'Используйте редактор впервые', it:'Usa l\'editor per la prima volta', pt:'Use o editor pela primeira vez' },
+            'ach-first-hint': { zh:'灵光一闪', en:'Lightbulb Moment', ja:'閃き', ko:'아이디어', fr:'Éclair de génie', de:'Aha-Moment', es:'Momento de inspiración', ru:'Озарение', it:'Momento di ispirazione', pt:'Momento de inspiração' },
+            'ach-first-hint-desc': { zh:'第一次使用提示功能', en:'Use the Hint button for the first time', ja:'初めてヒントを使う', ko:'처음으로 힌트 사용', fr:'Utilisez l\'indice pour la première fois', de:'Verwenden Sie den Tipp zum ersten Mal', es:'Usa la pista por primera vez', ru:'Используйте подсказку впервые', it:'Usa il suggerimento per la prima volta', pt:'Use a dica pela primeira vez' },
             'hotkey-esc': { zh:'Esc', en:'Esc', ja:'Esc', ko:'Esc', fr:'Esc', de:'Esc', es:'Esc', ru:'Esc', it:'Esc', pt:'Esc' },
             'hotkey-esc-desc': { zh:'关闭弹窗/抽屉', en:'Close modal or drawer', ja:'ポップアップ/ドロワーを閉じる', ko:'팝업/서랍 닫기', fr:'Fermer la modale/le tiroir', de:'Modal/Drawer schließen', es:'Cerrar modal o cajón', ru:'Закрыть модалку/панель', it:'Chiudi modale o cassetto', pt:'Fechar modal ou gaveta' },
             'hotkey-ctrl-z': { zh:'Ctrl + Z', en:'Ctrl + Z', ja:'Ctrl + Z', ko:'Ctrl + Z', fr:'Ctrl + Z', de:'Ctrl + Z', es:'Ctrl + Z', ru:'Ctrl + Z', it:'Ctrl + Z', pt:'Ctrl + Z' },
@@ -725,6 +733,22 @@
 
     /* ===== Changelog Data ===== */
     const changelogData = [
+        {
+            version: '0.14.0',
+            date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
+            items: {
+                zh: ['新增走子提示系统：人机对战（井字棋）时，点击提示按钮可高亮显示最佳落子位置', '提示功能仅在玩家回合可用，且仅在标准井字棋人机模式下显示', '提示按钮支持键盘快捷键 H 触发', '新增「灵光一闪」成就：第一次使用提示功能'],
+                en: ['Added Move Hint System: in PvE Tic-Tac-Toe, click the hint button to highlight the best move', 'Hint only available during player turn, and only shown in standard TTT PvE mode', 'Hint button supports H keyboard shortcut', 'Added "Lightbulb Moment" achievement: use the Hint button for the first time'],
+                ja: ['着手ヒントシステム追加：CPU戦（三目並べ）でヒントボタンを押すと最善手がハイライト','ヒントはプレイヤーの番のみ使用可能、標準三目並べCPU戦のみ表示','ヒントボタンはHキーショートカット対応','「閃き」実績追加：初めてヒントを使う'],
+                ko: ['수 힌트 시스템 추가: AI전(틱택토)에서 힌트 버튼 클릭 시 최선의 수 하이라이트','힌트는 플레이어 턴에만 사용 가능, 표준 틱택토 AI전에서만 표시','힌트 버튼 H 키보드 단축키 지원','「아이디어」업적 추가: 처음으로 힌트 사용'],
+                fr: ['Système d\'indice ajouté : en PvE Morpion, cliquez sur le bouton indice pour surligner le meilleur coup','Indice disponible uniquement pendant votre tour, uniquement en Morpion PvE standard','Bouton indice supporte le raccourci H','Succès "Éclair de génie" ajouté : utilisez l\'indice pour la première fois'],
+                de: ['Zug-Tipp-System hinzugefügt: Im TTT-KI-Spiel wird der beste Zug durch Tipp hervorgehoben','Tipp nur am Zug des Spielers verfügbar, nur im Standard-TTT-KI-Modus','Tipp-Taste unterstützt H-Tastenkürzel','"Aha-Moment"-Erfolg hinzugefügt: Tipp zum ersten Mal verwenden'],
+                es: ['Sistema de pistas añadido: en TTT PvE, haz clic en el botón de pista para resaltar el mejor movimiento','Pista solo disponible durante tu turno, solo en modo TTT PvE estándar','Botón de pista admite atajo de teclado H','Logro "Momento de inspiración" añadido: usa la pista por primera vez'],
+                ru: ['Добавлена система подсказок: в PvE Крестики-нолики нажмите кнопку подсказки для выделения лучшего хода','Подсказка доступна только во время хода игрока, только в стандартном режиме','Кнопка подсказки поддерживает горячую клавишу H','Добавлено достижение "Озарение": используйте подсказку впервые'],
+                it: ['Sistema di suggerimenti aggiunto: in PvE Tris, clicca il pulsante suggerimento per evidenziare la mossa migliore','Suggerimento disponibile solo durante il turno del giocatore, solo in modalità Tris PvE standard','Pulsante suggerimento supporta scorciatoia H','Obiettivo "Momento di ispirazione" aggiunto: usa il suggerimento per la prima volta'],
+                pt: ['Sistema de dicas adicionado: em PvE Jogo da velha, clique no botão de dica para destacar a melhor jogada','Dica disponível apenas durante seu turno, apenas no modo PvE padrão','Botão de dica suporta atalho de teclado H','Conquista "Momento de inspiração" adicionada: use a dica pela primeira vez'],
+            }
+        },
         {
             version: '0.8.3',
             date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
@@ -1474,6 +1498,7 @@
         changelogModal.addEventListener('click', e => { if (e.target === changelogModal) closeChangelog(); });
 
         undoBtn.addEventListener('click', undoMove);
+        if (hintBtn) hintBtn.addEventListener('click', getHint);
         historyBtn.addEventListener('click', openHistory);
         historyClose.addEventListener('click', closeHistory);
         historyOverlay.addEventListener('click', closeHistory);
@@ -1629,7 +1654,13 @@
             if (isInputFocused() || isAnyModalOpen()) return;
             if (e.key === 'r' || e.key === 'R') { e.preventDefault(); resetGame(); }
             else if (e.key === 'u' || e.key === 'U') { e.preventDefault(); undoMove(); }
-            else if (e.key === 'h' || e.key === 'H') { e.preventDefault(); openHistory(); }
+            else if (e.key === 'h' || e.key === 'H') {
+                if (e.ctrlKey || e.altKey || e.metaKey) return;
+                e.preventDefault();
+                const canHint = getEffectiveBattleMode() === 'pve' && currentMode === 'ttt' && gameActive && currentPlayer === PLAYER_X;
+                if (canHint) { getHint(); }
+                else { openHistory(); }
+            }
             else if (e.key === 'a' || e.key === 'A') { e.preventDefault(); openAchievements(); }
             else if (e.key === 't' || e.key === 'T') { e.preventDefault(); openTactics(); }
             else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); openDaily(); }
@@ -1755,7 +1786,7 @@
         const diw = document.getElementById('data-import-wrap');
         if (dew) dew.classList.remove('show');
         if (diw) diw.classList.remove('show');
-        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
 
     function setLang(lang) {
@@ -1764,6 +1795,7 @@
         buildLangGrid();
         applyI18n();
         saveSettings();
+        updateUndoButton();
     }
 
     function setTheme(theme) {
@@ -2232,7 +2264,7 @@
     function closeTactics() {
         tacticsDrawer.classList.remove('show');
         tacticsOverlay.classList.remove('show');
-        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
     function resetTacticModalState() {
         if (tacticWrongTimer) { clearTimeout(tacticWrongTimer); tacticWrongTimer = null; }
@@ -2460,7 +2492,7 @@
         if (dailyFocusTimeout) { clearTimeout(dailyFocusTimeout); dailyFocusTimeout = null; }
         if (dailyResetTimeout) clearTimeout(dailyResetTimeout);
         dailyResetTimeout = setTimeout(() => { dailyResetTimeout = null; resetDailyModalState(); }, 350);
-        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
     function resetDailyModalState() {
         if (dailyWrongTimer) { clearTimeout(dailyWrongTimer); dailyWrongTimer = null; }
@@ -2627,7 +2659,7 @@
         stopRushGame();
         rushState.active = false;
         if (rushWrongTimer) { clearTimeout(rushWrongTimer); rushWrongTimer = null; }
-        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
     function resetRushState() {
         if (rushWrongTimer) { clearTimeout(rushWrongTimer); rushWrongTimer = null; }
@@ -2842,7 +2874,7 @@
     }
     function closeEditor() {
         if (editorModal) editorModal.classList.remove('show');
-        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
     function renderEditorBoard() {
         editorCells.forEach((cell, i) => {
@@ -3333,7 +3365,7 @@
 
     function closeHotkeyModal() {
         hotkeyModal.classList.remove('show');
-        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
 
     function renderHotkeyHelp() {
@@ -3798,6 +3830,7 @@
         if (!gameActive || index < 0 || index > 8 || gameBoard[index] !== '') return;
         const elapsed = Date.now() - (moveHistory.length === 0 ? gameStartTime : currentMoveStartTime);
         gameBoard[index] = player;
+        cells.forEach(c => c.classList.remove('hint-glow'));
         moveHistory.push({ player, index, elapsed });
         currentMoveStartTime = Date.now();
         pushBoardSnapshot();
@@ -3819,6 +3852,7 @@
             switchTimerTo(currentPlayer);
         }
         updateUndoButton();
+        updateHintButton();
     }
 
     /* ===== Connect Four ===== */
@@ -3885,6 +3919,7 @@
             switchTimerTo(currentPlayer);
         }
         updateUndoButton();
+        updateHintButton();
     }
 
     function checkWinC4(row, col, player) {
@@ -3954,6 +3989,7 @@
             }
             showModal(icon, title, msg);
         }
+        updateHintButton();
     }
 
     function getWinLineEndpoints(winCells) {
@@ -4204,6 +4240,7 @@
             switchTimerTo(currentPlayer);
         }
         updateUndoButton();
+        updateHintButton();
     }
 
     function getActiveGmkConfig() {
@@ -4283,6 +4320,7 @@
             }
             showModal(icon, title, msg);
         }
+        updateHintButton();
     }
 
     function drawGmkWinLine(winCells, winner) {
@@ -4568,6 +4606,7 @@
             }
             showModal(icon, title, msg);
         }
+        updateHintButton();
     }
 
     function getWinnerText(winner) {
@@ -4666,6 +4705,7 @@
         }
         updateCellAriaLabels();
         updateUndoButton();
+        updateHintButton();
     }
 
     function isC4Mode() {
@@ -4687,7 +4727,7 @@
     }
     function hideModal() {
         modal.classList.remove('show');
-        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
 
     /* ===== Win Line ===== */
@@ -4881,7 +4921,7 @@
     }
     function closeChangelog() {
         changelogModal.classList.remove('show');
-        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
 
     function renderChangelog() {
@@ -4995,7 +5035,7 @@
     function closeHistory() {
         historyDrawer.classList.remove('show');
         historyOverlay.classList.remove('show');
-        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
 
     function clearHistory() {
@@ -5096,7 +5136,7 @@
         replayTimer = null;
         replayPlaying = false;
         replayData = null;
-        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
 
     function renderReplayBoard() {
@@ -5385,12 +5425,114 @@
         switchTimerTo(currentPlayer);
         updateCellAriaLabels();
         updateUndoButton();
+        updateHintButton();
     }
 
     function updateUndoButton() {
         const canUndo = battleMode !== 'aivsai' && boardSnapshots.length > 1;
         undoBtn.classList.toggle('disabled', !canUndo);
         undoBtn.setAttribute('aria-disabled', String(!canUndo));
+        const count = Math.max(0, boardSnapshots.length - 1);
+        const tooltip = document.getElementById('undo-tooltip');
+        if (tooltip) tooltip.textContent = t('undo-tooltip').replace('{count}', count);
+        undoBtn.setAttribute('aria-label', t('aria-undo') + (count > 0 ? ' (' + count + ')' : ''));
+    }
+    function updateHintButton() {
+        if (!hintBtn) return;
+        const bm = getEffectiveBattleMode();
+        const show = bm === 'pve' && currentMode === 'ttt' && gameActive && currentPlayer === PLAYER_X;
+        hintBtn.style.display = show ? 'inline-flex' : 'none';
+        const canHint = show;
+        hintBtn.classList.toggle('disabled', !canHint);
+        hintBtn.setAttribute('aria-disabled', String(!canHint));
+    }
+
+    function getBestMove(board, player) {
+        const opponent = player === PLAYER_X ? PLAYER_O : PLAYER_X;
+        const empty = board.map((v, i) => v === '' ? i : -1).filter(i => i !== -1);
+        if (empty.length === 0) return -1;
+        // Check for immediate win
+        for (const i of empty) {
+            board[i] = player;
+            const win = checkWinForBoard(board, player);
+            board[i] = '';
+            if (win) return i;
+        }
+        // Block opponent's immediate win
+        for (const i of empty) {
+            board[i] = opponent;
+            const win = checkWinForBoard(board, opponent);
+            board[i] = '';
+            if (win) return i;
+        }
+        // Fork opportunity
+        for (const i of empty) {
+            board[i] = player;
+            let wins = 0;
+            for (const j of empty) {
+                if (j === i) continue;
+                board[j] = player;
+                if (checkWinForBoard(board, player)) wins++;
+                board[j] = '';
+            }
+            board[i] = '';
+            if (wins >= 2) return i;
+        }
+        // Block opponent fork
+        for (const i of empty) {
+            board[i] = opponent;
+            let wins = 0;
+            for (const j of empty) {
+                if (j === i) continue;
+                board[j] = opponent;
+                if (checkWinForBoard(board, opponent)) wins++;
+                board[j] = '';
+            }
+            board[i] = '';
+            if (wins >= 2) return i;
+        }
+        // Center
+        if (board[4] === '') return 4;
+        // Opposite corner
+        const corners = [0, 2, 6, 8];
+        for (const c of corners) {
+            const opp = 8 - c;
+            if (board[c] === opponent && board[opp] === '') return opp;
+        }
+        // Empty corner
+        for (const c of corners) if (board[c] === '') return c;
+        // Empty side
+        const sides = [1, 3, 5, 7];
+        for (const s of sides) if (board[s] === '') return s;
+        return empty[0];
+    }
+
+    function checkWinForBoard(board, player) {
+        for (const [a, b, c] of tttWinConditions) {
+            if (board[a] === player && board[b] === player && board[c] === player) return true;
+        }
+        return false;
+    }
+
+    function getHint() {
+        if (isAnyModalOpen()) return;
+        if (getEffectiveBattleMode() !== 'pve' || currentMode !== 'ttt' || !gameActive || currentPlayer !== PLAYER_X) return;
+        if (document.querySelector('.hint-glow')) return; // Already showing
+        const move = getBestMove([...gameBoard], PLAYER_X);
+        if (move === -1) return;
+        // Track hint usage
+        if (achievementStats) {
+            achievementStats.hintsUsed = (achievementStats.hintsUsed || 0) + 1;
+            saveAchievements();
+            checkSingleAchievement('first_hint');
+        }
+        const cell = cells[move];
+        if (!cell) return;
+        cell.classList.add('hint-glow');
+        if (a11yAnnouncer) { a11yAnnouncer.textContent = t('hint-shown'); setTimeout(() => { if (a11yAnnouncer) a11yAnnouncer.textContent = ''; }, 1500); }
+        setTimeout(() => {
+            cell.classList.remove('hint-glow');
+        }, 2000);
     }
 
     /* ===== Achievement System ===== */
@@ -5405,6 +5547,7 @@
             colorsUsed: [],
             soundsUsed: [],
             boardThemesUsed: [],
+            hintsUsed: 0,
             modesPlayed: [],
             battlesPlayed: [],
             fastestWin: null,
@@ -5474,6 +5617,7 @@
         { id: 'all_colors', icon: '🎨', category: 'explorer', getProgress: (s) => Math.min(s.colorsUsed.length, 10), target: 10 },
         { id: 'all_sounds', icon: '🎵', category: 'explorer', getProgress: (s) => Math.min(s.soundsUsed.length, 12), target: 12 },
         { id: 'theme_explorer', icon: '🎨', category: 'explorer', getProgress: (s) => Math.min(s.boardThemesUsed.length, 5), target: 5 },
+        { id: 'first_hint', icon: '💡', category: 'explorer', getProgress: (s) => s.hintsUsed > 0 ? 1 : 0, target: 1 },
         { id: 'all_modes', icon: '🔢', category: 'explorer', getProgress: (s) => Math.min(s.modesPlayed.length, 4), target: 4 },
         { id: 'all_battles', icon: '⚔️', category: 'explorer', getProgress: (s) => Math.min(s.battlesPlayed.length, 3), target: 3 },
         { id: 'ttt_master', icon: '🧠', category: 'master', getProgress: (s) => Math.min(s.winsByMode.ttt, 50), target: 50 },
@@ -5645,7 +5789,7 @@
     function closeAchievements() {
         achievementsDrawer.classList.remove('show');
         achievementsOverlay.classList.remove('show');
-        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
 
     function showAchievementToast(def) {
