@@ -126,6 +126,29 @@
     const dailyShareBtn = document.getElementById('daily-share-btn');
     const dailyCells = Array.from(document.querySelectorAll('#daily-board .cell'));
     const tacticCells = Array.from(document.querySelectorAll('#tactics-board .cell'));
+    // Puzzle Rush elements
+    const rushBtn = document.getElementById('rush-btn');
+    const rushModal = document.getElementById('rush-modal');
+    const rushModalClose = document.getElementById('rush-modal-close');
+    const rushMeta = document.getElementById('rush-meta');
+    const rushHud = document.getElementById('rush-hud');
+    const rushTimerEl = document.getElementById('rush-timer');
+    const rushScoreEl = document.getElementById('rush-score');
+    const rushStreakEl = document.getElementById('rush-streak');
+    const rushStart = document.getElementById('rush-start');
+    const rushStartBtn = document.getElementById('rush-start-btn');
+    const rushGame = document.getElementById('rush-game');
+    const rushInstruction = document.getElementById('rush-instruction');
+    const rushBoard = document.getElementById('rush-board');
+    const rushFeedback = document.getElementById('rush-feedback');
+    const rushSkipBtn = document.getElementById('rush-skip-btn');
+    const rushResult = document.getElementById('rush-result');
+    const rushResultScore = document.getElementById('rush-result-score');
+    const rushResultStats = document.getElementById('rush-result-stats');
+    const rushResultBest = document.getElementById('rush-result-best');
+    const rushRestartBtn = document.getElementById('rush-restart-btn');
+    const rushCloseBtn = document.getElementById('rush-close-btn');
+    const rushCells = Array.from(document.querySelectorAll('#rush-board .cell'));
 
     const PLAYER_X = 'X';
     const PLAYER_O = 'O';
@@ -189,8 +212,15 @@
     let dailyWrongTimer = null;
     let dailyFocusTimeout = null;
     let dailyShareTimeout = null;
+    let dailyResetTimeout = null;
+    // Puzzle Rush state
+    let rushProgress = { bestScore: 0, bestStreak: 0, totalPlayed: 0 };
+    let rushState = { active: false, score: 0, streak: 0, bestStreak: 0, correct: 0, wrong: 0, skipped: 0, timeLeft: 180, currentPuzzle: null, solved: false, usedPuzzles: [] };
+    let rushTimerInterval = null;
+    let rushWrongTimer = null;
     const TACTICS_KEY = 'ttt_tactics_v1';
     const DAILY_KEY = 'ttt_daily_v1';
+    const RUSH_KEY = 'ttt_rush_v1';
 
     const settings = {
         lang: 'zh',
@@ -504,6 +534,8 @@
             'hotkey-t-desc': { zh:'打开战术训练', en:'Open Tactics Trainer', ja:'戦術トレーニングを開く', ko:'전술 훈련 열기', fr:'Ouvrir entraînement tactique', de:'Taktik-Training öffnen', es:'Abrir entrenamiento táctico', ru:'Открыть тактический тренажер', it:'Apri allenamento tattico', pt:'Abrir treinamento tático' },
             'hotkey-d': { zh:'D', en:'D', ja:'D', ko:'D', fr:'D', de:'D', es:'D', ru:'D', it:'D', pt:'D' },
             'hotkey-d-desc': { zh:'打开每日挑战', en:'Open Daily Challenge', ja:'デイリーチャレンジを開く', ko:'데일리 챌린지 열기', fr:'Ouvrir le défi quotidien', de:'Tägliche Herausforderung öffnen', es:'Abrir desafío diario', ru:'Открыть ежедневный вызов', it:'Apri sfida quotidiana', pt:'Abrir desafio diário' },
+            'hotkey-p': { zh:'P', en:'P', ja:'P', ko:'P', fr:'P', de:'P', es:'P', ru:'P', it:'P', pt:'P' },
+            'hotkey-p-desc': { zh:'打开闪电谜题', en:'Open Puzzle Rush', ja:'パズルラッシュを開く', ko:'퍼즐 러시 열기', fr:'Ouvrir Puzzle Rush', de:'Puzzle-Rush öffnen', es:'Abrir Puzzle Rush', ru:'Открыть Puzzle Rush', it:'Apri Puzzle Rush', pt:'Abrir Puzzle Rush' },
             'hotkey-esc': { zh:'Esc', en:'Esc', ja:'Esc', ko:'Esc', fr:'Esc', de:'Esc', es:'Esc', ru:'Esc', it:'Esc', pt:'Esc' },
             'hotkey-esc-desc': { zh:'关闭弹窗/抽屉', en:'Close modal or drawer', ja:'ポップアップ/ドロワーを閉じる', ko:'팝업/서랍 닫기', fr:'Fermer la modale/le tiroir', de:'Modal/Drawer schließen', es:'Cerrar modal o cajón', ru:'Закрыть модалку/панель', it:'Chiudi modale o cassetto', pt:'Fechar modal ou gaveta' },
             'hotkey-ctrl-z': { zh:'Ctrl + Z', en:'Ctrl + Z', ja:'Ctrl + Z', ko:'Ctrl + Z', fr:'Ctrl + Z', de:'Ctrl + Z', es:'Ctrl + Z', ru:'Ctrl + Z', it:'Ctrl + Z', pt:'Ctrl + Z' },
@@ -573,6 +605,37 @@
             'daily-already-done': { zh:'你已完成今日挑战！', en:"You have already completed today's challenge!", ja:'今日のチャレンジは既に完了しています！', ko:'오늘의 챌린지를 이미 완료했습니다!', fr:'Vous avez déjà terminé le défi du jour !', de:'Sie haben die heutige Herausforderung bereits geschafft!', es:'¡Ya has completado el desafío de hoy!', ru:'Вы уже выполнили сегодняшний вызов!', it:'Hai già completato la sfida di oggi!', pt:'Você já completou o desafio de hoje!' },
             'daily-share-text': { zh:'📅 每日挑战 {date} | 类型：{type} | 连胜：{streak} 🔥', en:'📅 Daily Challenge {date} | Type: {type} | Streak: {streak} 🔥', ja:'📅 デイリーチャレンジ {date} | タイプ：{type} | 連勝：{streak} 🔥', ko:'📅 데일리 챌린지 {date} | 유형: {type} | 연승: {streak} 🔥', fr:'📅 Défi quotidien {date} | Type : {type} | Série : {streak} 🔥', de:'📅 Tägliche Herausforderung {date} | Typ: {type} | Serie: {streak} 🔥', es:'📅 Desafío diario {date} | Tipo: {type} | Racha: {streak} 🔥', ru:'📅 Ежедневный вызов {date} | Тип: {type} | Серия: {streak} 🔥', it:'📅 Sfida quotidiana {date} | Tipo: {type} | Serie: {streak} 🔥', pt:'📅 Desafio diário {date} | Tipo: {type} | Sequência: {streak} 🔥' },
             'aria-daily': { zh:'每日挑战', en:'Daily Challenge', ja:'デイリーチャレンジ', ko:'데일리 챌린지', fr:'Défi quotidien', de:'Tägliche Herausforderung', es:'Desafío diario', ru:'Ежедневный вызов', it:'Sfida quotidiana', pt:'Desafio diário' },
+            'aria-rush': { zh:'闪电谜题', en:'Puzzle Rush', ja:'パズルラッシュ', ko:'퍼즐 러시', fr:'Puzzle Rush', de:'Puzzle-Rush', es:'Puzzle Rush', ru:'Puzzle Rush', it:'Puzzle Rush', pt:'Puzzle Rush' },
+            'aria-rush-cell': { zh:'闪电谜题格子', en:'Puzzle Rush cell', ja:'パズルラッシュのマス', ko:'퍼즐 러시 칸', fr:'Case du Puzzle Rush', de:'Puzzle-Rush-Zelle', es:'Celda del Puzzle Rush', ru:'Ячейка Puzzle Rush', it:'Cella del Puzzle Rush', pt:'Célula do Puzzle Rush' },
+            'rush-modal-title': { zh:'闪电谜题', en:'Puzzle Rush', ja:'パズルラッシュ', ko:'퍼즐 러시', fr:'Puzzle Rush', de:'Puzzle-Rush', es:'Puzzle Rush', ru:'Puzzle Rush', it:'Puzzle Rush', pt:'Puzzle Rush' },
+            'rush-time': { zh:'时间', en:'Time', ja:'時間', ko:'시간', fr:'Temps', de:'Zeit', es:'Tiempo', ru:'Время', it:'Tempo', pt:'Tempo' },
+            'rush-score': { zh:'得分', en:'Score', ja:'スコア', ko:'점수', fr:'Score', de:'Punkte', es:'Puntuación', ru:'Счёт', it:'Punteggio', pt:'Pontuação' },
+            'rush-streak': { zh:'连击', en:'Streak', ja:'連勝', ko:'연승', fr:'Série', de:'Serie', es:'Racha', ru:'Серия', it:'Serie', pt:'Sequência' },
+            'rush-start-desc': { zh:'在3分钟内尽可能多地解答战术谜题！', en:'Solve as many tactic puzzles as you can in 3 minutes!', ja:'3分以内にできるだけ多くの戦術問題を解こう！', ko:'3분 안에 최대한 많은 전술 문제를 풀어보세요!', fr:'Résolvez autant d\'énigmes tactiques que possible en 3 minutes !', de:'Lösen Sie so viele Taktik-Rätsel wie möglich in 3 Minuten!', es:'¡Resuelve tantos puzzles tácticos como puedas en 3 minutos!', ru:'Решите как можно больше тактических задач за 3 минуты!', it:'Risolvi più puzzle tattici che puoi in 3 minuti!', pt:'Resolva o máximo de quebra-cabeças táticos em 3 minutos!' },
+            'rush-rule-1': { zh:'答对 +1 分', en:'Correct: +1 point', ja:'正解で +1 ポイント', ko:'정답 +1점', fr:'Correct : +1 point', de:'Richtig: +1 Punkt', es:'Correcto: +1 punto', ru:'Верно: +1 очко', it:'Corretto: +1 punto', pt:'Correto: +1 ponto' },
+            'rush-rule-2': { zh:'答错 -1 分', en:'Wrong: -1 point', ja:'不正解で -1 ポイント', ko:'오답 -1점', fr:'Faux : -1 point', de:'Falsch: -1 Punkt', es:'Incorrecto: -1 punto', ru:'Неверно: -1 очко', it:'Sbagliato: -1 punto', pt:'Errado: -1 ponto' },
+            'rush-rule-3': { zh:'连续答对获得连击奖励', en:'Build a streak for bonus momentum', ja:'連続正解でボーナス', ko:'연속 정답으로 병너스 획득', fr:'Enchaînez pour un bonus', de:'Serien bringen Bonus', es:'Racha para bonificación', ru:'Серия даёт бонус', it:'Serie per bonus', pt:'Sequência para bônus' },
+            'rush-start-btn': { zh:'开始挑战', en:'Start Challenge', ja:'チャレンジ開始', ko:'도전 시작', fr:'Commencer', de:'Herausforderung starten', es:'Iniciar desafío', ru:'Начать вызов', it:'Inizia sfida', pt:'Iniciar desafio' },
+            'rush-skip': { zh:'跳过', en:'Skip', ja:'スキップ', ko:'걍 넘기기', fr:'Passer', de:'Überspringen', es:'Saltar', ru:'Пропустить', it:'Salta', pt:'Pular' },
+            'rush-correct': { zh:'正确！', en:'Correct!', ja:'正解！', ko:'정답!', fr:'Correct !', de:'Richtig!', es:'¡Correcto!', ru:'Верно!', it:'Corretto!', pt:'Correto!' },
+            'rush-wrong': { zh:'错误！', en:'Wrong!', ja:'不正解！', ko:'오답!', fr:'Faux !', de:'Falsch!', es:'¡Incorrecto!', ru:'Неверно!', it:'Sbagliato!', pt:'Errado!' },
+            'rush-result-label': { zh:'最终得分', en:'Final Score', ja:'最終スコア', ko:'최종 점수', fr:'Score final', de:'Endpunktzahl', es:'Puntuación final', ru:'Итоговый счёт', it:'Punteggio finale', pt:'Pontuação final' },
+            'rush-restart-btn': { zh:'再玩一次', en:'Play Again', ja:'もう一度', ko:'다시 하기', fr:'Rejouer', de:'Nochmal spielen', es:'Jugar de nuevo', ru:'Играть снова', it:'Gioca ancora', pt:'Jogar novamente' },
+            'rush-close-btn': { zh:'关闭', en:'Close', ja:'閉じる', ko:'닫기', fr:'Fermer', de:'Schließen', es:'Cerrar', ru:'Закрыть', it:'Chiudi', pt:'Fechar' },
+            'rush-stat-correct': { zh:'正确', en:'Correct', ja:'正解', ko:'정답', fr:'Correct', de:'Richtig', es:'Correcto', ru:'Верно', it:'Corretto', pt:'Correto' },
+            'rush-stat-wrong': { zh:'错误', en:'Wrong', ja:'不正解', ko:'오답', fr:'Faux', de:'Falsch', es:'Incorrecto', ru:'Неверно', it:'Sbagliato', pt:'Errado' },
+            'rush-stat-skipped': { zh:'跳过', en:'Skipped', ja:'スキップ', ko:'걍 넘김', fr:'Passé', de:'Übersprungen', es:'Saltado', ru:'Пропущено', it:'Saltato', pt:'Pulado' },
+            'rush-stat-best-streak': { zh:'最高连击', en:'Best Streak', ja:'最高連勝', ko:'최고 연승', fr:'Meilleure série', de:'Beste Serie', es:'Mejor racha', ru:'Лучшая серия', it:'Migliore serie', pt:'Melhor sequência' },
+            'rush-new-record': { zh:'🎉 新纪录！', en:'🎉 New Record!', ja:'🎉 新記録！', ko:'🎉 신기록!', fr:'🎉 Nouveau record !', de:'🎉 Neuer Rekord!', es:'🎉 ¡Nuevo récord!', ru:'🎉 Новый рекорд!', it:'🎉 Nuovo record!', pt:'🎉 Novo recorde!' },
+            'rush-best-score': { zh:'历史最佳：{score}', en:'Best: {score}', ja:'ベスト：{score}', ko:'최고 점수: {score}', fr:'Meilleur : {score}', de:'Beste: {score}', es:'Mejor: {score}', ru:'Лучший: {score}', it:'Migliore: {score}', pt:'Melhor: {score}' },
+            'ach-rush-first': { zh:'闪电新手', en:'Rush Rookie', ja:'ラッシュ新人', ko:'러시 루키', fr:'Rush Rookie', de:'Rush-Neuling', es:'Rush Novato', ru:'Новичок Rush', it:'Rush Rookie', pt:'Rush Novato' },
+            'ach-rush-first-desc': { zh:'第一次玩闪电谜题', en:'Play Puzzle Rush for the first time', ja:'初めてパズルラッシュをプレイする', ko:'처음으로 퍼즐 러시 플레이', fr:'Jouez à Puzzle Rush pour la première fois', de:'Spielen Sie Puzzle-Rush zum ersten Mal', es:'Juega Puzzle Rush por primera vez', ru:'Сыграйте в Puzzle Rush впервые', it:'Gioca a Puzzle Rush per la prima volta', pt:'Jogue Puzzle Rush pela primeira vez' },
+            'ach-rush-score-10': { zh:'闪电达人', en:'Rush Pro', ja:'ラッシュプロ', ko:'러시 프로', fr:'Rush Pro', de:'Rush-Profi', es:'Rush Pro', ru:'Puzzle Rush Pro', it:'Rush Pro', pt:'Rush Pro' },
+            'ach-rush-score-10-desc': { zh:'闪电谜题得分达到10分', en:'Score 10 points in Puzzle Rush', ja:'パズルラッシュで10ポイント獲得', ko:'퍼즐 러시에서 10점 달성', fr:'Marquez 10 points en Puzzle Rush', de:'Erreichen Sie 10 Punkte im Puzzle-Rush', es:'Consigue 10 puntos en Puzzle Rush', ru:'Наберите 10 очков в Puzzle Rush', it:'Segna 10 punti in Puzzle Rush', pt:'Pontue 10 no Puzzle Rush' },
+            'ach-rush-score-20': { zh:'闪电大师', en:'Rush Master', ja:'ラッシュマスター', ko:'러시 마스터', fr:'Rush Master', de:'Rush-Meister', es:'Rush Master', ru:'Мастер Puzzle Rush', it:'Rush Master', pt:'Rush Mestre' },
+            'ach-rush-score-20-desc': { zh:'闪电谜题得分达到20分', en:'Score 20 points in Puzzle Rush', ja:'パズルラッシュで20ポイント獲得', ko:'퍼즐 러시에서 20점 달성', fr:'Marquez 20 points en Puzzle Rush', de:'Erreichen Sie 20 Punkte im Puzzle-Rush', es:'Consigue 20 puntos en Puzzle Rush', ru:'Наберите 20 очков в Puzzle Rush', it:'Segna 20 punti in Puzzle Rush', pt:'Pontue 20 no Puzzle Rush' },
+            'ach-rush-streak-5': { zh:'连击之王', en:'Streak King', ja:'連勝キング', ko:'연승의 왕', fr:'Roi de la série', de:'Serienkönig', es:'Rey de la racha', ru:'Король серий', it:'Re della serie', pt:'Rei da sequência' },
+            'ach-rush-streak-5-desc': { zh:'闪电谜题连击达到5', en:'Reach a streak of 5 in Puzzle Rush', ja:'パズルラッシュで連勝5を達成', ko:'퍼즐 러시에서 연승 5 달성', fr:'Atteignez une série de 5 en Puzzle Rush', de:'Erreichen Sie eine Serie von 5 im Puzzle-Rush', es:'Alcanza una racha de 5 en Puzzle Rush', ru:'Достигните серии из 5 в Puzzle Rush', it:'Raggiungi una serie di 5 in Puzzle Rush', pt:'Alcance uma sequência de 5 no Puzzle Rush' },
             'ach-daily-first': { zh:'初出茅庐', en:'First Steps', ja:'初挑戦', ko:'첫 도전', fr:'Premiers pas', de:'Erste Schritte', es:'Primeros pasos', ru:'Первые шаги', it:'Primi passi', pt:'Primeiros passos' },
             'ach-daily-first-desc': { zh:'完成第一个每日挑战', en:'Complete your first daily challenge', ja:'初めてのデイリーチャレンジを完了する', ko:'첫 데일리 챌린지 완료', fr:'Terminez votre premier défi quotidien', de:'Schließen Sie Ihre erste tägliche Herausforderung ab', es:'Completa tu primer desafío diario', ru:'Выполните свой первый ежедневный вызов', it:'Completa la tua prima sfida quotidiana', pt:'Complete seu primeiro desafio diário' },
             'ach-daily-streak-7': { zh:'持之以恒', en:'Weekly Warrior', ja:'週間戦士', ko:'주간 전사', fr:'Guerrier hebdomadaire', de:'Wöchentlicher Krieger', es:'Guerrero semanal', ru:'Еженедельный воин', it:'Guerriero settimanale', pt:'Guerreiro semanal' },
@@ -1405,6 +1468,17 @@
             cell.addEventListener('click', () => validateDailyMove(i));
             cell.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); validateDailyMove(i); } });
         });
+        if (rushBtn) rushBtn.addEventListener('click', openRush);
+        if (rushModalClose) rushModalClose.addEventListener('click', closeRush);
+        if (rushModal) rushModal.addEventListener('click', e => { if (e.target === rushModal) closeRush(); });
+        if (rushStartBtn) rushStartBtn.addEventListener('click', startRushGame);
+        if (rushRestartBtn) rushRestartBtn.addEventListener('click', startRushGame);
+        if (rushCloseBtn) rushCloseBtn.addEventListener('click', closeRush);
+        if (rushSkipBtn) rushSkipBtn.addEventListener('click', skipRushPuzzle);
+        if (rushCells) rushCells.forEach((cell, i) => {
+            cell.addEventListener('click', () => validateRushMove(i));
+            cell.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); validateRushMove(i); } });
+        });
         if (tacticsFilter) {
             tacticsFilter.querySelectorAll('.tactics-filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1455,7 +1529,8 @@
 
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
-                if (dailyModal && dailyModal.classList.contains('show')) { closeDaily(); }
+                if (rushModal && rushModal.classList.contains('show')) { closeRush(); }
+                else if (dailyModal && dailyModal.classList.contains('show')) { closeDaily(); }
                 else if (tacticsModal && tacticsModal.classList.contains('show')) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
                 else if (hotkeyModal && hotkeyModal.classList.contains('show')) { closeHotkeyModal(); }
                 else if (replayModal && replayModal.classList.contains('show')) { closeReplay(); }
@@ -1467,7 +1542,8 @@
                 else if (modal && modal.classList.contains('show')) { hideModal(); }
             }
             if (e.key === 'Tab') {
-                const activeModal = (dailyModal && dailyModal.classList.contains('show')) ? dailyModal :
+                const activeModal = (rushModal && rushModal.classList.contains('show')) ? rushModal :
+                    (dailyModal && dailyModal.classList.contains('show')) ? dailyModal :
                     (tacticsModal && tacticsModal.classList.contains('show')) ? tacticsModal :
                     (replayModal && replayModal.classList.contains('show')) ? replayModal :
                     (tacticsDrawer && tacticsDrawer.classList.contains('show')) ? tacticsDrawer :
@@ -1509,12 +1585,18 @@
             else if (e.key === 'a' || e.key === 'A') { e.preventDefault(); openAchievements(); }
             else if (e.key === 't' || e.key === 'T') { e.preventDefault(); openTactics(); }
             else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); openDaily(); }
+            else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); openRush(); }
             else if (e.key === 'c' || e.key === 'C') { e.preventDefault(); openChangelog(); }
             else if (e.key === 's' || e.key === 'S') { e.preventDefault(); openDrawer(); }
             else if (e.key === '?') { e.preventDefault(); openHotkeyModal(); }
             else if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
-                e.preventDefault();
-                navigateBoard(e.key.replace('Arrow', '').toLowerCase());
+                if (rushModal && rushModal.classList.contains('show')) {
+                    e.preventDefault();
+                    navigateRushBoard(e.key.replace('Arrow', '').toLowerCase());
+                } else {
+                    e.preventDefault();
+                    navigateBoard(e.key.replace('Arrow', '').toLowerCase());
+                }
             }
         });
 
@@ -1527,6 +1609,8 @@
         loadDailyProgress();
         updateDailyBadge();
         checkDailyAchievements();
+        loadRushProgress();
+        updateRushBestDisplay();
     }
 
     function buildC4Cells() {
@@ -1603,9 +1687,9 @@
 
     /* ===== Settings Logic ===== */
     function openDrawer() {
-        closeChangelog();
-        closeHistory();
-        closeReplay();
+        closeChangelog(); closeHistory(); closeReplay(); closeRush(); closeDaily();
+        if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
+        if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
         drawer.classList.add('show');
         drawerOverlay.classList.add('show');
@@ -2064,7 +2148,7 @@
         try { localStorage.setItem(TACTICS_KEY, JSON.stringify(tacticsProgress)); } catch (e) {}
     }
     function openTactics() {
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal();
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeRush(); closeDaily();
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         lastFocusedElement = document.activeElement;
         if (tacticsFilter) {
@@ -2259,7 +2343,8 @@
     function openDaily() {
         if (!dailyModal) return;
         if (dailyModal.classList.contains('show')) return;
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal();
+        if (dailyResetTimeout) { clearTimeout(dailyResetTimeout); dailyResetTimeout = null; }
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeRush();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
@@ -2308,7 +2393,8 @@
     function closeDaily() {
         if (dailyModal) dailyModal.classList.remove('show');
         if (dailyFocusTimeout) { clearTimeout(dailyFocusTimeout); dailyFocusTimeout = null; }
-        setTimeout(() => resetDailyModalState(), 350);
+        if (dailyResetTimeout) clearTimeout(dailyResetTimeout);
+        dailyResetTimeout = setTimeout(() => { dailyResetTimeout = null; resetDailyModalState(); }, 350);
         if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
     }
     function resetDailyModalState() {
@@ -2320,17 +2406,19 @@
         if (dailyFeedback) { dailyFeedback.textContent = ''; dailyFeedback.className = 'daily-feedback'; }
         if (dailySkipBtn) dailySkipBtn.style.display = 'inline-block';
         if (dailyShareBtn) { dailyShareBtn.style.display = 'none'; dailyShareBtn.onclick = null; }
-        dailyCells.forEach(cell => { cell.classList.remove('hint-correct', 'hint-wrong', 'disabled'); cell.innerHTML = ''; });
+        dailyCells.forEach(cell => { cell.classList.remove('hint-correct', 'hint-wrong', 'disabled'); cell.innerHTML = ''; cell.setAttribute('tabindex', '0'); });
     }
     function renderDailyBoard() {
         if (!currentDailyPuzzle || !dailyBoard) return;
         dailyCells.forEach((cell, i) => {
             cell.innerHTML = '';
             cell.classList.remove('disabled', 'hint-correct', 'hint-wrong');
+            cell.setAttribute('tabindex', '0');
             const mark = currentDailyPuzzle.board[i];
             if (mark === 'X' || mark === 'O') {
                 cell.appendChild(createMarkSvg(mark));
                 cell.classList.add('disabled');
+                cell.setAttribute('tabindex', '-1');
             }
         });
     }
@@ -2434,6 +2522,241 @@
         } catch (e) {}
     }
 
+    /* ===== Puzzle Rush ===== */
+    function loadRushProgress() {
+        try {
+            const raw = localStorage.getItem(RUSH_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object') {
+                    rushProgress.bestScore = typeof parsed.bestScore === 'number' ? Math.max(0, parsed.bestScore) : 0;
+                    rushProgress.bestStreak = typeof parsed.bestStreak === 'number' ? Math.max(0, parsed.bestStreak) : 0;
+                    rushProgress.totalPlayed = typeof parsed.totalPlayed === 'number' ? Math.max(0, parsed.totalPlayed) : 0;
+                }
+            }
+        } catch (e) {}
+    }
+    function saveRushProgress() {
+        try { localStorage.setItem(RUSH_KEY, JSON.stringify(rushProgress)); } catch (e) {}
+    }
+    function openRush() {
+        if (!rushModal) return;
+        if (rushModal.classList.contains('show')) return;
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal();
+        if (modal) modal.classList.remove('show');
+        if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
+        if (tacticsDrawer) { closeTactics(); }
+        if (dailyModal) { closeDaily(); }
+        stopTimer();
+        stopRushGame();
+        resetRushState();
+        resetRushUI();
+        updateRushBestDisplay();
+        lastFocusedElement = document.activeElement;
+        rushModal.classList.add('show');
+        setTimeout(() => { if (rushStartBtn && rushStartBtn.offsetParent !== null) rushStartBtn.focus(); }, 50);
+    }
+    function closeRush() {
+        if (!rushModal) return;
+        rushModal.classList.remove('show');
+        stopRushGame();
+        rushState.active = false;
+        if (rushWrongTimer) { clearTimeout(rushWrongTimer); rushWrongTimer = null; }
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+    }
+    function resetRushState() {
+        if (rushWrongTimer) { clearTimeout(rushWrongTimer); rushWrongTimer = null; }
+        if (rushTimerInterval) { clearInterval(rushTimerInterval); rushTimerInterval = null; }
+        rushState = { active: false, score: 0, streak: 0, bestStreak: 0, correct: 0, wrong: 0, skipped: 0, timeLeft: 180, currentPuzzle: null, solved: false, usedPuzzles: [] };
+    }
+    function resetRushUI() {
+        if (rushHud) rushHud.style.display = 'none';
+        if (rushStart) rushStart.style.display = 'flex';
+        if (rushGame) rushGame.style.display = 'none';
+        if (rushResult) rushResult.style.display = 'none';
+        if (rushScoreEl) rushScoreEl.textContent = '0';
+        if (rushStreakEl) rushStreakEl.textContent = '0';
+        if (rushTimerEl) { rushTimerEl.textContent = '03:00'; rushTimerEl.classList.remove('warning'); }
+        if (rushFeedback) { rushFeedback.textContent = ''; rushFeedback.className = 'rush-feedback'; }
+        if (rushCells) rushCells.forEach(cell => { cell.classList.remove('hint-correct', 'hint-wrong', 'disabled'); cell.innerHTML = ''; cell.setAttribute('tabindex', '0'); });
+    }
+    function startRushGame() {
+        resetRushState();
+        if (rushStart) rushStart.style.display = 'none';
+        if (rushResult) rushResult.style.display = 'none';
+        if (rushHud) rushHud.style.display = 'grid';
+        if (rushGame) rushGame.style.display = 'flex';
+        if (rushScoreEl) rushScoreEl.textContent = '0';
+        if (rushStreakEl) rushStreakEl.textContent = '0';
+        if (rushTimerEl) { rushTimerEl.textContent = '03:00'; rushTimerEl.classList.remove('warning'); }
+        rushState.active = true;
+        loadRushPuzzle();
+        startRushTimer();
+    }
+    function stopRushGame() {
+        if (rushTimerInterval) { clearInterval(rushTimerInterval); rushTimerInterval = null; }
+        rushState.active = false;
+    }
+    function loadRushPuzzle() {
+        if (!rushState.active) return;
+        if (!tacticsDB.length) {
+            if (rushInstruction) rushInstruction.textContent = t('tactics-empty');
+            return;
+        }
+        let available = tacticsDB.filter(t => !rushState.usedPuzzles.includes(t.id));
+        if (available.length === 0) {
+            rushState.usedPuzzles = [];
+            available = tacticsDB.slice();
+        }
+        const puzzle = available[Math.floor(Math.random() * available.length)];
+        rushState.currentPuzzle = puzzle;
+        rushState.solved = false;
+        rushState.usedPuzzles.push(puzzle.id);
+        if (rushInstruction) {
+            const diffLabel = puzzle.difficulty === 'easy' ? t('tactics-filter-easy') : puzzle.difficulty === 'medium' ? t('tactics-filter-medium') : t('tactics-filter-hard');
+            rushInstruction.textContent = t(puzzle.descKey) + ' (' + diffLabel + ')';
+        }
+        if (rushFeedback) { rushFeedback.textContent = ''; rushFeedback.className = 'rush-feedback'; }
+        if (rushSkipBtn) rushSkipBtn.style.display = 'inline-block';
+        renderRushBoard();
+        setTimeout(() => {
+            if (!rushState.active || !rushModal || !rushModal.classList.contains('show')) return;
+            const firstEmpty = rushCells.find(c => !c.classList.contains('disabled') && c.offsetParent !== null);
+            if (firstEmpty) firstEmpty.focus();
+        }, 50);
+    }
+    function renderRushBoard() {
+        if (!rushState.currentPuzzle || !rushBoard) return;
+        rushCells.forEach((cell, i) => {
+            cell.innerHTML = '';
+            cell.classList.remove('disabled', 'hint-correct', 'hint-wrong');
+            cell.setAttribute('tabindex', '0');
+            const mark = rushState.currentPuzzle.board[i];
+            if (mark === 'X' || mark === 'O') {
+                cell.appendChild(createMarkSvg(mark));
+                cell.classList.add('disabled');
+                cell.setAttribute('tabindex', '-1');
+            }
+        });
+    }
+    function validateRushMove(index) {
+        if (!rushState.active || !rushState.currentPuzzle || rushState.solved) return;
+        const cell = rushCells[index];
+        if (!cell || cell.classList.contains('disabled')) return;
+        if (rushState.currentPuzzle.correctMoves.includes(index)) {
+            if (rushWrongTimer) { clearTimeout(rushWrongTimer); rushWrongTimer = null; }
+            rushCells.forEach(c => c.classList.remove('hint-wrong'));
+            rushState.solved = true;
+            rushState.score++;
+            rushState.streak++;
+            if (rushState.streak > rushState.bestStreak) rushState.bestStreak = rushState.streak;
+            rushState.correct++;
+            cell.appendChild(createMarkSvg(rushState.currentPuzzle.player));
+            cell.classList.add('hint-correct', 'disabled');
+            cell.setAttribute('tabindex', '-1');
+            if (rushSkipBtn) rushSkipBtn.style.display = 'none';
+            if (rushScoreEl) rushScoreEl.textContent = rushState.score;
+            if (rushStreakEl) rushStreakEl.textContent = rushState.streak;
+            if (rushFeedback) { rushFeedback.textContent = t('rush-correct'); rushFeedback.className = 'rush-feedback correct'; }
+            playWinSound();
+            setTimeout(() => { if (rushState.active) loadRushPuzzle(); }, 400);
+        } else {
+            if (rushWrongTimer) { clearTimeout(rushWrongTimer); rushWrongTimer = null; }
+            rushCells.forEach(c => c.classList.remove('hint-wrong'));
+            rushState.score = Math.max(0, rushState.score - 1);
+            rushState.streak = 0;
+            rushState.wrong++;
+            cell.classList.add('hint-wrong');
+            if (rushScoreEl) rushScoreEl.textContent = rushState.score;
+            if (rushStreakEl) rushStreakEl.textContent = '0';
+            if (rushFeedback) { rushFeedback.textContent = t('rush-wrong'); rushFeedback.className = 'rush-feedback wrong'; }
+            playErrorSound();
+            rushWrongTimer = setTimeout(() => { rushCells.forEach(c => c.classList.remove('hint-wrong')); rushWrongTimer = null; }, 600);
+        }
+    }
+    function skipRushPuzzle() {
+        if (!rushState.active) return;
+        if (rushWrongTimer) { clearTimeout(rushWrongTimer); rushWrongTimer = null; }
+        rushCells.forEach(c => c.classList.remove('hint-wrong'));
+        rushState.streak = 0;
+        rushState.skipped++;
+        if (rushStreakEl) rushStreakEl.textContent = '0';
+        if (rushFeedback) { rushFeedback.textContent = ''; rushFeedback.className = 'rush-feedback'; }
+        loadRushPuzzle();
+    }
+    function startRushTimer() {
+        if (rushTimerInterval) clearInterval(rushTimerInterval);
+        rushState.timeLeft = 180;
+        rushTimerInterval = setInterval(tickRushTimer, 1000);
+    }
+    function tickRushTimer() {
+        if (!rushState.active) return;
+        rushState.timeLeft--;
+        if (rushTimerEl) {
+            rushTimerEl.textContent = formatRushTime(rushState.timeLeft);
+            if (rushState.timeLeft <= 10) rushTimerEl.classList.add('warning');
+            else rushTimerEl.classList.remove('warning');
+        }
+        if (rushState.timeLeft <= 0) {
+            endRush();
+        }
+    }
+    function formatRushTime(sec) {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+    function endRush() {
+        stopRushGame();
+        playTimeoutSound();
+        rushProgress.totalPlayed++;
+        let isNewRecord = false;
+        if (rushState.score > rushProgress.bestScore) {
+            rushProgress.bestScore = rushState.score;
+            isNewRecord = true;
+        }
+        if (rushState.bestStreak > rushProgress.bestStreak) {
+            rushProgress.bestStreak = rushState.bestStreak;
+        }
+        saveRushProgress();
+        checkRushAchievements();
+        if (rushGame) rushGame.style.display = 'none';
+        if (rushResult) rushResult.style.display = 'flex';
+        renderRushResult(isNewRecord);
+        setTimeout(() => {
+            if (!rushModal || !rushModal.classList.contains('show')) return;
+            const focusable = rushResult ? Array.from(rushResult.querySelectorAll('button')).filter(el => el.offsetParent !== null) : [];
+            if (focusable.length) focusable[0].focus();
+        }, 100);
+    }
+    function renderRushResult(isNewRecord) {
+        if (rushResultScore) rushResultScore.textContent = rushState.score;
+        if (rushResultStats) {
+            rushResultStats.innerHTML = '<div class="rush-result-stat"><div class="rush-result-stat-value">' + rushState.correct + '</div><div class="rush-result-stat-label">' + t('rush-stat-correct') + '</div></div>' +
+                '<div class="rush-result-stat"><div class="rush-result-stat-value">' + rushState.wrong + '</div><div class="rush-result-stat-label">' + t('rush-stat-wrong') + '</div></div>' +
+                '<div class="rush-result-stat"><div class="rush-result-stat-value">' + rushState.skipped + '</div><div class="rush-result-stat-label">' + t('rush-stat-skipped') + '</div></div>' +
+                '<div class="rush-result-stat"><div class="rush-result-stat-value">' + rushState.bestStreak + '</div><div class="rush-result-stat-label">' + t('rush-stat-best-streak') + '</div></div>';
+        }
+        if (rushResultBest) {
+            if (isNewRecord) {
+                rushResultBest.textContent = t('rush-new-record');
+                rushResultBest.className = 'rush-result-best new-record';
+            } else {
+                rushResultBest.textContent = t('rush-best-score').replace('{score}', rushProgress.bestScore);
+                rushResultBest.className = 'rush-result-best';
+            }
+        }
+    }
+    function updateRushBestDisplay() {
+        if (rushMeta) rushMeta.textContent = t('rush-best-score').replace('{score}', rushProgress.bestScore);
+    }
+    function checkRushAchievements() {
+        if (rushProgress.totalPlayed >= 1) checkSingleAchievement('rush_first');
+        if (rushProgress.bestScore >= 10) checkSingleAchievement('rush_score_10');
+        if (rushProgress.bestScore >= 20) checkSingleAchievement('rush_score_20');
+        if (rushState.bestStreak >= 5) checkSingleAchievement('rush_streak_5');
+    }
+
     /* ===== Color Helpers ===== */
     function hexToRgb(hex) {
         if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) hex = '#7b68ee';
@@ -2530,11 +2853,13 @@
     }
 
     function playTickSound() {
+        if (!settings.sound) return;
         initAudio();
         playOsc(880, 'sine', 0.06, 0.08);
     }
 
     function playTimeoutSound() {
+        if (!settings.sound) return;
         initAudio();
         playOsc(200, 'sawtooth', 0.4, 0.12);
         setTimeout(() => playOsc(150, 'sawtooth', 0.4, 0.12), 120);
@@ -2685,7 +3010,8 @@
             (achievementsDrawer && achievementsDrawer.classList.contains('show')) ||
             (tacticsDrawer && tacticsDrawer.classList.contains('show')) ||
             (tacticsModal && tacticsModal.classList.contains('show')) ||
-            (dailyModal && dailyModal.classList.contains('show'));
+            (dailyModal && dailyModal.classList.contains('show')) ||
+            (rushModal && rushModal.classList.contains('show'));
     }
 
     function getActiveBoardCells() {
@@ -2749,6 +3075,31 @@
         if (targetCell) targetCell.focus();
     }
 
+    function navigateRushBoard(direction) {
+        if (!rushModal || !rushModal.classList.contains('show')) return;
+        const activeEl = document.activeElement;
+        const isRushCell = activeEl.classList.contains('cell') && activeEl.closest('#rush-board');
+        if (!isRushCell) {
+            const first = rushCells.find(c => !c.classList.contains('disabled') && c.offsetParent !== null);
+            if (first) first.focus();
+            return;
+        }
+        const idx = parseInt(activeEl.dataset.index, 10);
+        if (isNaN(idx)) return;
+        const row = Math.floor(idx / 3);
+        const col = idx % 3;
+        let targetR = row, targetC = col;
+        switch (direction) {
+            case 'up': targetR = Math.max(0, row - 1); break;
+            case 'down': targetR = Math.min(2, row + 1); break;
+            case 'left': targetC = Math.max(0, col - 1); break;
+            case 'right': targetC = Math.min(2, col + 1); break;
+        }
+        const targetIdx = targetR * 3 + targetC;
+        const targetCell = rushCells[targetIdx];
+        if (targetCell && !targetCell.classList.contains('disabled')) targetCell.focus();
+    }
+
     function handleNumberKey(num, e) {
         if (isInputFocused()) return;
         if (dailyModal && dailyModal.classList.contains('show')) {
@@ -2761,6 +3112,12 @@
             const map = { 7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: 8 };
             const idx = map[num];
             if (idx !== undefined) { e.preventDefault(); validateTacticMove(idx); }
+            return;
+        }
+        if (rushModal && rushModal.classList.contains('show')) {
+            const map = { 7: 0, 8: 1, 9: 2, 4: 3, 5: 4, 6: 5, 1: 6, 2: 7, 3: 8 };
+            const idx = map[num];
+            if (idx !== undefined) { e.preventDefault(); validateRushMove(idx); }
             return;
         }
         if (isAnyModalOpen()) return;
@@ -2787,13 +3144,8 @@
     }
 
     function openHotkeyModal() {
-        closeDrawer();
-        closeHistory();
-        closeChangelog();
-        closeReplay();
-        closeAchievements();
-        closeDaily();
-        if (tacticsDrawer) tacticsDrawer.classList.remove('show');
+        closeDrawer(); closeHistory(); closeChangelog(); closeReplay(); closeAchievements(); closeDaily(); closeRush();
+        if (tacticsDrawer) { closeTactics(); }
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         lastFocusedElement = document.activeElement;
         renderHotkeyHelp();
@@ -2826,6 +3178,7 @@
                     { kbd: t('hotkey-a'), desc: t('hotkey-a-desc') },
                     { kbd: t('hotkey-t'), desc: t('hotkey-t-desc') },
                     { kbd: t('hotkey-d'), desc: t('hotkey-d-desc') },
+                    { kbd: t('hotkey-p'), desc: t('hotkey-p-desc') },
                     { kbd: t('hotkey-c'), desc: t('hotkey-c-desc') },
                     { kbd: t('hotkey-s'), desc: t('hotkey-s-desc') },
                     { kbd: t('hotkey-question'), desc: t('hotkey-question-desc') },
@@ -2848,14 +3201,16 @@
     /* ===== Audio ===== */
     function initAudio() {
         if (!audioCtx) {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (AudioContext) audioCtx = new AudioContext();
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) audioCtx = new AudioContext();
+            } catch (e) {}
         }
     }
 
     function playOsc(freq, type, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = type;
@@ -2870,7 +3225,7 @@
 
     function playFiltered(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         const filter = audioCtx.createBiquadFilter();
@@ -2890,7 +3245,7 @@
 
     function playRetro(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'square';
@@ -2905,7 +3260,7 @@
 
     function playWoodTone(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
@@ -2920,7 +3275,7 @@
 
     function playBell(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
@@ -2945,7 +3300,7 @@
 
     function playSpace(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         const filter = audioCtx.createBiquadFilter();
@@ -2965,7 +3320,7 @@
 
     function playDrum(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'triangle';
@@ -2981,7 +3336,7 @@
 
     function playPiano(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         playOsc(freq, 'sine', duration, vol * 0.6);
         setTimeout(() => playOsc(freq * 2, 'sine', duration * 0.5, vol * 0.2), 10);
         setTimeout(() => playOsc(freq * 3, 'sine', duration * 0.3, vol * 0.1), 20);
@@ -2989,7 +3344,7 @@
 
     function playSynth(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         const lfo = audioCtx.createOscillator();
@@ -3013,10 +3368,11 @@
 
     function playChiptune(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const notes = [freq, freq * 1.25, freq * 1.5, freq * 2];
         notes.forEach((f, i) => {
             setTimeout(() => {
+                if (!audioCtx) return;
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'square';
@@ -3033,7 +3389,7 @@
 
     function playPluck(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
@@ -3048,7 +3404,7 @@
 
     function playCrystal(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
@@ -3073,6 +3429,7 @@
     }
 
     function playMoveSound(player) {
+        if (!settings.sound) return;
         initAudio();
         const style = settings.soundStyle;
         const baseFreq = player === PLAYER_X ? 523.25 : 392;
@@ -3092,6 +3449,7 @@
     }
 
     function playWinSound() {
+        if (!settings.sound) return;
         initAudio();
         const style = settings.soundStyle;
         const notes = [523.25, 659.25, 783.99, 1046.50];
@@ -3110,6 +3468,7 @@
     }
 
     function playDrawSound() {
+        if (!settings.sound) return;
         initAudio();
         const style = settings.soundStyle;
         if (style === 'classic') { playOsc(261.63, 'triangle', 0.3, 0.1); setTimeout(() => playOsc(196, 'triangle', 0.3, 0.1), 180); }
@@ -4330,9 +4689,9 @@
 
     /* ===== Changelog ===== */
     function openChangelog() {
-        closeDrawer();
-        closeHistory();
-        closeReplay();
+        closeDrawer(); closeHistory(); closeReplay(); closeRush(); closeDaily();
+        if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
+        if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
         renderChangelog();
         changelogModal.classList.add('show');
@@ -4441,9 +4800,9 @@
     }
 
     function openHistory() {
-        closeDrawer();
-        closeChangelog();
-        closeReplay();
+        closeDrawer(); closeChangelog(); closeReplay(); closeRush(); closeDaily();
+        if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
+        if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
         renderHistory();
         historyDrawer.classList.add('show');
@@ -4532,9 +4891,9 @@
 
     /* ===== Replay ===== */
     function openReplay(record) {
-        closeHistory();
-        closeDrawer();
-        closeChangelog();
+        closeHistory(); closeDrawer(); closeChangelog(); closeRush(); closeDaily();
+        if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
+        if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
         replayData = record;
         replayStep = 0;
@@ -4908,6 +5267,10 @@
         { id: 'daily_first', icon: '📅', category: 'explorer', getProgress: () => (dailyProgress.history || []).length >= 1 ? 1 : 0, target: 1 },
         { id: 'daily_streak_7', icon: '🔥', category: 'explorer', getProgress: () => (dailyProgress.streak || 0) >= 7 ? 1 : 0, target: 1 },
         { id: 'daily_streak_30', icon: '👑', category: 'master', getProgress: () => (dailyProgress.streak || 0) >= 30 ? 1 : 0, target: 1 },
+        { id: 'rush_first', icon: '⚡', category: 'explorer', getProgress: () => (rushProgress.totalPlayed || 0) >= 1 ? 1 : 0, target: 1 },
+        { id: 'rush_score_10', icon: '⚡', category: 'explorer', getProgress: () => (rushProgress.bestScore || 0) >= 10 ? 1 : 0, target: 1 },
+        { id: 'rush_score_20', icon: '⚡', category: 'master', getProgress: () => (rushProgress.bestScore || 0) >= 20 ? 1 : 0, target: 1 },
+        { id: 'rush_streak_5', icon: '🔥', category: 'explorer', getProgress: () => (rushProgress.bestStreak || 0) >= 5 ? 1 : 0, target: 1 },
         { id: 'tactic_first', icon: '🧩', category: 'explorer', getProgress: () => (tacticsProgress.completed || []).length >= 1 ? 1 : 0, target: 1 },
         { id: 'tactic_all_easy', icon: '🎯', category: 'explorer', getProgress: () => {
             const done = tacticsProgress.completed || [];
@@ -5083,10 +5446,9 @@
     }
 
     function openAchievements() {
-        closeDrawer();
-        closeChangelog();
-        closeHistory();
-        closeReplay();
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeRush(); closeDaily(); closeHotkeyModal();
+        if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
+        if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
         renderAchievements();
         achievementsDrawer.classList.add('show');

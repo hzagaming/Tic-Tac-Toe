@@ -129,6 +129,11 @@
                     <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                 </svg>
             </button>
+            <button class="btn btn-rush" id="rush-btn" data-i18n-aria="aria-rush" aria-label="Puzzle Rush">
+                <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+            </button>
             <button class="btn btn-daily" id="daily-btn" data-i18n-aria="aria-daily" aria-label="Daily Challenge" aria-haspopup="dialog">
                 <svg aria-hidden="true" focusable="false" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -619,6 +624,79 @@
                 </button>
             </div>
             <div class="hotkey-body" id="hotkey-body"></div>
+        </div>
+    </div>
+
+    <!-- Puzzle Rush Modal -->
+    <div class="modal" id="rush-modal" role="dialog" aria-modal="true" aria-labelledby="rush-modal-title">
+        <div class="modal-content rush-content">
+            <div class="rush-modal-header">
+                <div>
+                    <h2 id="rush-modal-title" data-i18n="rush-modal-title">闪电谜题</h2>
+                    <p class="rush-meta" id="rush-meta"></p>
+                </div>
+                <button class="drawer-close" id="rush-modal-close" data-i18n-aria="aria-close" aria-label="Close">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="rush-hud" id="rush-hud" style="display:none;">
+                <div class="rush-hud-item">
+                    <span class="rush-hud-label" data-i18n="rush-time">时间</span>
+                    <span class="rush-hud-value" id="rush-timer">03:00</span>
+                </div>
+                <div class="rush-hud-item rush-hud-score">
+                    <span class="rush-hud-label" data-i18n="rush-score">得分</span>
+                    <span class="rush-hud-value" id="rush-score">0</span>
+                </div>
+                <div class="rush-hud-item">
+                    <span class="rush-hud-label" data-i18n="rush-streak">连击</span>
+                    <span class="rush-hud-value" id="rush-streak">0</span>
+                </div>
+            </div>
+            <div class="rush-start" id="rush-start">
+                <div class="rush-start-icon" aria-hidden="true">⚡</div>
+                <p class="rush-start-desc" data-i18n="rush-start-desc">在3分钟内尽可能多地解答战术谜题！</p>
+                <ul class="rush-rules">
+                    <li data-i18n="rush-rule-1">答对 +1 分</li>
+                    <li data-i18n="rush-rule-2">答错 -1 分</li>
+                    <li data-i18n="rush-rule-3">连续答对获得连击奖励</li>
+                </ul>
+                <button class="btn btn-rush-start" id="rush-start-btn" data-i18n="rush-start-btn">开始挑战</button>
+            </div>
+            <div class="rush-game" id="rush-game" style="display:none;">
+                <div class="rush-instruction" id="rush-instruction"></div>
+                <div class="rush-board-wrap">
+                    <div class="board rush-board" id="rush-board">
+                        <div class="cell" data-index="0" tabindex="0" role="button" data-i18n-aria="aria-rush-cell" aria-label="Puzzle Rush cell"></div>
+                        <div class="cell" data-index="1" tabindex="0" role="button" data-i18n-aria="aria-rush-cell" aria-label="Puzzle Rush cell"></div>
+                        <div class="cell" data-index="2" tabindex="0" role="button" data-i18n-aria="aria-rush-cell" aria-label="Puzzle Rush cell"></div>
+                        <div class="cell" data-index="3" tabindex="0" role="button" data-i18n-aria="aria-rush-cell" aria-label="Puzzle Rush cell"></div>
+                        <div class="cell" data-index="4" tabindex="0" role="button" data-i18n-aria="aria-rush-cell" aria-label="Puzzle Rush cell"></div>
+                        <div class="cell" data-index="5" tabindex="0" role="button" data-i18n-aria="aria-rush-cell" aria-label="Puzzle Rush cell"></div>
+                        <div class="cell" data-index="6" tabindex="0" role="button" data-i18n-aria="aria-rush-cell" aria-label="Puzzle Rush cell"></div>
+                        <div class="cell" data-index="7" tabindex="0" role="button" data-i18n-aria="aria-rush-cell" aria-label="Puzzle Rush cell"></div>
+                        <div class="cell" data-index="8" tabindex="0" role="button" data-i18n-aria="aria-rush-cell" aria-label="Puzzle Rush cell"></div>
+                    </div>
+                </div>
+                <div class="rush-feedback" id="rush-feedback" aria-live="polite" aria-atomic="true"></div>
+                <div class="rush-actions">
+                    <button class="btn btn-rush-skip" id="rush-skip-btn" data-i18n="rush-skip">跳过</button>
+                </div>
+            </div>
+            <div class="rush-result" id="rush-result" style="display:none;">
+                <div class="rush-result-icon" aria-hidden="true">🏁</div>
+                <div class="rush-result-score" id="rush-result-score">0</div>
+                <div class="rush-result-label" data-i18n="rush-result-label">最终得分</div>
+                <div class="rush-result-stats" id="rush-result-stats"></div>
+                <div class="rush-result-best" id="rush-result-best"></div>
+                <div class="rush-result-actions">
+                    <button class="btn btn-rush-restart" id="rush-restart-btn" data-i18n="rush-restart-btn">再玩一次</button>
+                    <button class="btn btn-rush-close" id="rush-close-btn" data-i18n="rush-close-btn">关闭</button>
+                </div>
+            </div>
         </div>
     </div>
 
