@@ -149,6 +149,16 @@
     const rushRestartBtn = document.getElementById('rush-restart-btn');
     const rushCloseBtn = document.getElementById('rush-close-btn');
     const rushCells = Array.from(document.querySelectorAll('#rush-board .cell'));
+    // Board Editor elements
+    const editorBtn = document.getElementById('editor-btn');
+    const editorModal = document.getElementById('editor-modal');
+    const editorModalClose = document.getElementById('editor-modal-close');
+    const editorBoard = document.getElementById('editor-board');
+    const editorPlayerToggle = document.getElementById('editor-player-toggle');
+    const editorPlayerMark = document.getElementById('editor-player-mark');
+    const editorClearBtn = document.getElementById('editor-clear-btn');
+    const editorStartBtn = document.getElementById('editor-start-btn');
+    const editorCells = Array.from(document.querySelectorAll('#editor-board .cell'));
 
     const PLAYER_X = 'X';
     const PLAYER_O = 'O';
@@ -218,6 +228,9 @@
     let rushState = { active: false, score: 0, streak: 0, bestStreak: 0, correct: 0, wrong: 0, skipped: 0, timeLeft: 180, currentPuzzle: null, solved: false, usedPuzzles: [] };
     let rushTimerInterval = null;
     let rushWrongTimer = null;
+    // Board Editor state
+    let editorBoardState = Array(9).fill('');
+    let editorPlayer = 'X';
     const TACTICS_KEY = 'ttt_tactics_v1';
     const DAILY_KEY = 'ttt_daily_v1';
     const RUSH_KEY = 'ttt_rush_v1';
@@ -536,6 +549,18 @@
             'hotkey-d-desc': { zh:'打开每日挑战', en:'Open Daily Challenge', ja:'デイリーチャレンジを開く', ko:'데일리 챌린지 열기', fr:'Ouvrir le défi quotidien', de:'Tägliche Herausforderung öffnen', es:'Abrir desafío diario', ru:'Открыть ежедневный вызов', it:'Apri sfida quotidiana', pt:'Abrir desafio diário' },
             'hotkey-p': { zh:'P', en:'P', ja:'P', ko:'P', fr:'P', de:'P', es:'P', ru:'P', it:'P', pt:'P' },
             'hotkey-p-desc': { zh:'打开闪电谜题', en:'Open Puzzle Rush', ja:'パズルラッシュを開く', ko:'퍼즐 러시 열기', fr:'Ouvrir Puzzle Rush', de:'Puzzle-Rush öffnen', es:'Abrir Puzzle Rush', ru:'Открыть Puzzle Rush', it:'Apri Puzzle Rush', pt:'Abrir Puzzle Rush' },
+            'hotkey-z': { zh:'Z', en:'Z', ja:'Z', ko:'Z', fr:'Z', de:'Z', es:'Z', ru:'Z', it:'Z', pt:'Z' },
+            'hotkey-z-desc': { zh:'打开摆盘工坊', en:'Open Board Editor', ja:'エディタを開く', ko:'에디터 열기', fr:'Ouvrir l\'éditeur', de:'Editor öffnen', es:'Abrir editor', ru:'Открыть редактор', it:'Apri editor', pt:'Abrir editor' },
+            'aria-editor': { zh:'摆盘工坊', en:'Board Editor', ja:'エディタ', ko:'에디터', fr:'Éditeur', de:'Editor', es:'Editor', ru:'Редактор', it:'Editor', pt:'Editor' },
+            'aria-editor-cell': { zh:'编辑格子', en:'Editor cell', ja:'エディタのマス', ko:'에디터 칸', fr:'Case de l\'éditeur', de:'Editor-Zelle', es:'Celda del editor', ru:'Ячейка редактора', it:'Cella dell\'editor', pt:'Célula do editor' },
+            'editor-modal-title': { zh:'摆盘工坊', en:'Board Editor', ja:'ボードエディタ', ko:'보드 에디터', fr:'Éditeur de plateau', de:'Brett-Editor', es:'Editor de tablero', ru:'Редактор доски', it:'Editor di scacchiera', pt:'Editor de tabuleiro' },
+            'editor-meta': { zh:'自由设置局面，然后开始对战', en:'Set up any position, then play', ja:'好きな局面を作って対戦しよう', ko:'원하는 국면을 설정하고 대전하세요', fr:'Créez une position, puis jouez', de:'Beliebige Position aufbauen', es:'Crea cualquier posición y juega', ru:'Создайте любую позицию и играйте', it:'Crea una posizione e gioca', pt:'Crie qualquer posição e jogue' },
+            'editor-player-label': { zh:'当前回合', en:'To Move', ja:'手番', ko:'현재 턴', fr:'À jouer', de:'Am Zug', es:'Turno', ru:'Ход', it:'Turno', pt:'Vez' },
+            'editor-clear': { zh:'清空', en:'Clear', ja:'クリア', ko:'초기화', fr:'Vider', de:'Leeren', es:'Vaciar', ru:'Очистить', it:'Cancella', pt:'Limpar' },
+            'editor-start': { zh:'开始游戏', en:'Start Game', ja:'ゲーム開始', ko:'게임 시작', fr:'Commencer', de:'Spiel starten', es:'Iniciar juego', ru:'Начать игру', it:'Inizia partita', pt:'Iniciar jogo' },
+            'editor-invalid': { zh:'局面无效：同一玩家已有三连', en:'Invalid: three in a row already', ja:'無効：すでに三連', ko:'무효: 이미 3연속', fr:'Invalide : trois alignés', de:'Ungültig: Dreierreihe', es:'Inválido: tres en línea', ru:'Недопустимо: три в ряд', it:'Non valido: tris', pt:'Inválido: três em linha' },
+            'ach-editor-first': { zh:'造物主', en:'Creator', ja:'創造主', ko:'창조자', fr:'Créateur', de:'Schöpfer', es:'Creador', ru:'Создатель', it:'Creatore', pt:'Criador' },
+            'ach-editor-first-desc': { zh:'第一次使用摆盘工坊', en:'Use the Board Editor for the first time', ja:'初めてエディタを使う', ko:'처음으로 에디터 사용', fr:'Utilisez l\'éditeur pour la première fois', de:'Verwenden Sie den Editor zum ersten Mal', es:'Usa el editor por primera vez', ru:'Используйте редактор впервые', it:'Usa l\'editor per la prima volta', pt:'Use o editor pela primeira vez' },
             'hotkey-esc': { zh:'Esc', en:'Esc', ja:'Esc', ko:'Esc', fr:'Esc', de:'Esc', es:'Esc', ru:'Esc', it:'Esc', pt:'Esc' },
             'hotkey-esc-desc': { zh:'关闭弹窗/抽屉', en:'Close modal or drawer', ja:'ポップアップ/ドロワーを閉じる', ko:'팝업/서랍 닫기', fr:'Fermer la modale/le tiroir', de:'Modal/Drawer schließen', es:'Cerrar modal o cajón', ru:'Закрыть модалку/панель', it:'Chiudi modale o cassetto', pt:'Fechar modal ou gaveta' },
             'hotkey-ctrl-z': { zh:'Ctrl + Z', en:'Ctrl + Z', ja:'Ctrl + Z', ko:'Ctrl + Z', fr:'Ctrl + Z', de:'Ctrl + Z', es:'Ctrl + Z', ru:'Ctrl + Z', it:'Ctrl + Z', pt:'Ctrl + Z' },
@@ -1479,6 +1504,16 @@
             cell.addEventListener('click', () => validateRushMove(i));
             cell.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); validateRushMove(i); } });
         });
+        if (editorBtn) editorBtn.addEventListener('click', openEditor);
+        if (editorModalClose) editorModalClose.addEventListener('click', closeEditor);
+        if (editorModal) editorModal.addEventListener('click', e => { if (e.target === editorModal) closeEditor(); });
+        if (editorClearBtn) editorClearBtn.addEventListener('click', clearEditorBoard);
+        if (editorStartBtn) editorStartBtn.addEventListener('click', startGameFromEditor);
+        if (editorPlayerToggle) editorPlayerToggle.addEventListener('click', toggleEditorPlayer);
+        if (editorCells) editorCells.forEach((cell, i) => {
+            cell.addEventListener('click', () => toggleEditorCell(i));
+            cell.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleEditorCell(i); } });
+        });
         if (tacticsFilter) {
             tacticsFilter.querySelectorAll('.tactics-filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -1529,7 +1564,8 @@
 
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
-                if (rushModal && rushModal.classList.contains('show')) { closeRush(); }
+                if (editorModal && editorModal.classList.contains('show')) { closeEditor(); }
+                else if (rushModal && rushModal.classList.contains('show')) { closeRush(); }
                 else if (dailyModal && dailyModal.classList.contains('show')) { closeDaily(); }
                 else if (tacticsModal && tacticsModal.classList.contains('show')) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
                 else if (hotkeyModal && hotkeyModal.classList.contains('show')) { closeHotkeyModal(); }
@@ -1542,7 +1578,8 @@
                 else if (modal && modal.classList.contains('show')) { hideModal(); }
             }
             if (e.key === 'Tab') {
-                const activeModal = (rushModal && rushModal.classList.contains('show')) ? rushModal :
+                const activeModal = (editorModal && editorModal.classList.contains('show')) ? editorModal :
+                    (rushModal && rushModal.classList.contains('show')) ? rushModal :
                     (dailyModal && dailyModal.classList.contains('show')) ? dailyModal :
                     (tacticsModal && tacticsModal.classList.contains('show')) ? tacticsModal :
                     (replayModal && replayModal.classList.contains('show')) ? replayModal :
@@ -1586,6 +1623,7 @@
             else if (e.key === 't' || e.key === 'T') { e.preventDefault(); openTactics(); }
             else if (e.key === 'd' || e.key === 'D') { e.preventDefault(); openDaily(); }
             else if (e.key === 'p' || e.key === 'P') { e.preventDefault(); openRush(); }
+            else if (e.key === 'z' || e.key === 'Z') { e.preventDefault(); openEditor(); }
             else if (e.key === 'c' || e.key === 'C') { e.preventDefault(); openChangelog(); }
             else if (e.key === 's' || e.key === 'S') { e.preventDefault(); openDrawer(); }
             else if (e.key === '?') { e.preventDefault(); openHotkeyModal(); }
@@ -1687,7 +1725,7 @@
 
     /* ===== Settings Logic ===== */
     function openDrawer() {
-        closeChangelog(); closeHistory(); closeReplay(); closeRush(); closeDaily();
+        closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily();
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
@@ -2148,7 +2186,7 @@
         try { localStorage.setItem(TACTICS_KEY, JSON.stringify(tacticsProgress)); } catch (e) {}
     }
     function openTactics() {
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeRush(); closeDaily();
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeEditor(); closeRush(); closeDaily();
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         lastFocusedElement = document.activeElement;
         if (tacticsFilter) {
@@ -2344,7 +2382,7 @@
         if (!dailyModal) return;
         if (dailyModal.classList.contains('show')) return;
         if (dailyResetTimeout) { clearTimeout(dailyResetTimeout); dailyResetTimeout = null; }
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeRush();
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeEditor(); closeRush();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
@@ -2757,6 +2795,118 @@
         if (rushState.bestStreak >= 5) checkSingleAchievement('rush_streak_5');
     }
 
+    /* ===== Board Editor ===== */
+    function openEditor() {
+        if (!editorModal) return;
+        if (editorModal.classList.contains('show')) return;
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeRush(); closeDaily();
+        if (modal) modal.classList.remove('show');
+        if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
+        if (tacticsDrawer) { closeTactics(); }
+        stopTimer();
+        lastFocusedElement = document.activeElement;
+        renderEditorBoard();
+        updateEditorPlayerDisplay();
+        editorModal.classList.add('show');
+        setTimeout(() => {
+            const first = editorCells.find(c => c.offsetParent !== null);
+            if (first) first.focus();
+        }, 50);
+    }
+    function closeEditor() {
+        if (editorModal) editorModal.classList.remove('show');
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+    }
+    function renderEditorBoard() {
+        editorCells.forEach((cell, i) => {
+            cell.innerHTML = '';
+            cell.classList.remove('disabled');
+            cell.setAttribute('tabindex', '0');
+            const mark = editorBoardState[i];
+            if (mark === 'X' || mark === 'O') {
+                cell.appendChild(createMarkSvg(mark));
+            }
+        });
+    }
+    function toggleEditorCell(index) {
+        const cell = editorCells[index];
+        if (!cell) return;
+        const current = editorBoardState[index];
+        let next = '';
+        if (current === '') next = 'X';
+        else if (current === 'X') next = 'O';
+        else next = '';
+        editorBoardState[index] = next;
+        cell.innerHTML = '';
+        cell.classList.remove('disabled');
+        if (next) {
+            cell.appendChild(createMarkSvg(next));
+        }
+        if (settings.sound) playMoveSound(next || PLAYER_X);
+    }
+    function clearEditorBoard() {
+        editorBoardState = Array(9).fill('');
+        renderEditorBoard();
+        if (editorCells.length) editorCells[0].focus();
+    }
+    function toggleEditorPlayer() {
+        editorPlayer = editorPlayer === 'X' ? 'O' : 'X';
+        updateEditorPlayerDisplay();
+    }
+    function updateEditorPlayerDisplay() {
+        if (editorPlayerMark) {
+            editorPlayerMark.textContent = editorPlayer;
+            editorPlayerMark.style.color = editorPlayer === 'X' ? 'var(--x-color)' : 'var(--o-color)';
+        }
+    }
+    function startGameFromEditor() {
+        const xCount = editorBoardState.filter(m => m === 'X').length;
+        const oCount = editorBoardState.filter(m => m === 'O').length;
+        // Validate: cannot have a completed line for either player
+        const xWin = getWinningConditionTTT(editorBoardState, 'X');
+        const oWin = getWinningConditionTTT(editorBoardState, 'O');
+        if (xWin || oWin) {
+            if (settings.sound) playErrorSound();
+            alert(t('editor-invalid'));
+            return;
+        }
+        // Validate turn order: X must be equal or one more than O
+        if (xCount < oCount || xCount > oCount + 1) {
+            if (settings.sound) playErrorSound();
+            alert(t('editor-invalid'));
+            return;
+        }
+        // Set up game state
+        gameBoard = editorBoardState.slice();
+        currentPlayer = editorPlayer;
+        gameActive = true;
+        moveHistory = [];
+        boardSnapshots = [];
+        playerHistory = [];
+        gameStartTime = Date.now();
+        currentMoveStartTime = Date.now();
+        lastWinData = null;
+        winLine.classList.remove('show');
+        if (modal) modal.classList.remove('show');
+        // Re-render main board
+        cells.forEach((cell, i) => {
+            cell.innerHTML = '';
+            cell.classList.remove('x', 'o', 'disabled', 'win');
+            cell.setAttribute('tabindex', '0');
+            if (gameBoard[i]) {
+                cell.appendChild(createMarkSvg(gameBoard[i]));
+                cell.classList.add(gameBoard[i].toLowerCase());
+            }
+        });
+        updateStatus();
+        checkEditorAchievements();
+        closeEditor();
+        if (settings.sound) playWinSound();
+    }
+    function checkEditorAchievements() {
+        checkSingleAchievement('editor_first');
+    }
+
     /* ===== Color Helpers ===== */
     function hexToRgb(hex) {
         if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) hex = '#7b68ee';
@@ -3011,6 +3161,7 @@
             (tacticsDrawer && tacticsDrawer.classList.contains('show')) ||
             (tacticsModal && tacticsModal.classList.contains('show')) ||
             (dailyModal && dailyModal.classList.contains('show')) ||
+            (editorModal && editorModal.classList.contains('show')) ||
             (rushModal && rushModal.classList.contains('show'));
     }
 
@@ -3144,7 +3295,7 @@
     }
 
     function openHotkeyModal() {
-        closeDrawer(); closeHistory(); closeChangelog(); closeReplay(); closeAchievements(); closeDaily(); closeRush();
+        closeDrawer(); closeHistory(); closeChangelog(); closeReplay(); closeAchievements(); closeDaily(); closeRush(); closeEditor();
         if (tacticsDrawer) { closeTactics(); }
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         lastFocusedElement = document.activeElement;
@@ -3179,6 +3330,7 @@
                     { kbd: t('hotkey-t'), desc: t('hotkey-t-desc') },
                     { kbd: t('hotkey-d'), desc: t('hotkey-d-desc') },
                     { kbd: t('hotkey-p'), desc: t('hotkey-p-desc') },
+                    { kbd: t('hotkey-z'), desc: t('hotkey-z-desc') },
                     { kbd: t('hotkey-c'), desc: t('hotkey-c-desc') },
                     { kbd: t('hotkey-s'), desc: t('hotkey-s-desc') },
                     { kbd: t('hotkey-question'), desc: t('hotkey-question-desc') },
@@ -4689,7 +4841,7 @@
 
     /* ===== Changelog ===== */
     function openChangelog() {
-        closeDrawer(); closeHistory(); closeReplay(); closeRush(); closeDaily();
+        closeDrawer(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily();
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
@@ -4800,7 +4952,7 @@
     }
 
     function openHistory() {
-        closeDrawer(); closeChangelog(); closeReplay(); closeRush(); closeDaily();
+        closeDrawer(); closeChangelog(); closeReplay(); closeEditor(); closeRush(); closeDaily();
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
@@ -4891,7 +5043,7 @@
 
     /* ===== Replay ===== */
     function openReplay(record) {
-        closeHistory(); closeDrawer(); closeChangelog(); closeRush(); closeDaily();
+        closeHistory(); closeDrawer(); closeChangelog(); closeEditor(); closeRush(); closeDaily();
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
@@ -5271,6 +5423,7 @@
         { id: 'rush_score_10', icon: '⚡', category: 'explorer', getProgress: () => (rushProgress.bestScore || 0) >= 10 ? 1 : 0, target: 1 },
         { id: 'rush_score_20', icon: '⚡', category: 'master', getProgress: () => (rushProgress.bestScore || 0) >= 20 ? 1 : 0, target: 1 },
         { id: 'rush_streak_5', icon: '🔥', category: 'explorer', getProgress: () => (rushProgress.bestStreak || 0) >= 5 ? 1 : 0, target: 1 },
+        { id: 'editor_first', icon: '✏️', category: 'explorer', getProgress: () => (achievementState.editor_first || false) ? 1 : 0, target: 1 },
         { id: 'tactic_first', icon: '🧩', category: 'explorer', getProgress: () => (tacticsProgress.completed || []).length >= 1 ? 1 : 0, target: 1 },
         { id: 'tactic_all_easy', icon: '🎯', category: 'explorer', getProgress: () => {
             const done = tacticsProgress.completed || [];
@@ -5446,7 +5599,7 @@
     }
 
     function openAchievements() {
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeRush(); closeDaily(); closeHotkeyModal();
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeHotkeyModal();
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
