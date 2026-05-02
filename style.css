@@ -358,6 +358,86 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     cursor: grab;
 }
 
+/* ===== Board Themes ===== */
+[data-board-theme="neon"] .board,
+[data-board-theme="neon"] .connect4-board,
+[data-board-theme="neon"] .gomoku-board {
+    background: linear-gradient(135deg, #0a0a1a, #1a0a2e);
+    box-shadow: 0 0 30px rgba(123, 104, 238, 0.15), var(--shadow);
+    border: 1px solid rgba(123, 104, 238, 0.2);
+}
+[data-board-theme="neon"] .cell,
+[data-board-theme="neon"] .c4-cell,
+[data-board-theme="neon"] .gomoku-cell {
+    background: rgba(20, 20, 40, 0.8);
+    border: 1px solid rgba(123, 104, 238, 0.15);
+}
+[data-board-theme="neon"] .cell:hover,
+[data-board-theme="neon"] .c4-cell:hover,
+[data-board-theme="neon"] .gomoku-cell:hover {
+    background: rgba(123, 104, 238, 0.15);
+    box-shadow: inset 0 0 12px rgba(123, 104, 238, 0.2);
+}
+
+[data-board-theme="nature"] .board,
+[data-board-theme="nature"] .connect4-board,
+[data-board-theme="nature"] .gomoku-board {
+    background: linear-gradient(135deg, #2d4a3e, #3d5a4e);
+    box-shadow: 0 8px 32px rgba(46, 139, 87, 0.2), var(--shadow);
+}
+[data-board-theme="nature"] .cell,
+[data-board-theme="nature"] .c4-cell,
+[data-board-theme="nature"] .gomoku-cell {
+    background: rgba(60, 90, 70, 0.7);
+    border-radius: 14px;
+}
+[data-board-theme="nature"] .cell:hover,
+[data-board-theme="nature"] .c4-cell:hover,
+[data-board-theme="nature"] .gomoku-cell:hover {
+    background: rgba(80, 120, 90, 0.6);
+}
+
+[data-board-theme="minimal"] .board,
+[data-board-theme="minimal"] .connect4-board,
+[data-board-theme="minimal"] .gomoku-board {
+    background: transparent;
+    box-shadow: none;
+    border: 2px solid var(--surface-light);
+    padding: 10px;
+}
+[data-board-theme="minimal"] .cell,
+[data-board-theme="minimal"] .c4-cell,
+[data-board-theme="minimal"] .gomoku-cell {
+    background: transparent;
+    border: 1px solid var(--surface-light);
+    border-radius: 0;
+}
+[data-board-theme="minimal"] .cell:hover,
+[data-board-theme="minimal"] .c4-cell:hover,
+[data-board-theme="minimal"] .gomoku-cell:hover {
+    background: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.06);
+}
+
+[data-board-theme="space"] .board,
+[data-board-theme="space"] .connect4-board,
+[data-board-theme="space"] .gomoku-board {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    box-shadow: 0 0 40px rgba(100, 80, 200, 0.12), var(--shadow);
+}
+[data-board-theme="space"] .cell,
+[data-board-theme="space"] .c4-cell,
+[data-board-theme="space"] .gomoku-cell {
+    background: rgba(30, 25, 60, 0.6);
+    border: 1px solid rgba(150, 130, 255, 0.1);
+    border-radius: 18px;
+}
+[data-board-theme="space"] .cell:hover,
+[data-board-theme="space"] .c4-cell:hover,
+[data-board-theme="space"] .gomoku-cell:hover {
+    background: rgba(60, 50, 100, 0.4);
+    box-shadow: inset 0 0 15px rgba(150, 130, 255, 0.1);
+}
+
 .cell {
     background: var(--surface-light);
     border-radius: 16px;

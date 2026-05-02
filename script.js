@@ -254,7 +254,8 @@
         customBoardSize: 'custom',
         timerEnabled: false,
         timerDuration: 180,
-        rippleEnabled: true
+        rippleEnabled: true,
+        boardTheme: 'classic'
     };
 
     const langMap = {
@@ -376,6 +377,12 @@
             'setting-font': { zh:'字体', en:'Font', ja:'フォント', ko:'글꼴', fr:'Police', de:'Schriftart', es:'Fuente', ru:'Шрифт', it:'Carattere', pt:'Fonte' },
             'setting-theme': { zh:'外观模式', en:'Appearance', ja:'外観モード', ko:'외관 모드', fr:'Apparence', de:'Erscheinung', es:'Apariencia', ru:'Внешний вид', it:'Aspetto', pt:'Aparência' },
             'setting-3d': { zh:'3D 棋盘', en:'3D Board', ja:'3D ボード', ko:'3D 보드', fr:'Plateau 3D', de:'3D-Brett', es:'Tablero 3D', ru:'3D доска', it:'Scacchiera 3D', pt:'Tabuleiro 3D' },
+            'setting-board-theme': { zh:'棋盘主题', en:'Board Theme', ja:'ボードテーマ', ko:'보드 테마', fr:'Thème du plateau', de:'Brett-Thema', es:'Tema del tablero', ru:'Тема доски', it:'Tema scacchiera', pt:'Tema do tabuleiro' },
+            'theme-classic': { zh:'经典', en:'Classic', ja:'クラシック', ko:'클식', fr:'Classique', de:'Klassisch', es:'Clásico', ru:'Классика', it:'Classico', pt:'Clássico' },
+            'theme-neon': { zh:'霓虹', en:'Neon', ja:'ネオン', ko:'네온', fr:'Néon', de:'Neon', es:'Neón', ru:'Неон', it:'Neon', pt:'Neon' },
+            'theme-nature': { zh:'自然', en:'Nature', ja:'自然', ko:'자연', fr:'Nature', de:'Natur', es:'Naturaleza', ru:'Природа', it:'Natura', pt:'Natureza' },
+            'theme-minimal': { zh:'极简', en:'Minimal', ja:'ミニマル', ko:'미니멀', fr:'Minimal', de:'Minimal', es:'Minimal', ru:'Минимализм', it:'Minimale', pt:'Minimal' },
+            'theme-space': { zh:'太空', en:'Space', ja:'宇宙', ko:'우주', fr:'Espace', de:'Weltraum', es:'Espacio', ru:'Космос', it:'Spazio', pt:'Espaço' },
             'setting-animations': { zh:'动画效果', en:'Animations', ja:'アニメーション', ko:'애니메이션', fr:'Animations', de:'Animationen', es:'Animaciones', ru:'Анимации', it:'Animazioni', pt:'Animações' },
             'setting-anim-speed': { zh:'动画速度', en:'Anim Speed', ja:'アニメ速度', ko:'애니메이션 속도', fr:'Vitesse', de:'Geschw.', es:'Velocidad', ru:'Скорость', it:'Velocità', pt:'Velocidade' },
             'setting-sound': { zh:'音效', en:'Sound', ja:'効果音', ko:'효과음', fr:'Son', de:'Ton', es:'Sonido', ru:'Звук', it:'Audio', pt:'Som' },
@@ -1228,6 +1235,8 @@
                 if (typeof s.timerEnabled === 'boolean') settings.timerEnabled = s.timerEnabled;
                 if (typeof s.timerDuration === 'number' && [60, 180, 300, 600].includes(s.timerDuration)) settings.timerDuration = s.timerDuration;
                 if (typeof s.rippleEnabled === 'boolean') settings.rippleEnabled = s.rippleEnabled;
+                const validBoardThemes = ['classic','neon','nature','minimal','space'];
+                if (validBoardThemes.includes(s.boardTheme)) settings.boardTheme = s.boardTheme;
             }
             if (parsed.customConfig && typeof parsed.customConfig === 'object') {
                 const c = parsed.customConfig;
@@ -1425,6 +1434,8 @@
             btn.addEventListener('click', () => setDifficulty(btn.dataset.diff)));
         document.querySelectorAll('#board-size-segmented .seg-btn').forEach(btn =>
             btn.addEventListener('click', () => setCustomBoardSize(btn.dataset.size)));
+        document.querySelectorAll('#board-theme-segmented .seg-btn').forEach(btn =>
+            btn.addEventListener('click', () => setBoardTheme(btn.dataset.theme)));
 
         animToggle.addEventListener('change', e => { setAnimations(e.target.checked); saveSettings(); });
         soundToggle.addEventListener('change', e => { setSound(e.target.checked); saveSettings(); });
@@ -1958,6 +1969,20 @@
         saveSettings();
         if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); }
     }
+    function setBoardTheme(theme) {
+        if (settings.boardTheme === theme) return;
+        settings.boardTheme = theme;
+        applySettingsUI();
+        saveSettings();
+        if (achievementStats && achievementStats.boardThemesUsed) {
+            trackAchievementSetting('theme', theme);
+        }
+    }
+    function checkThemeAchievements() {
+        if (achievementStats && achievementStats.boardThemesUsed && achievementStats.boardThemesUsed.length >= 5) {
+            checkSingleAchievement('theme_explorer');
+        }
+    }
 
     function applySettingsUI() {
         document.querySelectorAll('#font-segmented .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.font === settings.font));
@@ -1966,6 +1991,7 @@
         document.querySelectorAll('#sound-style-segmented .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.sound === settings.soundStyle));
         document.querySelectorAll('#difficulty-segmented .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.diff === settings.difficulty));
         document.querySelectorAll('#board-size-segmented .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.size === settings.customBoardSize));
+        document.querySelectorAll('#board-theme-segmented .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.theme === settings.boardTheme));
         animToggle.checked = settings.animations;
         soundToggle.checked = settings.sound;
         toggle3d.checked = settings.board3d;
@@ -1985,6 +2011,7 @@
         customGameGroup.style.display = currentMode === 'custom' ? 'flex' : 'none';
         document.documentElement.setAttribute('data-theme', settings.theme);
         document.body.setAttribute('data-font', settings.font);
+        document.body.setAttribute('data-board-theme', settings.boardTheme);
         document.body.classList.toggle('animations-off', !settings.animations);
         boardEl.classList.toggle('is-3d', settings.board3d);
         connect4Board.classList.toggle('is-3d', settings.board3d);
@@ -5377,6 +5404,7 @@
             languagesUsed: [],
             colorsUsed: [],
             soundsUsed: [],
+            boardThemesUsed: [],
             modesPlayed: [],
             battlesPlayed: [],
             fastestWin: null,
@@ -5445,6 +5473,7 @@
         { id: 'all_languages', icon: '🌍', category: 'explorer', getProgress: (s) => Math.min(s.languagesUsed.length, 10), target: 10 },
         { id: 'all_colors', icon: '🎨', category: 'explorer', getProgress: (s) => Math.min(s.colorsUsed.length, 10), target: 10 },
         { id: 'all_sounds', icon: '🎵', category: 'explorer', getProgress: (s) => Math.min(s.soundsUsed.length, 12), target: 12 },
+        { id: 'theme_explorer', icon: '🎨', category: 'explorer', getProgress: (s) => Math.min(s.boardThemesUsed.length, 5), target: 5 },
         { id: 'all_modes', icon: '🔢', category: 'explorer', getProgress: (s) => Math.min(s.modesPlayed.length, 4), target: 4 },
         { id: 'all_battles', icon: '⚔️', category: 'explorer', getProgress: (s) => Math.min(s.battlesPlayed.length, 3), target: 3 },
         { id: 'ttt_master', icon: '🧠', category: 'master', getProgress: (s) => Math.min(s.winsByMode.ttt, 50), target: 50 },
@@ -5461,7 +5490,8 @@
         if (!achievementStats) return;
         const arr = type === 'lang' ? achievementStats.languagesUsed :
             type === 'color' ? achievementStats.colorsUsed :
-            type === 'sound' ? achievementStats.soundsUsed : null;
+            type === 'sound' ? achievementStats.soundsUsed :
+            type === 'theme' ? achievementStats.boardThemesUsed : null;
         if (arr && !arr.includes(value)) {
             arr.push(value);
             saveAchievements();
