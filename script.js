@@ -1767,7 +1767,8 @@
 
     /* ===== Settings Logic ===== */
     function openDrawer() {
-        closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily();
+        closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
+        if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
@@ -2246,6 +2247,7 @@
     }
     function openTactics() {
         closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeEditor(); closeRush(); closeDaily();
+        if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         lastFocusedElement = document.activeElement;
         if (tacticsFilter) {
@@ -2445,6 +2447,7 @@
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
+        clearTimeout(aiTimer); aiTimer = null;
         stopTimer();
         resetDailyModalState();
         lastFocusedElement = document.activeElement;
@@ -2493,6 +2496,7 @@
         if (dailyResetTimeout) clearTimeout(dailyResetTimeout);
         dailyResetTimeout = setTimeout(() => { dailyResetTimeout = null; resetDailyModalState(); }, 350);
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
+        resumeTimerIfGameActive();
     }
     function resetDailyModalState() {
         if (dailyWrongTimer) { clearTimeout(dailyWrongTimer); dailyWrongTimer = null; }
@@ -2639,11 +2643,12 @@
     function openRush() {
         if (!rushModal) return;
         if (rushModal.classList.contains('show')) return;
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal();
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeEditor();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
         if (dailyModal) { closeDaily(); }
+        clearTimeout(aiTimer); aiTimer = null;
         stopTimer();
         stopRushGame();
         resetRushState();
@@ -2660,6 +2665,7 @@
         rushState.active = false;
         if (rushWrongTimer) { clearTimeout(rushWrongTimer); rushWrongTimer = null; }
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
+        resumeTimerIfGameActive();
     }
     function resetRushState() {
         if (rushWrongTimer) { clearTimeout(rushWrongTimer); rushWrongTimer = null; }
@@ -2862,6 +2868,7 @@
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
+        clearTimeout(aiTimer); aiTimer = null;
         stopTimer();
         lastFocusedElement = document.activeElement;
         renderEditorBoard();
@@ -2875,6 +2882,7 @@
     function closeEditor() {
         if (editorModal) editorModal.classList.remove('show');
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
+        resumeTimerIfGameActive();
     }
     function renderEditorBoard() {
         editorCells.forEach((cell, i) => {
@@ -3040,7 +3048,7 @@
             if (timerState.running && timerState.activePlayer === PLAYER_X && gameActive) {
                 timerXEl.classList.add('active-x');
                 if (timerState.X <= 10000) timerXEl.classList.add('danger');
-            } else if (!gameActive) {
+            } else {
                 timerXEl.classList.add('paused');
             }
             return;
@@ -3081,7 +3089,6 @@
         if (bm === 'aivsai') return;
         if (bm === 'pve') {
             if (timerState.X <= 0) {
-                stopTimer();
                 playTimeoutSound();
                 timerTimeoutFlag = true;
                 if (isC4Mode()) endC4Game(false, PLAYER_O);
@@ -3091,7 +3098,6 @@
             }
         } else {
             if (timerState.activePlayer === PLAYER_X && timerState.X <= 0) {
-                stopTimer();
                 playTimeoutSound();
                 timerTimeoutFlag = true;
                 if (isC4Mode()) endC4Game(false, PLAYER_O);
@@ -3099,7 +3105,6 @@
                 else endGame(false, PLAYER_O);
                 timerTimeoutFlag = false;
             } else if (timerState.activePlayer === PLAYER_O && timerState.O <= 0) {
-                stopTimer();
                 playTimeoutSound();
                 timerTimeoutFlag = true;
                 if (isC4Mode()) endC4Game(false, PLAYER_X);
@@ -3136,6 +3141,7 @@
         const bm = getEffectiveBattleMode();
         if (bm === 'aivsai') return;
         if (bm === 'pve' && player === PLAYER_O) return;
+        if (timerState.running && timerState.activePlayer === player) return;
         timerState.running = true;
         timerState.activePlayer = player;
         timerState.lastTick = Date.now();
@@ -3154,6 +3160,11 @@
         }
         updateTimerDisplay();
     }
+    function resumeTimerIfGameActive() {
+        if (gameActive && settings.timerEnabled && getEffectiveBattleMode() !== 'aivsai') {
+            startTimer(currentPlayer);
+        }
+    }
 
     function switchTimerTo(player) {
         if (!settings.timerEnabled || !gameActive) return;
@@ -3162,6 +3173,7 @@
     }
 
     function initTimers() {
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
         if (!settings.timerEnabled) {
             stopTimer();
             timerState.X = 0;
@@ -4908,7 +4920,8 @@
 
     /* ===== Changelog ===== */
     function openChangelog() {
-        closeDrawer(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily();
+        closeDrawer(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
+        if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
@@ -5019,7 +5032,8 @@
     }
 
     function openHistory() {
-        closeDrawer(); closeChangelog(); closeReplay(); closeEditor(); closeRush(); closeDaily();
+        closeDrawer(); closeChangelog(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
+        if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
@@ -5110,9 +5124,12 @@
 
     /* ===== Replay ===== */
     function openReplay(record) {
-        closeHistory(); closeDrawer(); closeChangelog(); closeEditor(); closeRush(); closeDaily();
+        closeHistory(); closeDrawer(); closeChangelog(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
+        if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
+        clearTimeout(aiTimer); aiTimer = null;
+        stopTimer();
         lastFocusedElement = document.activeElement;
         replayData = record;
         replayStep = 0;
@@ -5137,6 +5154,7 @@
         replayPlaying = false;
         replayData = null;
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
+        resumeTimerIfGameActive();
     }
 
     function renderReplayBoard() {
@@ -5774,6 +5792,7 @@
 
     function openAchievements() {
         closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeHotkeyModal();
+        if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;
