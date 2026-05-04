@@ -437,6 +437,8 @@
             'aria-changelog': { zh:'更新公告', en:'Changelog', ja:'更新履歴', ko:'업데이트 공지', fr:'Journal', de:'Änderungen', es:'Actualizaciones', ru:'Обновления', it:'Aggiornamenti', pt:'Atualizações' },
             'aria-close': { zh:'关闭', en:'Close', ja:'閉じる', ko:'닫기', fr:'Fermer', de:'Schließen', es:'Cerrar', ru:'Закрыть', it:'Chiudi', pt:'Fechar' },
             'aria-cell-empty': { zh:'空单元格，按 Enter 或空格下棋', en:'Empty cell, press Enter or Space to play', ja:'空のマス、Enterまたはスペースで着手', ko:'빈 칸, Enter 또는 스페이스로 플레이', fr:'Cellule vide, appuyez sur Entrée ou Espace pour jouer', de:'Leere Zelle, Enter oder Leertaste zum Spielen', es:'Celda vacía, presiona Enter o Espacio para jugar', ru:'Пустая ячейка, нажмите Enter или Пробел для хода', it:'Cella vuota, premi Invio o Spazio per giocare', pt:'Célula vazia, pressione Enter ou Espaço para jogar' },
+            'cell-x': { zh:'X 棋子', en:'X piece', ja:'Xの駒', ko:'X 돌', fr:'Jeton X', de:'X-Stein', es:'Ficha X', ru:'Фишка X', it:'Pedina X', pt:'Peça X' },
+            'cell-o': { zh:'O 棋子', en:'O piece', ja:'Oの駒', ko:'O 돌', fr:'Jeton O', de:'O-Stein', es:'Ficha O', ru:'Фишка O', it:'Pedina O', pt:'Peça O' },
             'custom-win-label': { zh:'子连珠', en:' in a row', ja:'子連珠', ko:'목', fr:' alignés', de:' in einer Reihe', es:' en línea', ru:' в ряд', it:' in fila', pt:' em linha' },
             'aria-history': { zh:'对局历史', en:'History', ja:'対局履歴', ko:'대국 기록', fr:'Historique', de:'Verlauf', es:'Historial', ru:'История', it:'Cronologia', pt:'Histórico' },
             'history-title': { zh:'对局历史', en:'Game History', ja:'対局履歴', ko:'대국 기록', fr:'Historique', de:'Spielverlauf', es:'Historial', ru:'История игр', it:'Cronologia', pt:'Histórico' },
@@ -566,6 +568,8 @@
             'hotkey-z-desc': { zh:'打开摆盘工坊', en:'Open Board Editor', ja:'エディタを開く', ko:'에디터 열기', fr:'Ouvrir l\'éditeur', de:'Editor öffnen', es:'Abrir editor', ru:'Открыть редактор', it:'Apri editor', pt:'Abrir editor' },
             'aria-editor': { zh:'摆盘工坊', en:'Board Editor', ja:'エディタ', ko:'에디터', fr:'Éditeur', de:'Editor', es:'Editor', ru:'Редактор', it:'Editor', pt:'Editor' },
             'aria-editor-cell': { zh:'编辑格子', en:'Editor cell', ja:'エディタのマス', ko:'에디터 칸', fr:'Case de l\'éditeur', de:'Editor-Zelle', es:'Celda del editor', ru:'Ячейка редактора', it:'Cella dell\'editor', pt:'Célula do editor' },
+            'aria-editor-toggle': { zh:'切换当前玩家', en:'Toggle current player', ja:'手番を切り替え', ko:'현재 플레이어 전환', fr:'Changer de joueur', de:'Spieler wechseln', es:'Cambiar jugador', ru:'Сменить игрока', it:'Cambia giocatore', pt:'Alternar jogador' },
+            'aria-tactics-cell': { zh:'战术格子', en:'Tactics cell', ja:'戦術のマス', ko:'전술 칸', fr:'Case tactique', de:'Taktik-Zelle', es:'Celda táctica', ru:'Тактическая ячейка', it:'Cella tattica', pt:'Célula tática' },
             'editor-modal-title': { zh:'摆盘工坊', en:'Board Editor', ja:'ボードエディタ', ko:'보드 에디터', fr:'Éditeur de plateau', de:'Brett-Editor', es:'Editor de tablero', ru:'Редактор доски', it:'Editor di scacchiera', pt:'Editor de tabuleiro' },
             'editor-meta': { zh:'自由设置局面，然后开始对战', en:'Set up any position, then play', ja:'好きな局面を作って対戦しよう', ko:'원하는 국면을 설정하고 대전하세요', fr:'Créez une position, puis jouez', de:'Beliebige Position aufbauen', es:'Crea cualquier posición y juega', ru:'Создайте любую позицию и играйте', it:'Crea una posizione e gioca', pt:'Crie qualquer posição e jogue' },
             'editor-player-label': { zh:'当前回合', en:'To Move', ja:'手番', ko:'현재 턴', fr:'À jouer', de:'Am Zug', es:'Turno', ru:'Ход', it:'Turno', pt:'Vez' },
@@ -1147,16 +1151,37 @@
     function updateCellAriaLabels() {
         const label = t('aria-cell-empty');
         cells.forEach(cell => {
-            if (!cell.querySelector('.mark')) cell.setAttribute('aria-label', label);
-            else cell.removeAttribute('aria-label');
+            const mark = cell.querySelector('.mark');
+            if (!mark) {
+                cell.setAttribute('aria-label', label);
+                cell.setAttribute('tabindex', '0');
+            } else {
+                const player = mark.classList.contains('x') ? PLAYER_X : PLAYER_O;
+                cell.setAttribute('aria-label', player === PLAYER_X ? t('cell-x') : t('cell-o'));
+                cell.setAttribute('tabindex', '-1');
+            }
         });
         document.querySelectorAll('.c4-cell').forEach(cell => {
-            if (!cell.querySelector('.c4-piece')) cell.setAttribute('aria-label', label);
-            else cell.removeAttribute('aria-label');
+            const piece = cell.querySelector('.c4-piece');
+            if (!piece) {
+                cell.setAttribute('aria-label', label);
+                cell.setAttribute('tabindex', '0');
+            } else {
+                const player = piece.classList.contains('x-piece') ? PLAYER_X : PLAYER_O;
+                cell.setAttribute('aria-label', player === PLAYER_X ? t('cell-x') : t('cell-o'));
+                cell.setAttribute('tabindex', '-1');
+            }
         });
         document.querySelectorAll('.gomoku-cell').forEach(cell => {
-            if (!cell.querySelector('.gomoku-piece')) cell.setAttribute('aria-label', label);
-            else cell.removeAttribute('aria-label');
+            const piece = cell.querySelector('.gomoku-piece');
+            if (!piece) {
+                cell.setAttribute('aria-label', label);
+                cell.setAttribute('tabindex', '0');
+            } else {
+                const player = piece.classList.contains('x-piece') ? PLAYER_X : PLAYER_O;
+                cell.setAttribute('aria-label', player === PLAYER_X ? t('cell-x') : t('cell-o'));
+                cell.setAttribute('tabindex', '-1');
+            }
         });
     }
 
@@ -1669,13 +1694,22 @@
             else if (e.key === 'c' || e.key === 'C') { e.preventDefault(); openChangelog(); }
             else if (e.key === 's' || e.key === 'S') { e.preventDefault(); openDrawer(); }
             else if (e.key === '?') { e.preventDefault(); openHotkeyModal(); }
-            else if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+            // Arrow keys — board navigation (works inside modals too)
+            if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+                if (isInputFocused()) return;
+                const dir = e.key.replace('Arrow', '').toLowerCase();
                 if (rushModal && rushModal.classList.contains('show')) {
                     e.preventDefault();
-                    navigateRushBoard(e.key.replace('Arrow', '').toLowerCase());
-                } else {
+                    navigateRushBoard(dir);
+                } else if (dailyModal && dailyModal.classList.contains('show')) {
                     e.preventDefault();
-                    navigateBoard(e.key.replace('Arrow', '').toLowerCase());
+                    navigateGridCells(dailyCells, dir, 3);
+                } else if (tacticsModal && tacticsModal.classList.contains('show')) {
+                    e.preventDefault();
+                    navigateGridCells(tacticCells, dir, 3);
+                } else if (!isAnyModalOpen()) {
+                    e.preventDefault();
+                    navigateBoard(dir);
                 }
             }
         });
@@ -2892,6 +2926,9 @@
             const mark = editorBoardState[i];
             if (mark === 'X' || mark === 'O') {
                 cell.appendChild(createMarkSvg(mark));
+                cell.setAttribute('aria-label', mark === 'X' ? t('cell-x') : t('cell-o'));
+            } else {
+                cell.setAttribute('aria-label', t('aria-editor-cell'));
             }
         });
     }
@@ -2908,6 +2945,9 @@
         cell.classList.remove('disabled');
         if (next) {
             cell.appendChild(createMarkSvg(next));
+            cell.setAttribute('aria-label', next === 'X' ? t('cell-x') : t('cell-o'));
+        } else {
+            cell.setAttribute('aria-label', t('aria-editor-cell'));
         }
         if (settings.sound) playMoveSound(next || PLAYER_X);
     }
@@ -3322,6 +3362,28 @@
         const targetIdx = targetR * 3 + targetC;
         const targetCell = rushCells[targetIdx];
         if (targetCell && !targetCell.classList.contains('disabled')) targetCell.focus();
+    }
+    function navigateGridCells(cells, direction, cols) {
+        const activeEl = document.activeElement;
+        const idx = cells.indexOf(activeEl);
+        if (idx === -1) {
+            const first = cells.find(c => !c.classList.contains('disabled') && c.offsetParent !== null);
+            if (first) first.focus();
+            return;
+        }
+        const row = Math.floor(idx / cols);
+        const col = idx % cols;
+        const rows = Math.ceil(cells.length / cols);
+        let targetR = row, targetC = col;
+        switch (direction) {
+            case 'up': targetR = Math.max(0, row - 1); break;
+            case 'down': targetR = Math.min(rows - 1, row + 1); break;
+            case 'left': targetC = Math.max(0, col - 1); break;
+            case 'right': targetC = Math.min(cols - 1, col + 1); break;
+        }
+        const targetIdx = targetR * cols + targetC;
+        const targetCell = cells[targetIdx];
+        if (targetCell) targetCell.focus();
     }
 
     function handleNumberKey(num, e) {
@@ -3887,7 +3949,8 @@
         cells[index].innerHTML = '';
         cells[index].appendChild(createMarkSvg(player));
         cells[index].classList.add('disabled');
-        cells[index].removeAttribute('aria-label');
+        cells[index].setAttribute('aria-label', player === PLAYER_X ? t('cell-x') : t('cell-o'));
+        cells[index].setAttribute('tabindex', '-1');
         playMoveSound(player);
 
         if (checkWinTTT(gameBoard, player)) {
@@ -3953,7 +4016,8 @@
         piece.className = 'c4-piece ' + (player === PLAYER_X ? 'x-piece' : 'o-piece');
         cell.appendChild(piece);
         cell.classList.add('disabled');
-        cell.removeAttribute('aria-label');
+        cell.setAttribute('aria-label', player === PLAYER_X ? t('cell-x') : t('cell-o'));
+        cell.setAttribute('tabindex', '-1');
         playMoveSound(player);
 
         const winCells = checkWinC4(row, col, player);
@@ -4275,7 +4339,8 @@
         piece.className = 'gomoku-piece ' + (player === PLAYER_X ? 'x-piece' : 'o-piece');
         cell.appendChild(piece);
         cell.classList.add('disabled');
-        cell.removeAttribute('aria-label');
+        cell.setAttribute('aria-label', player === PLAYER_X ? t('cell-x') : t('cell-o'));
+        cell.setAttribute('tabindex', '-1');
         playMoveSound(player);
 
         const winCells = checkWinGmk(row, col, player, cfg.w, cfg.h, cfg.winLen, board);
@@ -5391,11 +5456,15 @@
                     piece.className = 'c4-piece ' + (c4Board[r][c] === PLAYER_X ? 'x-piece' : 'o-piece');
                     cell.appendChild(piece);
                     cell.classList.add('disabled');
+                    cell.setAttribute('aria-label', c4Board[r][c] === PLAYER_X ? t('cell-x') : t('cell-o'));
+                    cell.setAttribute('tabindex', '-1');
                 } else {
                     const col = parseInt(cell.dataset.col, 10);
                     const cellRow = parseInt(cell.dataset.row, 10);
                     const nextRow = getC4NextOpenRow(col);
                     if (nextRow !== -1 && cellRow !== nextRow) cell.classList.add('disabled');
+                    cell.setAttribute('aria-label', t('aria-cell-empty'));
+                    cell.setAttribute('tabindex', '0');
                 }
             });
         } else if (isGmkMode()) {
@@ -5416,6 +5485,11 @@
                     piece.className = 'gomoku-piece ' + (board[r][c] === PLAYER_X ? 'x-piece' : 'o-piece');
                     cell.appendChild(piece);
                     cell.classList.add('disabled');
+                    cell.setAttribute('aria-label', board[r][c] === PLAYER_X ? t('cell-x') : t('cell-o'));
+                    cell.setAttribute('tabindex', '-1');
+                } else {
+                    cell.setAttribute('aria-label', t('aria-cell-empty'));
+                    cell.setAttribute('tabindex', '0');
                 }
             });
         } else {
@@ -5426,6 +5500,11 @@
                 if (gameBoard[i]) {
                     cell.appendChild(createMarkSvg(gameBoard[i]));
                     cell.classList.add('disabled');
+                    cell.setAttribute('aria-label', gameBoard[i] === PLAYER_X ? t('cell-x') : t('cell-o'));
+                    cell.setAttribute('tabindex', '-1');
+                } else {
+                    cell.setAttribute('aria-label', t('aria-cell-empty'));
+                    cell.setAttribute('tabindex', '0');
                 }
             });
         }
