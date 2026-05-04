@@ -2968,7 +2968,9 @@
         updateStatus();
         checkEditorAchievements();
         closeEditor();
-        if (settings.sound) playWinSound();
+        updateUndoButton();
+        updateHintButton();
+        if (settings.sound) playMoveSound(PLAYER_X);
     }
     function checkEditorAchievements() {
         checkSingleAchievement('editor_first');
@@ -3595,7 +3597,7 @@
         const notes = [freq, freq * 1.25, freq * 1.5, freq * 2];
         notes.forEach((f, i) => {
             setTimeout(() => {
-                if (!audioCtx) return;
+                if (!settings.sound || !audioCtx) return;
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'square';
@@ -3741,6 +3743,41 @@
         else if (style === 'chiptune') notes.forEach((freq, i) => setTimeout(() => playChiptune(freq, 0.3, 0.1), i * 80));
         else if (style === 'pluck') notes.forEach((freq, i) => setTimeout(() => playPluck(freq, 0.25, 0.12), i * 90));
         else if (style === 'crystal') notes.forEach((freq, i) => setTimeout(() => playCrystal(freq, 0.4, 0.1), i * 110));
+    }
+    function playUndoSound() {
+        if (!settings.sound) return;
+        initAudio();
+        const style = settings.soundStyle;
+        if (style === 'classic') { playOsc(329.63, 'sine', 0.2, 0.08); setTimeout(() => playOsc(261.63, 'sine', 0.25, 0.08), 100); }
+        else if (style === 'electronic') { playFiltered(329, 0.18, 0.08); setTimeout(() => playFiltered(261, 0.22, 0.08), 100); }
+        else if (style === 'retro') { playRetro(329, 0.15, 0.08); setTimeout(() => playRetro(261, 0.18, 0.08), 80); }
+        else if (style === 'wood') { playWoodTone(329, 0.15, 0.1); setTimeout(() => playWoodTone(261, 0.18, 0.1), 100); }
+        else if (style === 'bell') { playBell(329, 0.2, 0.06); setTimeout(() => playBell(261, 0.25, 0.06), 120); }
+        else if (style === 'space') { playSpace(329, 0.18, 0.05); setTimeout(() => playSpace(261, 0.22, 0.05), 120); }
+        else if (style === 'drum') { playDrum(329, 0.12, 0.06); setTimeout(() => playDrum(261, 0.15, 0.06), 100); }
+        else if (style === 'piano') { playPiano(329, 0.18, 0.06); setTimeout(() => playPiano(261, 0.22, 0.06), 120); }
+        else if (style === 'synth') { playSynth(329, 0.22, 0.06); setTimeout(() => playSynth(261, 0.26, 0.06), 120); }
+        else if (style === 'chiptune') { playChiptune(329, 0.15, 0.06); setTimeout(() => playChiptune(261, 0.18, 0.06), 100); }
+        else if (style === 'pluck') { playPluck(329, 0.15, 0.06); setTimeout(() => playPluck(261, 0.18, 0.06), 100); }
+        else if (style === 'crystal') { playCrystal(329, 0.25, 0.06); setTimeout(() => playCrystal(261, 0.3, 0.06), 140); }
+    }
+    function playAchievementSound() {
+        if (!settings.sound) return;
+        initAudio();
+        const style = settings.soundStyle;
+        const notes = [523.25, 659.25, 783.99];
+        if (style === 'classic') notes.forEach((freq, i) => setTimeout(() => playOsc(freq, 'sine', 0.25, 0.1), i * 70));
+        else if (style === 'electronic') notes.forEach((freq, i) => setTimeout(() => playFiltered(freq, 0.22, 0.1), i * 70));
+        else if (style === 'retro') notes.forEach((freq, i) => setTimeout(() => playRetro(freq, 0.18, 0.1), i * 60));
+        else if (style === 'wood') notes.forEach((freq, i) => setTimeout(() => playWoodTone(freq, 0.22, 0.12), i * 80));
+        else if (style === 'bell') notes.forEach((freq, i) => setTimeout(() => playBell(freq, 0.3, 0.08), i * 90));
+        else if (style === 'space') notes.forEach((freq, i) => setTimeout(() => playSpace(freq, 0.25, 0.06), i * 80));
+        else if (style === 'drum') notes.forEach((freq, i) => setTimeout(() => playDrum(freq, 0.15, 0.06), i * 60));
+        else if (style === 'piano') notes.forEach((freq, i) => setTimeout(() => playPiano(freq, 0.25, 0.1), i * 80));
+        else if (style === 'synth') notes.forEach((freq, i) => setTimeout(() => playSynth(freq, 0.3, 0.08), i * 80));
+        else if (style === 'chiptune') notes.forEach((freq, i) => setTimeout(() => playChiptune(freq, 0.25, 0.08), i * 60));
+        else if (style === 'pluck') notes.forEach((freq, i) => setTimeout(() => playPluck(freq, 0.2, 0.08), i * 70));
+        else if (style === 'crystal') notes.forEach((freq, i) => setTimeout(() => playCrystal(freq, 0.35, 0.08), i * 90));
     }
 
     /* ===== Game Flow ===== */
@@ -4001,6 +4038,7 @@
             }
             showModal(icon, title, msg);
         }
+        updateUndoButton();
         updateHintButton();
     }
 
@@ -4332,6 +4370,7 @@
             }
             showModal(icon, title, msg);
         }
+        updateUndoButton();
         updateHintButton();
     }
 
@@ -4618,6 +4657,7 @@
             }
             showModal(icon, title, msg);
         }
+        updateUndoButton();
         updateHintButton();
     }
 
@@ -4652,6 +4692,7 @@
         hideWinLine();
         c4WinLine.classList.remove('show');
         gomokuWinLine.classList.remove('show');
+        cells.forEach(c => c.classList.remove('hint-glow'));
 
         if (isC4Mode()) {
             c4Board = Array(C4_ROWS).fill(null).map(() => Array(C4_COLS).fill(''));
@@ -5438,15 +5479,18 @@
         hideWinLine();
         c4WinLine.classList.remove('show');
         gomokuWinLine.classList.remove('show');
+        cells.forEach(c => c.classList.remove('hint-glow'));
         currentMoveStartTime = Date.now();
         updateStatus(getTurnText(), currentPlayer === PLAYER_X ? 'x' : 'o');
         switchTimerTo(currentPlayer);
         updateCellAriaLabels();
         updateUndoButton();
         updateHintButton();
+        playUndoSound();
     }
 
     function updateUndoButton() {
+        if (!undoBtn) return;
         const canUndo = battleMode !== 'aivsai' && boardSnapshots.length > 1;
         undoBtn.classList.toggle('disabled', !canUndo);
         undoBtn.setAttribute('aria-disabled', String(!canUndo));
@@ -5469,6 +5513,7 @@
         const opponent = player === PLAYER_X ? PLAYER_O : PLAYER_X;
         const empty = board.map((v, i) => v === '' ? i : -1).filter(i => i !== -1);
         if (empty.length === 0) return -1;
+        if (checkWinForBoard(board, player) || checkWinForBoard(board, opponent)) return -1;
         // Check for immediate win
         for (const i of empty) {
             board[i] = player;
@@ -5548,9 +5593,11 @@
         if (!cell) return;
         cell.classList.add('hint-glow');
         if (a11yAnnouncer) { a11yAnnouncer.textContent = t('hint-shown'); setTimeout(() => { if (a11yAnnouncer) a11yAnnouncer.textContent = ''; }, 1500); }
-        setTimeout(() => {
+        const onAnimEnd = () => {
             cell.classList.remove('hint-glow');
-        }, 2000);
+            cell.removeEventListener('animationend', onAnimEnd);
+        };
+        cell.addEventListener('animationend', onAnimEnd);
     }
 
     /* ===== Achievement System ===== */
@@ -5813,6 +5860,7 @@
 
     function showAchievementToast(def) {
         if (!toastContainer) return;
+        playAchievementSound();
         const toast = document.createElement('div');
         toast.className = 'achievement-toast';
         toast.innerHTML = `
