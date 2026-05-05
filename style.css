@@ -162,6 +162,32 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     margin-top: 0.25rem;
     letter-spacing: 1px;
 }
+.misere-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ff6b6b;
+    background: hsla(0, 80%, 60%, 0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid hsla(0, 80%, 60%, 0.2);
+}
+.misere-indicator::before {
+    content: '↻';
+    font-size: 0.85rem;
+}
+.game-wrapper.misere-mode .board,
+.game-wrapper.misere-mode .connect4-board,
+.game-wrapper.misere-mode .gomoku-board {
+    border-color: hsla(0, 80%, 60%, 0.3);
+    box-shadow: 0 0 0 1px hsla(0, 80%, 60%, 0.15), var(--shadow);
+}
+.game-wrapper.misere-mode .cell:hover:not(.disabled):not(.x):not(.o) {
+    background: hsla(0, 80%, 60%, 0.08);
+}
 
 /* ===== Mode Switch ===== */
 .mode-switch,
@@ -221,6 +247,28 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 
 /* ===== Scoreboard ===== */
+.elo-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 0.4rem 0.8rem;
+    box-shadow: var(--shadow);
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.elo-badge:hover { transform: translateY(-2px); }
+.elo-tier-icon { font-size: 1rem; }
+.elo-value { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; }
+.elo-tier-name { font-size: 0.8rem; opacity: 0.8; }
+
 .scoreboard {
     display: flex;
     gap: 0.75rem;
@@ -874,6 +922,10 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 
 .modal-content h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
 .modal-content p { color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
+.modal-elo { font-weight: 600; font-size: 1rem !important; margin-bottom: 1rem !important; }
+.modal-elo.positive { color: #2ecc71; }
+.modal-elo.negative { color: #e74c3c; }
+.modal-elo.neutral { color: var(--text-muted); }
 
 /* ===== Settings Drawer ===== */
 .settings-drawer {
@@ -945,6 +997,13 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 .setting-label.sub {
     font-size: 0.8rem;
     color: var(--text-muted);
+}
+.setting-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    line-height: 1.4;
+    opacity: 0.8;
     font-weight: 500;
 }
 
@@ -1563,6 +1622,14 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     font-size: 0.8rem;
     color: var(--text-muted);
 }
+.history-elo {
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+}
+.history-elo.positive { color: #2ecc71; }
+.history-elo.negative { color: #e74c3c; }
+.history-elo.neutral { color: var(--text-muted); }
 
 .history-item-actions {
     display: flex;

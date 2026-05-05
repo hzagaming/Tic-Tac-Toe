@@ -20,6 +20,7 @@
                 <span class="o-mark">O</span>
             </h1>
             <p class="subtitle" id="subtitle" data-i18n="subtitle-pve">不可战胜的 AI 对手</p>
+            <span class="misere-indicator" id="misere-indicator" style="display:none;">反向规则</span>
         </header>
 
         <div class="mode-switch" id="mode-switch">
@@ -33,6 +34,12 @@
             <button class="battle-btn active" data-battle="pve" data-i18n="mode-pve" aria-pressed="true">人机</button>
             <button class="battle-btn" data-battle="pvp" data-i18n="mode-pvp" aria-pressed="false">双人</button>
             <button class="battle-btn" data-battle="aivsai" data-i18n="mode-aivsai" aria-pressed="false">AI 对战</button>
+        </div>
+
+        <div class="elo-badge" id="elo-badge" style="display:none;">
+            <span class="elo-tier-icon" id="elo-tier-icon"></span>
+            <span class="elo-value" id="elo-value"></span>
+            <span class="elo-tier-name" id="elo-tier-name"></span>
         </div>
 
         <div class="scoreboard" id="scoreboard">
@@ -171,6 +178,7 @@
             <div class="modal-icon" id="modal-icon"></div>
             <h2 id="modal-title" data-i18n="modal-game-over">游戏结束</h2>
             <p id="modal-message" data-i18n="modal-win">恭喜获胜！</p>
+            <p id="modal-elo" class="modal-elo"></p>
             <button class="btn btn-primary" id="modal-btn" data-i18n="btn-play-again">再来一局</button>
         </div>
     </div>
@@ -371,6 +379,31 @@
                     <button class="seg-btn" data-diff="medium" data-i18n="diff-medium">中等</button>
                     <button class="seg-btn active" data-diff="hard" data-i18n="diff-hard">困难</button>
                 </div>
+            </div>
+
+            <!-- ELO Rating -->
+            <div class="setting-group" id="elo-settings-group">
+                <span class="setting-label" data-i18n="setting-elo">ELO 等级分</span>
+                <div class="setting-row">
+                    <span class="setting-label sub" id="label-toggle-elo" data-i18n="setting-elo-toggle">显示 ELO</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-elo" aria-labelledby="label-toggle-elo" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Misère Mode -->
+            <div class="setting-group" id="misere-settings-group">
+                <span class="setting-label" data-i18n="setting-misere">反向规则</span>
+                <div class="setting-row">
+                    <span class="setting-label sub" id="label-toggle-misere" data-i18n="setting-misere-toggle">连成线者输</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-misere" aria-labelledby="label-toggle-misere">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <p class="setting-desc" data-i18n="setting-misere-desc">经典变体规则：最后被迫连成线的一方输。策略完全反转！</p>
             </div>
 
             <!-- Timer Settings -->
