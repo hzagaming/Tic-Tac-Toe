@@ -242,6 +242,7 @@
     // Board Editor state
     let editorBoardState = Array(9).fill('');
     let editorPlayer = 'X';
+    let editorGame = false;
     // Misère Mode state
     let misereMode = false;
     const TACTICS_KEY = 'ttt_tactics_v1';
@@ -278,27 +279,31 @@
             const raw = localStorage.getItem(ELO_KEY);
             if (raw) {
                 const parsed = JSON.parse(raw);
-                if (parsed && typeof parsed.current === 'number') {
+                if (parsed && typeof parsed.current === 'number' && Number.isFinite(parsed.current) && !Number.isNaN(parsed.current)) {
                     eloData.current = parsed.current;
-                    eloData.peak = typeof parsed.peak === 'number' ? parsed.peak : parsed.current;
+                    eloData.peak = typeof parsed.peak === 'number' && Number.isFinite(parsed.peak) && !Number.isNaN(parsed.peak) ? parsed.peak : parsed.current;
                     eloData.history = Array.isArray(parsed.history) ? parsed.history : [];
-                    eloData.streak = typeof parsed.streak === 'number' ? parsed.streak : 0;
+                    eloData.streak = typeof parsed.streak === 'number' && Number.isFinite(parsed.streak) && !Number.isNaN(parsed.streak) ? parsed.streak : 0;
                 }
             }
         } catch (e) {}
     }
     function recordEloChange(difficulty, result, change) {
+        const oldElo = eloData.current;
         eloData.current += change;
         if (eloData.current < 100) eloData.current = 100;
         if (eloData.current > eloData.peak) eloData.peak = eloData.current;
         if (result === 1) eloData.streak = Math.max(0, eloData.streak) + 1;
         else eloData.streak = 0;
-        eloData.history.unshift({ date: Date.now(), difficulty, result, change, elo: eloData.current });
+        const actualChange = eloData.current - oldElo;
+        eloData.history.unshift({ date: Date.now(), difficulty, result, change: actualChange, elo: eloData.current });
         if (eloData.history.length > 50) eloData.history.pop();
         saveElo();
+        return actualChange;
     }
     function processEloChange(draw, winner) {
         if (settings.eloEnabled === false) return null;
+        if (editorGame) return null;
         const bm = getEffectiveBattleMode();
         if (bm !== 'pve') return null;
         const aiElo = getAiElo(settings.difficulty);
@@ -307,9 +312,9 @@
         else if (winner === PLAYER_X) result = 1;
         else result = 0;
         const change = computeEloChange(eloData.current, aiElo, result);
-        recordEloChange(settings.difficulty, result, change);
+        const actualChange = recordEloChange(settings.difficulty, result, change);
         updateEloBadge();
-        return change;
+        return actualChange;
     }
     function updateEloBadge() {
         if (!eloBadge) return;
@@ -1511,6 +1516,7 @@
         try { const v = localStorage.getItem(STATS_KEY); if (v) payload.stats = v; } catch (e) {}
         try { const v = localStorage.getItem(TACTICS_KEY); if (v) payload.tactics = v; } catch (e) {}
         try { const v = localStorage.getItem(DAILY_KEY); if (v) payload.daily = v; } catch (e) {}
+        try { const v = localStorage.getItem(ELO_KEY); if (v) payload.elo = v; } catch (e) {}
         if (Object.keys(payload).length <= 2) {
             dataExportArea.value = t('data-export-empty');
             return;
@@ -1556,6 +1562,7 @@
         if (payload.stats && !validString(payload.stats)) { alert(t('data-import-invalid')); return; }
         if (payload.tactics && !validString(payload.tactics)) { alert(t('data-import-invalid')); return; }
         if (payload.daily && !validString(payload.daily)) { alert(t('data-import-invalid')); return; }
+        if (payload.elo && !validString(payload.elo)) { alert(t('data-import-invalid')); return; }
         try {
             if (payload.settings) localStorage.setItem(SETTINGS_KEY, payload.settings);
             if (payload.history) localStorage.setItem(HISTORY_KEY, payload.history);
@@ -1564,6 +1571,7 @@
             if (payload.stats) localStorage.setItem(STATS_KEY, payload.stats);
             if (payload.tactics) localStorage.setItem(TACTICS_KEY, payload.tactics);
             if (payload.daily) localStorage.setItem(DAILY_KEY, payload.daily);
+            if (payload.elo) localStorage.setItem(ELO_KEY, payload.elo);
             alert(t('data-import-success'));
             window.location.reload();
         } catch (e) { alert(t('data-import-fail')); }
@@ -2418,6 +2426,8 @@
         try { localStorage.setItem(TACTICS_KEY, JSON.stringify(tacticsProgress)); } catch (e) {}
     }
     function openTactics() {
+        stopTimer();
+        clearTimeout(aiTimer); aiTimer = null;
         closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeEditor(); closeRush(); closeDaily();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
@@ -2439,6 +2449,7 @@
         tacticsDrawer.classList.remove('show');
         tacticsOverlay.classList.remove('show');
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
+        resumeTimerIfGameActive();
     }
     function resetTacticModalState() {
         if (tacticWrongTimer) { clearTimeout(tacticWrongTimer); tacticWrongTimer = null; }
@@ -2484,6 +2495,8 @@
         if (tacticsSkipBtn) tacticsSkipBtn.style.display = 'inline-block';
         if (tacticsNextBtn) tacticsNextBtn.style.display = 'none';
         renderTacticBoard();
+        stopTimer();
+        clearTimeout(aiTimer); aiTimer = null;
         tacticsModal.classList.add('show');
         setTimeout(() => {
             const firstEmpty = tacticCells.find(c => !c.classList.contains('disabled'));
@@ -3122,8 +3135,9 @@
             return;
         }
         // Set up game state
+        editorGame = true;
         gameBoard = editorBoardState.slice();
-        currentPlayer = editorPlayer;
+        currentPlayer = getEffectiveBattleMode() === 'pve' ? PLAYER_X : editorPlayer;
         gameActive = true;
         moveHistory = [];
         boardSnapshots = [];
@@ -3133,6 +3147,7 @@
         lastWinData = null;
         winLine.classList.remove('show');
         if (modal) modal.classList.remove('show');
+        initTimers();
         // Re-render main board
         cells.forEach((cell, i) => {
             cell.innerHTML = '';
@@ -3148,7 +3163,6 @@
         closeEditor();
         updateUndoButton();
         updateHintButton();
-        if (settings.sound) playMoveSound(PLAYER_X);
     }
     function checkEditorAchievements() {
         checkSingleAchievement('editor_first');
@@ -3200,7 +3214,7 @@
     /* ===== Timer System ===== */
     function formatTimer(ms) {
         if (ms < 0) ms = 0;
-        const totalSeconds = Math.ceil(ms / 1000);
+        const totalSeconds = Math.round(ms / 1000);
         const m = Math.floor(totalSeconds / 60);
         const s = totalSeconds % 60;
         return m.toString().padStart(2, '0') + ':' + s.toString().padStart(2, '0');
@@ -3385,6 +3399,8 @@
             timerState.X = 0;
             timerState.O = 0;
             updateTimerDisplay();
+        } else if (gameActive) {
+            initTimers();
         }
         saveSettings();
     }
@@ -3592,6 +3608,8 @@
     }
 
     function openHotkeyModal() {
+        stopTimer();
+        clearTimeout(aiTimer); aiTimer = null;
         closeDrawer(); closeHistory(); closeChangelog(); closeReplay(); closeAchievements(); closeDaily(); closeRush(); closeEditor();
         if (tacticsDrawer) { closeTactics(); }
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
@@ -3604,6 +3622,7 @@
     function closeHotkeyModal() {
         hotkeyModal.classList.remove('show');
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
+        resumeTimerIfGameActive();
     }
 
     function renderHotkeyHelp() {
@@ -4134,6 +4153,7 @@
         playMoveSound(player);
 
         if (checkWinTTT(gameBoard, player)) {
+            if (misereMode) drawWinLine(player);
             endGame(false, misereMode ? (player === PLAYER_X ? PLAYER_O : PLAYER_X) : player);
         } else if (checkDrawTTT(gameBoard)) {
             endGame(true);
@@ -4967,6 +4987,7 @@
         clearTimeout(replayTimer); replayTimer = null;
         stopTimer();
         initTimers();
+        editorGame = false;
         gameActive = true;
         currentPlayer = PLAYER_X;
         lastWinData = null;
@@ -5120,6 +5141,7 @@
 
     /* ===== TTT AI ===== */
     function getAiMove(board, aiPlayer) {
+        if (misereMode && currentMode === 'ttt') return getBestMoveMisere(board, aiPlayer);
         const humanPlayer = aiPlayer === PLAYER_X ? PLAYER_O : PLAYER_X;
         const diff = settings.difficulty;
         if (diff === 'hard') return getBestMoveGeneric(board, aiPlayer);
@@ -5128,6 +5150,9 @@
     }
 
     function getEasyMoveTTT(board, aiPlayer, humanPlayer) {
+        const empties = board.map((v, i) => v === '' ? i : null).filter(v => v !== null);
+        if (empties.length === 0) return -1;
+        // In normal mode: try to win, then block opponent
         for (let i = 0; i < 9; i++) if (board[i] === '') {
             board[i] = aiPlayer;
             const win = checkWinTTT(board, aiPlayer);
@@ -5140,8 +5165,7 @@
             board[i] = '';
             if (lose) return i;
         }
-        const empties = board.map((v, i) => v === '' ? i : null).filter(v => v !== null);
-        return empties.length > 0 ? empties[Math.floor(Math.random() * empties.length)] : -1;
+        return empties[Math.floor(Math.random() * empties.length)];
     }
 
     function getBestMoveGeneric(board, aiPlayer) {
@@ -5260,6 +5284,8 @@
 
     /* ===== Changelog ===== */
     function openChangelog() {
+        stopTimer();
+        clearTimeout(aiTimer); aiTimer = null;
         closeDrawer(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
@@ -5275,6 +5301,7 @@
     function closeChangelog() {
         changelogModal.classList.remove('show');
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
+        resumeTimerIfGameActive();
     }
 
     function renderChangelog() {

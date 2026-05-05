@@ -185,7 +185,9 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     border-color: hsla(0, 80%, 60%, 0.3);
     box-shadow: 0 0 0 1px hsla(0, 80%, 60%, 0.15), var(--shadow);
 }
-.game-wrapper.misere-mode .cell:hover:not(.disabled):not(.x):not(.o) {
+.game-wrapper.misere-mode .cell:hover:not(.disabled):not(.x):not(.o),
+.game-wrapper.misere-mode .c4-cell:hover:not(.disabled),
+.game-wrapper.misere-mode .gomoku-cell:hover:not(.disabled) {
     background: hsla(0, 80%, 60%, 0.08);
 }
 
