@@ -32,6 +32,7 @@
     const eloTierIcon = document.getElementById('elo-tier-icon');
     const eloValue = document.getElementById('elo-value');
     const eloTierName = document.getElementById('elo-tier-name');
+    const gameWrapper = document.querySelector('.game-wrapper');
     const modeSwitch = document.getElementById('mode-switch');
     const modeBtns = Array.from(document.querySelectorAll('.mode-btn'));
     const battleSwitch = document.getElementById('battle-switch');
@@ -243,7 +244,6 @@
     let editorPlayer = 'X';
     // Misère Mode state
     let misereMode = false;
-    const MISERE_STATS_KEY = 'ttt_misere_stats_v1';
     const TACTICS_KEY = 'ttt_tactics_v1';
     const DAILY_KEY = 'ttt_daily_v1';
     const RUSH_KEY = 'ttt_rush_v1';
@@ -643,6 +643,7 @@
             'ach-misere-hard-desc': { zh:'在困难难度的反向规则下获胜', en:'Win a Hard Misère match', ja:'難易度「難しい」のミゼールで勝利', ko:'어려움 난이도 미제르에서 승리', fr:'Gagnez en Misère Difficile', de:'Gewinne Misère auf Schwer', es:'Gana en Misère Difícil', ru:'Победите в Мизер на Сложно', it:'Vinci in Misère Difficile', pt:'Vença em Misère no Difícil' },
             'setting-elo': { zh:'ELO 等级分', en:'ELO Rating', ja:'ELO レーティング', ko:'ELO 레이팅', fr:'Classement ELO', de:'ELO-Wertung', es:'Clasificación ELO', ru:'Рейтинг ELO', it:'Classifica ELO', pt:'Classificação ELO' },
             'setting-elo-toggle': { zh:'显示 ELO', en:'Show ELO', ja:'ELO を表示', ko:'ELO 표시', fr:'Afficher ELO', de:'ELO anzeigen', es:'Mostrar ELO', ru:'Показать ELO', it:'Mostra ELO', pt:'Mostrar ELO' },
+            'setting-elo-desc': { zh:'基于对局结果动态调整的等级分系统，仅在人机对战中生效。', en:'Dynamic rating system based on match results, only active in PvE.', ja:'対戦結果に基づく動的レーティングシステム、PvEのみ有効。', ko:'대전 결과 기반 동적 레이팅 시스템, PvE에서만 활성화.', fr:'Système de classement dynamique basé sur les résultats, actif uniquement en PvE.', de:'Dynamisches Bewertungssystem basierend auf Spielergebnissen, nur im PvE aktiv.', es:'Sistema de clasificación dinámico basado en resultados, solo activo en PvE.', ru:'Динамическая система рейтинга на основе результатов, только в PvE.', it:'Sistema di rating dinamico basato sui risultati, attivo solo in PvE.', pt:'Sistema de classificação dinâmico baseado em resultados, ativo apenas em PvE.' },
             'setting-misere': { zh:'反向规则', en:'Misère Mode', ja:'ミゼールモード', ko:'미제르 모드', fr:'Mode Misère', de:'Misère-Modus', es:'Modo Misère', ru:'Режим Мизер', it:'Modalità Misère', pt:'Modo Misère' },
             'setting-misere-toggle': { zh:'连成线者输', en:'Line = Loss', ja:'ライン完成=敗北', ko:'줄 완성=패배', fr:'Ligne = Défaite', de:'Linie = Verlust', es:'Línea = Derrota', ru:'Линия = Поражение', it:'Linea = Sconfitta', pt:'Linha = Derrota' },
             'setting-misere-desc': { zh:'经典变体规则：连成线的一方输。策略完全反转！', en:'Classic variant: forming a line makes you lose. Strategy is completely inverted!', ja:'古典的変則：ラインを作ると負け。戦略が完全に逆転！', ko:'클식 변형: 줄을 완성하면 패배. 전략이 완전히 반전!', fr:'Variante classique : former une ligne vous fait perdre. Stratégie inversée !', de:'Klassische Variante: Linie bilden = Verlust. Strategie komplett umgekehrt!', es:'Variante clásica: formar línea = perder. ¡Estrategia invertida!', ru:'Классический вариант: линия = поражение. Стратегия полностью инвертирована!', it:'Variante classica: formare una linea = sconfitta. Strategia invertita!', pt:'Variante clássica: formar linha = derrota. Estratégia invertida!' },
@@ -1932,6 +1933,7 @@
 
     /* ===== Settings Logic ===== */
     function openDrawer() {
+        stopTimer();
         closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
@@ -1948,6 +1950,7 @@
     function closeDrawer() {
         drawer.classList.remove('show');
         drawerOverlay.classList.remove('show');
+        resumeTimerIfGameActive();
         const dew = document.getElementById('data-export-wrap');
         const diw = document.getElementById('data-import-wrap');
         if (dew) dew.classList.remove('show');
@@ -1962,6 +1965,8 @@
         applyI18n();
         saveSettings();
         updateUndoButton();
+        updateEloBadge();
+        updateMisereIndicator();
     }
 
     function setTheme(theme) {
@@ -4239,30 +4244,32 @@
         lockC4Board(true);
         recordGameStats(draw, winner);
         const eloChange = processEloChange(draw, winner);
-        saveGameHistory(draw ? null : winner, eloData.history.length > 0 ? eloData.history[0] : null);
-        checkAchievements({ mode: currentMode, bm: getEffectiveBattleMode(), winner: draw ? null : winner, difficulty: settings.difficulty, duration: Math.max(0, Date.now() - gameStartTime), moves: moveHistory.length });
+        saveGameHistory(draw ? null : winner, eloChange !== null && eloData.history.length > 0 ? eloData.history[0] : null);
+        checkAchievements({ mode: currentMode, bm: getEffectiveBattleMode(), winner: draw ? null : winner, difficulty: settings.difficulty, duration: Math.max(0, Date.now() - gameStartTime), moves: moveHistory.length, misereMode: misereMode });
         const bm = getEffectiveBattleMode();
 
         if (draw) {
             scores.draw++;
             animateScore(scoreDrawEl);
             playDrawSound();
-            const msg = bm === 'aivsai' ? t('modal-draw-aivsai') : bm === 'pve' ? t('modal-draw-pve') : t('modal-draw-pvp');
+            const msg = bm === 'aivsai' ? t('modal-draw-aivsai') : bm === 'pve' ? (misereMode ? t('modal-misere-draw') : t('modal-draw-pve')) : t('modal-draw-pvp');
             showModal('🤝', t('status-draw'), msg, eloChange);
             updateStatus(t('status-draw'), null);
         } else {
             scores[winner]++;
             animateScore(winner === PLAYER_X ? scoreXEl : scoreOEl);
             drawC4WinLine(winCells, winner);
-            if (misereMode && getEffectiveBattleMode() === 'pve' && winner === PLAYER_O) playLossSound(); else playWinSound();
+            if (!timerTimeoutFlag) {
+                if (misereMode && getEffectiveBattleMode() === 'pve' && winner === PLAYER_O) playLossSound(); else playWinSound();
+            }
             let icon = '🎉', title, msg;
             if (timerTimeoutFlag) {
                 icon = '⏰'; title = t('timer-out');
                 if (winner === PLAYER_X) {
-                    msg = getResultMessage(winner, bm);
+                    msg = bm === 'aivsai' ? t('modal-ai-x-wins') : (bm === 'pvp' ? t('modal-player1-wins') : t('modal-you-win'));
                     updateStatus(title, 'x');
                 } else {
-                    msg = getResultMessage(winner, bm);
+                    msg = bm === 'aivsai' ? t('modal-ai-o-wins') : (bm === 'pvp' ? t('modal-player2-wins') : t('modal-ai-wins'));
                     updateStatus(title, 'o');
                 }
             } else if (winner === PLAYER_X) {
@@ -4589,30 +4596,32 @@
         lockGmkBoard(true);
         recordGameStats(draw, winner);
         const eloChange = processEloChange(draw, winner);
-        saveGameHistory(draw ? null : winner, eloData.history.length > 0 ? eloData.history[0] : null);
-        checkAchievements({ mode: currentMode, bm: getEffectiveBattleMode(), winner: draw ? null : winner, difficulty: settings.difficulty, duration: Math.max(0, Date.now() - gameStartTime), moves: moveHistory.length });
+        saveGameHistory(draw ? null : winner, eloChange !== null && eloData.history.length > 0 ? eloData.history[0] : null);
+        checkAchievements({ mode: currentMode, bm: getEffectiveBattleMode(), winner: draw ? null : winner, difficulty: settings.difficulty, duration: Math.max(0, Date.now() - gameStartTime), moves: moveHistory.length, misereMode: misereMode });
         const bm = getEffectiveBattleMode();
 
         if (draw) {
             scores.draw++;
             animateScore(scoreDrawEl);
             playDrawSound();
-            const msg = bm === 'aivsai' ? t('modal-draw-aivsai') : bm === 'pve' ? t('modal-draw-pve') : t('modal-draw-pvp');
+            const msg = bm === 'aivsai' ? t('modal-draw-aivsai') : bm === 'pve' ? (misereMode ? t('modal-misere-draw') : t('modal-draw-pve')) : t('modal-draw-pvp');
             showModal('🤝', t('status-draw'), msg, eloChange);
             updateStatus(t('status-draw'), null);
         } else {
             scores[winner]++;
             animateScore(winner === PLAYER_X ? scoreXEl : scoreOEl);
             drawGmkWinLine(winCells, winner);
-            if (misereMode && getEffectiveBattleMode() === 'pve' && winner === PLAYER_O) playLossSound(); else playWinSound();
+            if (!timerTimeoutFlag) {
+                if (misereMode && getEffectiveBattleMode() === 'pve' && winner === PLAYER_O) playLossSound(); else playWinSound();
+            }
             let icon = '🎉', title, msg;
             if (timerTimeoutFlag) {
                 icon = '⏰'; title = t('timer-out');
                 if (winner === PLAYER_X) {
-                    msg = getResultMessage(winner, bm);
+                    msg = bm === 'aivsai' ? t('modal-ai-x-wins') : (bm === 'pvp' ? t('modal-player1-wins') : t('modal-you-win'));
                     updateStatus(title, 'x');
                 } else {
-                    msg = getResultMessage(winner, bm);
+                    msg = bm === 'aivsai' ? t('modal-ai-o-wins') : (bm === 'pvp' ? t('modal-player2-wins') : t('modal-ai-wins'));
                     updateStatus(title, 'o');
                 }
             } else if (winner === PLAYER_X) {
@@ -4888,31 +4897,33 @@
         lockBoard(true);
         recordGameStats(draw, winner);
         const eloChange = processEloChange(draw, winner);
-        saveGameHistory(draw ? null : winner, eloData.history.length > 0 ? eloData.history[0] : null);
-        checkAchievements({ mode: currentMode, bm: getEffectiveBattleMode(), winner: draw ? null : winner, difficulty: settings.difficulty, duration: Math.max(0, Date.now() - gameStartTime), moves: moveHistory.length });
+        saveGameHistory(draw ? null : winner, eloChange !== null && eloData.history.length > 0 ? eloData.history[0] : null);
+        checkAchievements({ mode: currentMode, bm: getEffectiveBattleMode(), winner: draw ? null : winner, difficulty: settings.difficulty, duration: Math.max(0, Date.now() - gameStartTime), moves: moveHistory.length, misereMode: misereMode });
 
         const bm = getEffectiveBattleMode();
         if (draw) {
             scores.draw++;
             animateScore(scoreDrawEl);
             playDrawSound();
-            const msg = bm === 'aivsai' ? t('modal-draw-aivsai') : bm === 'pve' ? t('modal-draw-pve') : t('modal-draw-pvp');
+            const msg = bm === 'aivsai' ? t('modal-draw-aivsai') : bm === 'pve' ? (misereMode ? t('modal-misere-draw') : t('modal-draw-pve')) : t('modal-draw-pvp');
             showModal('🤝', t('status-draw'), msg, eloChange);
             updateStatus(t('status-draw'), null);
         } else {
             scores[winner]++;
             animateScore(winner === PLAYER_X ? scoreXEl : scoreOEl);
             drawWinLine(winner);
-            if (misereMode && getEffectiveBattleMode() === 'pve' && winner === PLAYER_O) playLossSound(); else playWinSound();
+            if (!timerTimeoutFlag) {
+                if (misereMode && getEffectiveBattleMode() === 'pve' && winner === PLAYER_O) playLossSound(); else playWinSound();
+            }
 
             let icon, title, msg;
             if (timerTimeoutFlag) {
                 icon = '⏰'; title = t('timer-out');
                 if (winner === PLAYER_X) {
-                    msg = getResultMessage(winner, bm);
+                    msg = bm === 'aivsai' ? t('modal-ai-x-wins') : (bm === 'pvp' ? t('modal-player1-wins') : t('modal-you-win'));
                     updateStatus(title, 'x');
                 } else {
-                    msg = getResultMessage(winner, bm);
+                    msg = bm === 'aivsai' ? t('modal-ai-o-wins') : (bm === 'pvp' ? t('modal-player2-wins') : t('modal-ai-wins'));
                     updateStatus(title, 'o');
                 }
             } else if (winner === PLAYER_X) {
@@ -4936,15 +4947,6 @@
         updateHintButton();
     }
 
-    function getResultMessage(winner, bm) {
-        if (!misereMode || bm === 'aivsai' || bm === 'pvp') {
-            if (winner === PLAYER_X) return bm === 'aivsai' ? t('modal-ai-x-wins') : (bm === 'pvp' ? t('modal-player1-wins') : t('modal-you-win'));
-            return bm === 'aivsai' ? t('modal-ai-o-wins') : (bm === 'pvp' ? t('modal-player2-wins') : t('modal-ai-wins'));
-        }
-        // Misère PvE
-        if (winner === PLAYER_X) return t('modal-misere-you-win');
-        return t('modal-misere-ai-wins');
-    }
     function getWinnerText(winner) {
         if (timerTimeoutFlag) return t('timer-out');
         const bm = getEffectiveBattleMode();
@@ -5317,6 +5319,7 @@
             moves: JSON.parse(JSON.stringify(moveHistory)),
             totalMoves: moveHistory.length,
             customConfig: currentMode === 'custom' ? { w: customConfig.w, h: customConfig.h, winLen: customConfig.winLen } : null,
+            misere: misereMode,
             elo: eloInfo || null
         };
         let history = loadHistory();
@@ -5371,6 +5374,7 @@
     }
 
     function openHistory() {
+        stopTimer();
         closeDrawer(); closeChangelog(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
@@ -5389,6 +5393,7 @@
         historyDrawer.classList.remove('show');
         historyOverlay.classList.remove('show');
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
+        resumeTimerIfGameActive();
     }
 
     function clearHistory() {
@@ -6062,7 +6067,7 @@
         { id: 'misere_first', icon: '↻', category: 'explorer', getProgress: (s) => (s.misereWins || 0) >= 1 ? 1 : 0, target: 1 },
         { id: 'misere_streak_3', icon: '🔥', category: 'victory', getProgress: (s) => (s.misereCurrentStreak || 0) >= 3 ? 1 : 0, target: 1 },
         { id: 'misere_all_modes', icon: '🎯', category: 'master', getProgress: (s) => Math.min(s.misereModesWon ? s.misereModesWon.length : 0, 4), target: 4 },
-        { id: 'misere_hard', icon: '💀', category: 'master', getProgress: (s, r) => misereMode && r.bm === 'pve' && r.winner === 'X' && r.difficulty === 'hard' ? 1 : 0, target: 1 },
+        { id: 'misere_hard', icon: '💀', category: 'master', getProgress: (s, r) => r.misereMode && r.bm === 'pve' && r.winner === 'X' && r.difficulty === 'hard' ? 1 : 0, target: 1 },
     ];
 
     function trackAchievementSetting(type, value) {
@@ -6122,7 +6127,7 @@
             if (!s.fastestWin || result.duration < s.fastestWin) {
                 s.fastestWin = result.duration;
             }
-            if (misereMode) {
+            if (result.misereMode) {
                 s.misereWins = (s.misereWins || 0) + 1;
                 if (!s.misereModesWon.includes(result.mode)) s.misereModesWon.push(result.mode);
                 s.misereCurrentStreak = (s.misereCurrentStreak || 0) + 1;
@@ -6217,7 +6222,8 @@
     }
 
     function openAchievements() {
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeHotkeyModal();
+        stopTimer();
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
@@ -6235,6 +6241,7 @@
         achievementsDrawer.classList.remove('show');
         achievementsOverlay.classList.remove('show');
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
+        resumeTimerIfGameActive();
     }
 
     function showAchievementToast(def) {
