@@ -289,6 +289,7 @@
         } catch (e) {}
     }
     function recordEloChange(difficulty, result, change) {
+        if (!Number.isFinite(change) || Number.isNaN(change)) change = 0;
         const oldElo = eloData.current;
         eloData.current += change;
         if (eloData.current < 100) eloData.current = 100;
@@ -319,14 +320,14 @@
     function updateEloBadge() {
         if (!eloBadge) return;
         if (settings.eloEnabled === false || getEffectiveBattleMode() !== 'pve') {
-            eloBadge.style.display = 'none';
+            eloBadge.classList.add('hidden');
             return;
         }
         const tier = getEloTier(eloData.current);
         if (eloTierIcon) eloTierIcon.textContent = tier.icon;
         if (eloValue) eloValue.textContent = eloData.current;
         if (eloTierName) eloTierName.textContent = t('elo-tier-' + tier.id);
-        eloBadge.style.display = 'flex';
+        eloBadge.classList.remove('hidden');
     }
 
     const settings = {
@@ -3421,7 +3422,7 @@
     function updateMisereIndicator() {
         const indicator = document.getElementById('misere-indicator');
         if (indicator) {
-            indicator.style.display = misereMode ? 'inline-flex' : 'none';
+            indicator.classList.toggle('hidden', !misereMode);
             indicator.textContent = t('misere-indicator');
         }
         if (gameWrapper) {
@@ -4295,12 +4296,12 @@
             } else if (winner === PLAYER_X) {
                 if (bm === 'aivsai') { title = t('modal-ai-x-wins'); msg = title; icon = '⚡'; }
                 else if (bm === 'pvp') { title = t('modal-player1-wins'); msg = title; }
-                else { title = misereMode ? t('modal-misere-you-win') : t('modal-you-win'); msg = title; }
+                else { msg = misereMode ? t('modal-misere-you-win') : t('modal-you-win'); title = t('modal-you-win'); }
                 updateStatus(title, 'x');
             } else {
                 if (bm === 'aivsai') { title = t('modal-ai-o-wins'); msg = title; icon = '⚡'; }
                 else if (bm === 'pvp') { title = t('modal-player2-wins'); msg = title; icon = '🔥'; }
-                else { title = misereMode ? t('modal-misere-ai-wins') : t('modal-ai-wins'); msg = title; icon = '🤖'; }
+                else { msg = misereMode ? t('modal-misere-ai-wins') : t('modal-ai-wins'); title = t('modal-ai-wins'); icon = '🤖'; }
                 updateStatus(title, 'o');
             }
             showModal(icon, title, msg, eloChange);
@@ -4647,12 +4648,12 @@
             } else if (winner === PLAYER_X) {
                 if (bm === 'aivsai') { title = t('modal-ai-x-wins'); msg = title; icon = '⚡'; }
                 else if (bm === 'pvp') { title = t('modal-player1-wins'); msg = title; }
-                else { title = misereMode ? t('modal-misere-you-win') : t('modal-you-win'); msg = title; }
+                else { msg = misereMode ? t('modal-misere-you-win') : t('modal-you-win'); title = t('modal-you-win'); }
                 updateStatus(title, 'x');
             } else {
                 if (bm === 'aivsai') { title = t('modal-ai-o-wins'); msg = title; icon = '⚡'; }
                 else if (bm === 'pvp') { title = t('modal-player2-wins'); msg = title; icon = '🔥'; }
-                else { title = misereMode ? t('modal-misere-ai-wins') : t('modal-ai-wins'); msg = title; icon = '🤖'; }
+                else { msg = misereMode ? t('modal-misere-ai-wins') : t('modal-ai-wins'); title = t('modal-ai-wins'); icon = '🤖'; }
                 updateStatus(title, 'o');
             }
             showModal(icon, title, msg, eloChange);
@@ -6010,6 +6011,7 @@
             fastestWin: null,
             misereWins: 0,
             misereModesWon: [],
+            misereCurrentStreak: 0,
         };
     }
 
