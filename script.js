@@ -25,6 +25,14 @@
     const modalIcon = document.getElementById('modal-icon');
     const modalElo = document.getElementById('modal-elo');
     const modalBtn = document.getElementById('modal-btn');
+    const modalAnalysisBtn = document.getElementById('modal-analysis-btn');
+    const analysisModal = document.getElementById('analysis-modal');
+    const analysisClose = document.getElementById('analysis-close');
+    const analysisAccuracy = document.getElementById('analysis-accuracy');
+    const analysisChart = document.getElementById('analysis-chart');
+    const analysisBoardWrap = document.getElementById('analysis-board-wrap');
+    const analysisMoveInfo = document.getElementById('analysis-move-info');
+    const analysisMoveList = document.getElementById('analysis-move-list');
     const scoreXEl = document.getElementById('score-x');
     const scoreOEl = document.getElementById('score-o');
     const scoreDrawEl = document.getElementById('score-draw');
@@ -243,6 +251,7 @@
     let editorBoardState = Array(9).fill('');
     let editorPlayer = 'X';
     let editorGame = false;
+    let lastSavedRecord = null;
     // Misère Mode state
     let misereMode = false;
     const TACTICS_KEY = 'ttt_tactics_v1';
@@ -657,6 +666,21 @@
             'modal-misere-you-win': { zh:'对手被迫连线，你赢了！', en:'Opponent was forced to connect — you win!', ja:'相手がラインを完成させたので勝利！', ko:'상대가 줄을 완성하여 승리!', fr:'L’adversaire a été forcé — vous gagnez !', de:'Gegner gezwungen — Sie gewinnen!', es:'¡El oponente se vio forzado — ganas!', ru:'Соперник вынужден — вы победили!', it:'L’avversario è stato costretto — vinci!', pt:'Oponente forçado — você vence!' },
             'modal-misere-ai-wins': { zh:'你被迫连线，输了！', en:'You were forced to connect — you lose!', ja:'あなたがラインを完成させたので敗北！', ko:'당신이 줄을 완성하여 패배!', fr:'Vous avez été forcé — vous perdez !', de:'Sie wurden gezwungen — Sie verlieren!', es:'¡Fuiste forzado — pierdes!', ru:'Вы вынуждены — вы проиграли!', it:'Sei stato costretto — perdi!', pt:'Você foi forçado — perde!' },
             'modal-misere-draw': { zh:'棋盘已满，平局！', en:'Board full — it\'s a draw!', ja:'盤面が一杯で引き分け！', ko:'보드가 가득 차 무승부!', fr:'Plateau plein — égalité !', de:'Brett voll — Unentschieden!', es:'¡Tablero lleno — empate!', ru:'Доска заполнена — ничья!', it:'Tabella piena — pareggio!', pt:'Tabuleiro cheio — empate!' },
+            'analysis-title': { zh:'复盘分析', en:'Game Analysis', ja:'棋譜解析', ko:'복기 분석', fr:'Analyse de partie', de:'Partieanalyse', es:'Análisis de partida', ru:'Анализ партии', it:'Analisi partita', pt:'Análise da partida' },
+            'btn-analysis': { zh:'📊 复盘分析', en:'📊 Analyze', ja:'📊 解析', ko:'📊 분석', fr:'📊 Analyser', de:'📊 Analysieren', es:'📊 Analizar', ru:'📊 Анализ', it:'📊 Analizza', pt:'📊 Analisar' },
+            'history-analysis': { zh:'分析', en:'Analyze', ja:'解析', ko:'분석', fr:'Analyser', de:'Analysieren', es:'Analizar', ru:'Анализ', it:'Analizza', pt:'Analisar' },
+            'analysis-best': { zh:'最佳', en:'Best', ja:'最善', ko:'최선', fr:'Optimal', de:'Beste', es:'Óptimo', ru:'Лучший', it:'Ottimo', pt:'Ótimo' },
+            'analysis-good': { zh:'好棋', en:'Good', ja:'好手', ko:'좋음', fr:'Bon', de:'Gut', es:'Bueno', ru:'Хороший', it:'Buono', pt:'Bom' },
+            'analysis-inaccuracy': { zh:'不精确', en:'Inaccuracy', ja:'不精確', ko:'부정확', fr:'Imprécision', de:'Ungenauigkeit', es:'Imprecisión', ru:'Неточность', it:'Imprecisione', pt:'Imprecisão' },
+            'analysis-mistake': { zh:'失误', en:'Mistake', ja:'ミス', ko:'실수', fr:'Erreur', de:'Fehler', es:'Error', ru:'Ошибка', it:'Errore', pt:'Erro' },
+            'analysis-blunder': { zh:'严重失误', en:'Blunder', ja:'大ミス', ko:'심각한 실수', fr:'Gaffe', de:'Grober Fehler', es:'Pifia', ru:'Грубая ошибка', it:'Errore grave', pt:'Erro grave' },
+            'analysis-best-detail': { zh:'这是一步最佳走法！', en:'Best move!', ja:'最善手です！', ko:'최선의 수입니다!', fr:'Coup optimal !', de:'Bester Zug!', es:'¡Jugada óptima!', ru:'Лучший ход!', it:'Mossa ottima!', pt:'Ótima jogada!' },
+            'analysis-good-detail': { zh:'这是一步好棋。', en:'Good move.', ja:'好手です。', ko:'좋은 수입니다.', fr:'Bon coup.', de:'Guter Zug.', es:'Buena jugada.', ru:'Хороший ход.', it:'Buona mossa.', pt:'Boa jogada.' },
+            'analysis-inaccuracy-detail': { zh:'这步棋不够精确，有更好的选择。', en:'Inaccurate — there was a better option.', ja:'不精確です。より良い手がありました。', ko:'부정확합니다. 더 나은 수가 있었습니다.', fr:'Imprécis — il y avait mieux.', de:'Ungenau — es gab eine bessere Option.', es:'Impreciso — había una opción mejor.', ru:'Неточно — был лучший ход.', it:'Impreciso — c\'era un\'opzione migliore.', pt:'Impreciso — havia uma opção melhor.' },
+            'analysis-mistake-detail': { zh:'这是一步失误，局势开始恶化。', en:'Mistake — the position worsens.', ja:'ミスです。局面が悪化します。', ko:'실수입니다. 상황이 악화됩니다.', fr:'Erreur — la position se dégrade.', de:'Fehler — die Position verschlechtert sich.', es:'Error — la posición empeora.', ru:'Ошибка — позиция ухудшается.', it:'Errore — la posizione peggiora.', pt:'Erro — a posição piora.' },
+            'analysis-blunder-detail': { zh:'严重失误！这步棋大幅降低了胜率。', en:'Blunder — significantly lowers winning chances.', ja:'大ミスです！勝率を大幅に下げました。', ko:'심각한 실수입니다! 승률을 크게 낮췄습니다.', fr:'Gaffe — chances de victoire fortement réduites.', de:'Grober Fehler — Gewinnchancen deutlich gesenkt.', es:'Pifia — reduce significativamente las chances.', ru:'Грубая ошибка — сильно снижает шансы.', it:'Errore grave — riduce significativamente le chances.', pt:'Erro grave — reduz significativamente as chances.' },
+            'analysis-prev': { zh:'上一步', en:'Prev', ja:'前', ko:'이전', fr:'Préc.', de:'Zurück', es:'Ant.', ru:'Назад', it:'Prec.', pt:'Ant.' },
+            'analysis-next': { zh:'下一步', en:'Next', ja:'次', ko:'다음', fr:'Suiv.', de:'Weiter', es:'Sig.', ru:'Вперёд', it:'Succ.', pt:'Próx.' },
             'setting-timer': { zh:'对战计时器', en:'Battle Timer', ja:'対戦タイマー', ko:'대전 타이머', fr:'Chronomètre', de:'Zeituhr', es:'Cronómetro', ru:'Таймер', it:'Timer', pt:'Cronômetro' },
             'setting-timer-toggle': { zh:'启用计时', en:'Enable Timer', ja:'タイマー有効', ko:'타이머 활성화', fr:'Activer', de:'Aktivieren', es:'Activar', ru:'Включить', it:'Attiva', pt:'Ativar' },
             'setting-timer-duration': { zh:'每方时长', en:'Time per Player', ja:'双方の持ち時間', ko:'각자 시간', fr:'Temps par joueur', de:'Zeit pro Spieler', es:'Tiempo por jugador', ru:'Время на игрока', it:'Tempo a giocatore', pt:'Tempo por jogador' },
@@ -1603,6 +1627,11 @@
         restartBtn.addEventListener('click', resetGame);
         modalBtn.addEventListener('click', resetGame);
         modal.addEventListener('click', e => { if (e.target === modal) resetGame(); });
+        if (modalAnalysisBtn) modalAnalysisBtn.addEventListener('click', () => {
+            if (lastSavedRecord) openAnalysis(lastSavedRecord);
+        });
+        if (analysisClose) analysisClose.addEventListener('click', closeAnalysis);
+        if (analysisModal) analysisModal.addEventListener('click', e => { if (e.target === analysisModal) closeAnalysis(); });
         modeBtns.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
         battleBtns.forEach(btn => btn.addEventListener('click', () => setBattleMode(btn.dataset.battle)));
 
@@ -1770,6 +1799,7 @@
                 else if (rushModal && rushModal.classList.contains('show')) { closeRush(); }
                 else if (dailyModal && dailyModal.classList.contains('show')) { closeDaily(); }
                 else if (tacticsModal && tacticsModal.classList.contains('show')) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
+                else if (analysisModal && analysisModal.classList.contains('show')) { closeAnalysis(); }
                 else if (hotkeyModal && hotkeyModal.classList.contains('show')) { closeHotkeyModal(); }
                 else if (replayModal && replayModal.classList.contains('show')) { closeReplay(); }
                 else if (tacticsDrawer && tacticsDrawer.classList.contains('show')) { closeTactics(); }
@@ -4306,6 +4336,7 @@
             }
             showModal(icon, title, msg, eloChange);
         }
+        if (modalAnalysisBtn) modalAnalysisBtn.style.display = 'inline-block';
         updateUndoButton();
         updateHintButton();
     }
@@ -5354,6 +5385,169 @@
         history.unshift(record);
         if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
         try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch (e) {}
+        lastSavedRecord = record;
+    }
+
+    /* ===== Post-Game Analysis Engine ===== */
+    function analyzeGame(record) {
+        if (!record || !record.moves || record.moves.length === 0) return null;
+        const mode = record.mode;
+        const moves = record.moves;
+        const isMisere = !!record.misere;
+        const analysis = [];
+        let boardTTT = null, boardC4 = null, boardGmk = null, gmkCfg = null;
+
+        for (let i = 0; i < moves.length; i++) {
+            const move = moves[i];
+            const player = move.player;
+            const opponent = player === PLAYER_X ? PLAYER_O : PLAYER_X;
+            let result;
+
+            if (mode === 'ttt') {
+                boardTTT = boardTTT || Array(9).fill('');
+                result = analyzeTTTMove(boardTTT, move, player, opponent, isMisere);
+            } else if (mode === 'connect4') {
+                boardC4 = boardC4 || Array(C4_ROWS).fill(null).map(() => Array(C4_COLS).fill(''));
+                result = analyzeC4Move(boardC4, move, player, opponent);
+            } else {
+                // gomoku or custom
+                boardGmk = boardGmk || (mode === 'custom' && record.customConfig
+                    ? createGmkBoard(record.customConfig.w, record.customConfig.h)
+                    : createGmkBoard(GMK_SIZE, GMK_SIZE));
+                gmkCfg = gmkCfg || (mode === 'custom' && record.customConfig
+                    ? { w: record.customConfig.w, h: record.customConfig.h, winLen: record.customConfig.winLen }
+                    : { w: GMK_SIZE, h: GMK_SIZE, winLen: 5 });
+                result = analyzeGmkMove(boardGmk, gmkCfg, move, player, opponent);
+            }
+
+            const diff = result.bestScore - result.actualScore;
+            const range = Math.max(Math.abs(result.bestScore - result.worstScore), 1);
+            const relativeDiff = Math.max(0, Math.min(1, diff / range));
+            const classification = classifyAnalysisMove(relativeDiff, result.isBest);
+
+            analysis.push({
+                moveIndex: i,
+                player,
+                move,
+                bestMove: result.bestMove,
+                bestScore: result.bestScore,
+                actualScore: result.actualScore,
+                diff,
+                relativeDiff,
+                classification
+            });
+
+            // Advance board for next iteration
+            if (mode === 'ttt') boardTTT[move.index] = player;
+            else if (mode === 'connect4') boardC4[move.row][move.col] = player;
+            else boardGmk[move.row][move.col] = player;
+        }
+
+        return {
+            record,
+            moves: analysis,
+            accuracyX: calculateAccuracy(analysis, PLAYER_X),
+            accuracyO: calculateAccuracy(analysis, PLAYER_O),
+            keyMoments: findKeyMoments(analysis)
+        };
+    }
+
+    function analyzeTTTMove(board, move, player, opponent, isMisere) {
+        let bestScore = -Infinity, worstScore = Infinity, bestIdx = -1;
+        for (let i = 0; i < 9; i++) {
+            if (board[i] !== '') continue;
+            const testBoard = [...board];
+            testBoard[i] = player;
+            const score = isMisere
+                ? minimaxMisere(testBoard, 0, false, player, opponent)
+                : minimaxGeneric(testBoard, 0, false, player, opponent);
+            if (score > bestScore) { bestScore = score; bestIdx = i; }
+            if (score < worstScore) worstScore = score;
+        }
+        const actualBoard = [...board];
+        actualBoard[move.index] = player;
+        const actualScore = isMisere
+            ? minimaxMisere(actualBoard, 0, false, player, opponent)
+            : minimaxGeneric(actualBoard, 0, false, player, opponent);
+        return { bestMove: bestIdx >= 0 ? { index: bestIdx } : null, bestScore, worstScore, actualScore, isBest: bestIdx === move.index };
+    }
+
+    function analyzeC4Move(board, move, player, opponent) {
+        const saved = c4Board.map(r => [...r]);
+        c4Board = board.map(r => [...r]);
+        let bestScore = -Infinity, worstScore = Infinity, bestCol = -1;
+        for (let c = 0; c < C4_COLS; c++) {
+            const r = getC4NextOpenRow(c);
+            if (r === -1) continue;
+            c4Board[r][c] = player;
+            const score = evaluateC4Board(player, opponent);
+            c4Board[r][c] = '';
+            if (score > bestScore) { bestScore = score; bestCol = c; }
+            if (score < worstScore) worstScore = score;
+        }
+        c4Board[move.row][move.col] = player;
+        const actualScore = evaluateC4Board(player, opponent);
+        c4Board = saved;
+        return { bestMove: bestCol >= 0 ? { row: move.row, col: bestCol } : null, bestScore, worstScore, actualScore, isBest: bestCol === move.col };
+    }
+
+    function analyzeGmkMove(board, cfg, move, player, opponent) {
+        let bestScore = -Infinity, worstScore = Infinity, bestR = -1, bestC = -1;
+        const candidates = [];
+        for (let r = 0; r < cfg.h; r++) {
+            for (let c = 0; c < cfg.w; c++) {
+                if (board[r][c] === '') candidates.push({ r, c });
+            }
+        }
+        for (const m of candidates) {
+            const testBoard = board.map(row => [...row]);
+            testBoard[m.r][m.c] = player;
+            const score = evaluateGmkPosition(testBoard, cfg, player, opponent);
+            if (score > bestScore) { bestScore = score; bestR = m.r; bestC = m.c; }
+            if (score < worstScore) worstScore = score;
+        }
+        const actualBoard = board.map(row => [...row]);
+        actualBoard[move.row][move.col] = player;
+        const actualScore = evaluateGmkPosition(actualBoard, cfg, player, opponent);
+        return { bestMove: bestR >= 0 ? { row: bestR, col: bestC } : null, bestScore, worstScore, actualScore, isBest: bestR === move.row && bestC === move.col };
+    }
+
+    function classifyAnalysisMove(relativeDiff, isBest) {
+        if (isBest) return 'best';
+        if (relativeDiff < 0.15) return 'good';
+        if (relativeDiff < 0.35) return 'inaccuracy';
+        if (relativeDiff < 0.65) return 'mistake';
+        return 'blunder';
+    }
+
+    function calculateAccuracy(analysis, player) {
+        const playerMoves = analysis.filter(a => a.player === player);
+        if (playerMoves.length === 0) return 0;
+        let score = 0;
+        for (const m of playerMoves) {
+            if (m.classification === 'best') score += 1;
+            else if (m.classification === 'good') score += 0.75;
+            else if (m.classification === 'inaccuracy') score += 0.5;
+            else if (m.classification === 'mistake') score += 0.25;
+            else score += 0;
+        }
+        return Math.round((score / playerMoves.length) * 100);
+    }
+
+    function findKeyMoments(analysis) {
+        const moments = [];
+        let prevDiff = 0;
+        for (let i = 0; i < analysis.length; i++) {
+            const a = analysis[i];
+            const swing = Math.abs(a.relativeDiff - prevDiff);
+            if (a.classification === 'blunder' || swing > 0.5) moments.push(i);
+            prevDiff = a.relativeDiff;
+        }
+        return moments;
+    }
+
+    function createGmkBoard(w, h) {
+        return Array(h).fill(null).map(() => Array(w).fill(''));
     }
 
     function loadHistory() {
@@ -5399,6 +5593,181 @@
         if (bm === 'aivsai') return winner === 'X' ? t('label-player-x-ai') : t('label-player-o-ai');
         if (bm === 'pvp') return winner === 'X' ? t('label-player-x-pvp') : t('label-player-o-pvp');
         return winner === 'X' ? t('label-player-x') : t('label-player-o');
+    }
+
+    function openAnalysis(record) {
+        if (!record) return;
+        const analysis = analyzeGame(record);
+        if (!analysis) return;
+        stopTimer();
+        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
+        if (modal) modal.classList.remove('show');
+        if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
+        if (tacticsDrawer) { closeTactics(); }
+        lastFocusedElement = document.activeElement;
+        renderAnalysis(analysis);
+        analysisModal.classList.add('show');
+    }
+    function closeAnalysis() {
+        analysisModal.classList.remove('show');
+        if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
+        resumeTimerIfGameActive();
+    }
+
+    let currentAnalysis = null;
+    let currentAnalysisMoveIndex = 0;
+
+    function renderAnalysis(analysis) {
+        currentAnalysis = analysis;
+        currentAnalysisMoveIndex = 0;
+        // Accuracy
+        analysisAccuracy.innerHTML = '';
+        const xCard = document.createElement('div');
+        xCard.className = 'accuracy-card';
+        xCard.innerHTML = `<span class="accuracy-label">${t('label-player-x')}</span><span class="accuracy-value" style="color:var(--x-color)">${analysis.accuracyX}%</span>`;
+        analysisAccuracy.appendChild(xCard);
+        const oCard = document.createElement('div');
+        oCard.className = 'accuracy-card';
+        oCard.innerHTML = `<span class="accuracy-label">${t('label-player-o')}</span><span class="accuracy-value" style="color:var(--o-color)">${analysis.accuracyO}%</span>`;
+        analysisAccuracy.appendChild(oCard);
+        // Chart
+        renderAnalysisChart(analysis);
+        // Board
+        renderAnalysisBoard(analysis, 0);
+        // Move info
+        renderAnalysisMoveInfo(analysis, 0);
+        // Move list
+        renderAnalysisMoveList(analysis);
+    }
+
+    function renderAnalysisChart(analysis) {
+        analysisChart.innerHTML = '';
+        const maxAbs = Math.max(...analysis.moves.map(m => Math.abs(m.actualScore)), 1);
+        analysis.moves.forEach((m, i) => {
+            const bar = document.createElement('div');
+            bar.className = 'analysis-bar';
+            bar.dataset.player = m.player;
+            const h = Math.max(4, Math.min(100, Math.round((Math.abs(m.actualScore) / maxAbs) * 100)));
+            bar.style.height = h + '%';
+            if (i === currentAnalysisMoveIndex) bar.classList.add('active');
+            bar.addEventListener('click', () => goToAnalysisMove(i));
+            analysisChart.appendChild(bar);
+        });
+    }
+
+    function renderAnalysisBoard(analysis, moveIndex) {
+        analysisBoardWrap.innerHTML = '';
+        const record = analysis.record;
+        const mode = record.mode;
+        // Rebuild board up to moveIndex
+        if (mode === 'ttt') {
+            const board = Array(9).fill('');
+            for (let i = 0; i <= moveIndex; i++) board[record.moves[i].index] = record.moves[i].player;
+            const b = document.createElement('div');
+            b.className = 'board';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell' + (board[i] ? ' ' + board[i].toLowerCase() + ' disabled' : '');
+                if (board[i]) cell.appendChild(createMarkSvg(board[i]));
+                b.appendChild(cell);
+            }
+            analysisBoardWrap.appendChild(b);
+        } else if (mode === 'connect4') {
+            const board = Array(C4_ROWS).fill(null).map(() => Array(C4_COLS).fill(''));
+            for (let i = 0; i <= moveIndex; i++) board[record.moves[i].row][record.moves[i].col] = record.moves[i].player;
+            const b = document.createElement('div');
+            b.className = 'connect4-board';
+            b.style.display = 'grid';
+            b.style.gridTemplateColumns = 'repeat(7, 1fr)';
+            b.style.gridTemplateRows = 'repeat(6, 1fr)';
+            for (let r = 0; r < C4_ROWS; r++) {
+                for (let c = 0; c < C4_COLS; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'c4-cell' + (board[r][c] ? ' disabled' : '');
+                    if (board[r][c]) {
+                        const piece = document.createElement('div');
+                        piece.className = 'c4-piece ' + (board[r][c] === PLAYER_X ? 'x-piece' : 'o-piece');
+                        cell.appendChild(piece);
+                    }
+                    b.appendChild(cell);
+                }
+            }
+            analysisBoardWrap.appendChild(b);
+        } else {
+            const cfg = record.customConfig || { w: GMK_SIZE, h: GMK_SIZE, winLen: 5 };
+            const board = Array(cfg.h).fill(null).map(() => Array(cfg.w).fill(''));
+            for (let i = 0; i <= moveIndex; i++) board[record.moves[i].row][record.moves[i].col] = record.moves[i].player;
+            const b = document.createElement('div');
+            b.className = 'gomoku-board';
+            b.style.display = 'grid';
+            b.style.gridTemplateColumns = `repeat(${cfg.w}, 1fr)`;
+            b.style.gridTemplateRows = `repeat(${cfg.h}, 1fr)`;
+            for (let r = 0; r < cfg.h; r++) {
+                for (let c = 0; c < cfg.w; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'gomoku-cell' + (board[r][c] ? ' disabled' : '');
+                    if (board[r][c]) {
+                        const piece = document.createElement('div');
+                        piece.className = 'gomoku-piece ' + (board[r][c] === PLAYER_X ? 'x-piece' : 'o-piece');
+                        cell.appendChild(piece);
+                    }
+                    b.appendChild(cell);
+                }
+            }
+            analysisBoardWrap.appendChild(b);
+        }
+    }
+
+    function renderAnalysisMoveInfo(analysis, moveIndex) {
+        const m = analysis.moves[moveIndex];
+        if (!m) { analysisMoveInfo.textContent = ''; return; }
+        const tagClass = 'class-tag ' + m.classification;
+        const tagText = t('analysis-' + m.classification);
+        const moveNum = (moveIndex + 1) + '. ' + m.player;
+        let detail = '';
+        if (m.classification === 'best') detail = t('analysis-best-detail');
+        else if (m.classification === 'good') detail = t('analysis-good-detail');
+        else if (m.classification === 'inaccuracy') detail = t('analysis-inaccuracy-detail');
+        else if (m.classification === 'mistake') detail = t('analysis-mistake-detail');
+        else detail = t('analysis-blunder-detail');
+        analysisMoveInfo.innerHTML = `<span class="${tagClass}">${tagText}</span><strong>${moveNum}</strong> — ${detail}`;
+    }
+
+    function renderAnalysisMoveList(analysis) {
+        analysisMoveList.innerHTML = '';
+        const nav = document.createElement('div');
+        nav.className = 'analysis-nav';
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'analysis-nav-btn';
+        prevBtn.textContent = '← ' + t('analysis-prev');
+        prevBtn.addEventListener('click', () => goToAnalysisMove(currentAnalysisMoveIndex - 1));
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'analysis-nav-btn';
+        nextBtn.textContent = t('analysis-next') + ' →';
+        nextBtn.addEventListener('click', () => goToAnalysisMove(currentAnalysisMoveIndex + 1));
+        nav.appendChild(prevBtn);
+        nav.appendChild(nextBtn);
+        analysisMoveList.appendChild(nav);
+        const btnsWrap = document.createElement('div');
+        btnsWrap.className = 'analysis-move-list';
+        analysis.moves.forEach((m, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'analysis-move-btn ' + m.classification + (i === currentAnalysisMoveIndex ? ' active' : '');
+            btn.textContent = (i + 1);
+            btn.addEventListener('click', () => goToAnalysisMove(i));
+            btnsWrap.appendChild(btn);
+        });
+        analysisMoveList.appendChild(btnsWrap);
+    }
+
+    function goToAnalysisMove(index) {
+        if (!currentAnalysis || index < 0 || index >= currentAnalysis.moves.length) return;
+        currentAnalysisMoveIndex = index;
+        renderAnalysisBoard(currentAnalysis, index);
+        renderAnalysisMoveInfo(currentAnalysis, index);
+        // Update active states in chart and buttons
+        analysisChart.querySelectorAll('.analysis-bar').forEach((b, i) => b.classList.toggle('active', i === index));
+        analysisMoveList.querySelectorAll('.analysis-move-btn').forEach((b, i) => b.classList.toggle('active', i === index));
     }
 
     function openHistory() {
@@ -5487,11 +5856,16 @@
                 replayBtn.className = 'btn btn-history-replay';
                 replayBtn.textContent = t('history-replay');
                 replayBtn.addEventListener('click', () => openReplay(h));
+                const analysisBtn = document.createElement('button');
+                analysisBtn.className = 'btn btn-history-analysis';
+                analysisBtn.textContent = t('history-analysis');
+                analysisBtn.addEventListener('click', () => openAnalysis(h));
                 const delBtn = document.createElement('button');
                 delBtn.className = 'btn btn-history-delete';
                 delBtn.textContent = t('history-delete');
                 delBtn.addEventListener('click', () => deleteHistoryItem(h.id));
                 actions.appendChild(replayBtn);
+                actions.appendChild(analysisBtn);
                 actions.appendChild(delBtn);
                 item.appendChild(meta);
                 item.appendChild(info);
