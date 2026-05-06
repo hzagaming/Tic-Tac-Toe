@@ -682,6 +682,7 @@
             'analysis-prev': { zh:'上一步', en:'Prev', ja:'前', ko:'이전', fr:'Préc.', de:'Zurück', es:'Ant.', ru:'Назад', it:'Prec.', pt:'Ant.' },
             'analysis-next': { zh:'下一步', en:'Next', ja:'次', ko:'다음', fr:'Suiv.', de:'Weiter', es:'Sig.', ru:'Вперёд', it:'Succ.', pt:'Próx.' },
             'analysis-key-moments': { zh:'关键转折点', en:'Key Moments', ja:'転換点', ko:'결정적 순간', fr:'Moments clés', de:'Wendepunkte', es:'Momentos clave', ru:'Ключевые моменты', it:'Momenti chiave', pt:'Momentos-chave' },
+            'analysis-move-aria': { zh:'第 {num} 步，玩家 {player}', en:'Move {num}, player {player}', ja:'第{num}手、プレイヤー{player}', ko:'{num}번째 수, 플레이어 {player}', fr:'Coup {num}, joueur {player}', de:'Zug {num}, Spieler {player}', es:'Jugada {num}, jugador {player}', ru:'Ход {num}, игрок {player}', it:'Mossa {num}, giocatore {player}', pt:'Jogada {num}, jogador {player}' },
             'setting-timer': { zh:'对战计时器', en:'Battle Timer', ja:'対戦タイマー', ko:'대전 타이머', fr:'Chronomètre', de:'Zeituhr', es:'Cronómetro', ru:'Таймер', it:'Timer', pt:'Cronômetro' },
             'setting-timer-toggle': { zh:'启用计时', en:'Enable Timer', ja:'タイマー有効', ko:'타이머 활성화', fr:'Activer', de:'Aktivieren', es:'Activar', ru:'Включить', it:'Attiva', pt:'Ativar' },
             'setting-timer-duration': { zh:'每方时长', en:'Time per Player', ja:'双方の持ち時間', ko:'각자 시간', fr:'Temps par joueur', de:'Zeit pro Spieler', es:'Tiempo por jugador', ru:'Время на игрока', it:'Tempo a giocatore', pt:'Tempo por jogador' },
@@ -1368,6 +1369,9 @@
         else subtitle.textContent = bm === 'pvp' ? getCustomSubtitle() + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? getCustomSubtitle() + ' — ' + t('subtitle-aivsai') : getCustomSubtitle();
         renderChangelog();
         if (tacticsDrawer && tacticsDrawer.classList.contains('show')) renderTacticsList();
+        if (historyDrawer && historyDrawer.classList.contains('show')) renderHistory();
+        if (achievementsDrawer && achievementsDrawer.classList.contains('show')) renderAchievements();
+        renderStats();
         if (dailyModal && dailyModal.classList.contains('show') && currentDailyPuzzle) {
             if (dailyMeta) dailyMeta.textContent = t('daily-meta-date') + ' · #' + currentDailyPuzzle.displayNum + ' · ' + t('daily-type-' + currentDailyPuzzle.type);
             if (dailyInstruction) dailyInstruction.textContent = t('daily-desc-' + currentDailyPuzzle.type).replace('{player}', currentDailyPuzzle.player);
@@ -1975,7 +1979,7 @@
     /* ===== Settings Logic ===== */
     function openDrawer() {
         stopTimer();
-        closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
+        closeAnalysis(true); closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
@@ -2461,7 +2465,7 @@
     function openTactics() {
         stopTimer();
         clearTimeout(aiTimer); aiTimer = null;
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeEditor(); closeRush(); closeDaily();
+        closeAnalysis(true); closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeEditor(); closeRush(); closeDaily();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         lastFocusedElement = document.activeElement;
@@ -2661,7 +2665,7 @@
         if (!dailyModal) return;
         if (dailyModal.classList.contains('show')) return;
         if (dailyResetTimeout) { clearTimeout(dailyResetTimeout); dailyResetTimeout = null; }
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeEditor(); closeRush();
+        closeAnalysis(true); closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeEditor(); closeRush();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
@@ -2861,7 +2865,7 @@
     function openRush() {
         if (!rushModal) return;
         if (rushModal.classList.contains('show')) return;
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeEditor();
+        closeAnalysis(true); closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeEditor();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
@@ -3082,7 +3086,7 @@
     function openEditor() {
         if (!editorModal) return;
         if (editorModal.classList.contains('show')) return;
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeRush(); closeDaily();
+        closeAnalysis(true); closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeAchievements(); closeHotkeyModal(); closeRush(); closeDaily();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
@@ -3644,7 +3648,7 @@
     function openHotkeyModal() {
         stopTimer();
         clearTimeout(aiTimer); aiTimer = null;
-        closeDrawer(); closeHistory(); closeChangelog(); closeReplay(); closeAchievements(); closeDaily(); closeRush(); closeEditor();
+        closeAnalysis(true); closeDrawer(); closeHistory(); closeChangelog(); closeReplay(); closeAchievements(); closeDaily(); closeRush(); closeEditor();
         if (tacticsDrawer) { closeTactics(); }
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         lastFocusedElement = document.activeElement;
@@ -5324,7 +5328,7 @@
     function openChangelog() {
         stopTimer();
         clearTimeout(aiTimer); aiTimer = null;
-        closeDrawer(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
+        closeAnalysis(true); closeDrawer(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
@@ -5619,12 +5623,12 @@
         analysisModal.classList.add('show');
         setTimeout(() => { if (analysisClose && analysisClose.offsetParent !== null) analysisClose.focus(); }, 50);
     }
-    function closeAnalysis() {
+    function closeAnalysis(skipTimerResume) {
         analysisModal.classList.remove('show');
         currentAnalysis = null;
         currentAnalysisMoveIndex = 0;
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
-        resumeTimerIfGameActive();
+        if (!skipTimerResume) resumeTimerIfGameActive();
     }
 
     let currentAnalysis = null;
@@ -5682,10 +5686,20 @@
             const bar = document.createElement('div');
             bar.className = 'analysis-bar';
             bar.dataset.player = m.player;
+            bar.setAttribute('role', 'button');
+            bar.setAttribute('tabindex', '0');
+            bar.setAttribute('aria-label', t('analysis-move-aria').replace('{num}', i + 1).replace('{player}', m.player));
+            bar.title = (i + 1) + '. ' + m.player;
             const h = Math.max(4, Math.min(100, Math.round((Math.abs(m.actualScore) / maxAbs) * 100)));
             bar.style.height = h + '%';
             if (i === currentAnalysisMoveIndex) bar.classList.add('active');
             bar.addEventListener('click', () => goToAnalysisMove(i));
+            bar.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    goToAnalysisMove(i);
+                }
+            });
             analysisChart.appendChild(bar);
         });
     }
@@ -5780,10 +5794,12 @@
         const prevBtn = document.createElement('button');
         prevBtn.className = 'analysis-nav-btn';
         prevBtn.textContent = '← ' + t('analysis-prev');
+        prevBtn.disabled = currentAnalysisMoveIndex <= 0;
         prevBtn.addEventListener('click', () => goToAnalysisMove(currentAnalysisMoveIndex - 1));
         const nextBtn = document.createElement('button');
         nextBtn.className = 'analysis-nav-btn';
         nextBtn.textContent = t('analysis-next') + ' →';
+        nextBtn.disabled = currentAnalysisMoveIndex >= analysis.moves.length - 1;
         nextBtn.addEventListener('click', () => goToAnalysisMove(currentAnalysisMoveIndex + 1));
         nav.appendChild(prevBtn);
         nav.appendChild(nextBtn);
@@ -5802,17 +5818,24 @@
 
     function goToAnalysisMove(index) {
         if (!currentAnalysis || index < 0 || index >= currentAnalysis.moves.length) return;
+        if (index === currentAnalysisMoveIndex) return;
         currentAnalysisMoveIndex = index;
         renderAnalysisBoard(currentAnalysis, index);
         renderAnalysisMoveInfo(currentAnalysis, index);
         // Update active states in chart and buttons
         analysisChart.querySelectorAll('.analysis-bar').forEach((b, i) => b.classList.toggle('active', i === index));
         analysisMoveList.querySelectorAll('.analysis-move-btn').forEach((b, i) => b.classList.toggle('active', i === index));
+        // Update nav button disabled states
+        const navBtns = analysisMoveList.querySelectorAll('.analysis-nav-btn');
+        if (navBtns.length >= 2) {
+            navBtns[0].disabled = index <= 0;
+            navBtns[1].disabled = index >= currentAnalysis.moves.length - 1;
+        }
     }
 
     function openHistory() {
         stopTimer();
-        closeDrawer(); closeChangelog(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
+        closeAnalysis(true); closeDrawer(); closeChangelog(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
@@ -5917,7 +5940,7 @@
 
     /* ===== Replay ===== */
     function openReplay(record) {
-        closeHistory(); closeDrawer(); closeChangelog(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
+        closeAnalysis(true); closeHistory(); closeDrawer(); closeChangelog(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
@@ -6666,7 +6689,7 @@
 
     function openAchievements() {
         stopTimer();
-        closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
+        closeAnalysis(true); closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }

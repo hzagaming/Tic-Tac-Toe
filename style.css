@@ -2945,6 +2945,8 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     padding: 0.5rem;
     background: var(--surface-light);
     border-radius: 10px;
+    overflow-x: auto;
+    min-width: 0;
 }
 .analysis-bar {
     flex: 1;
@@ -2952,6 +2954,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     border-radius: 2px 2px 0 0;
     transition: height 0.3s ease;
     position: relative;
+    cursor: pointer;
 }
 .analysis-bar[data-player="X"] { background: var(--x-color); opacity: 0.6; }
 .analysis-bar[data-player="O"] { background: var(--o-color); opacity: 0.6; }
@@ -2965,6 +2968,11 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 .analysis-board-wrap .gomoku-board {
     max-width: 220px;
     pointer-events: none;
+}
+.analysis-board-wrap .cell .mark,
+.analysis-board-wrap .c4-piece,
+.analysis-board-wrap .gomoku-piece {
+    animation: none;
 }
 .analysis-move-info {
     text-align: center;
@@ -2991,8 +2999,6 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     flex-wrap: wrap;
     gap: 0.35rem;
     justify-content: center;
-    max-height: 120px;
-    overflow-y: auto;
     padding: 0.25rem;
 }
 .analysis-move-btn {
@@ -3034,10 +3040,18 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     background: var(--surface);
     color: var(--text);
     font-size: 0.8rem;
+    font-family: inherit;
     cursor: pointer;
     transition: background 0.2s ease;
 }
 .analysis-nav-btn:hover { background: var(--surface-light); }
+.analysis-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.analysis-nav-btn:disabled:hover {
+    background: var(--surface);
+}
 
 .analysis-key-moments {
     display: flex;
