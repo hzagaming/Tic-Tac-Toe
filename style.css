@@ -897,6 +897,23 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 
 .btn .icon { width: 18px; height: 18px; }
 
+.btn-secondary {
+    background: var(--surface-light);
+    color: var(--text);
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--surface-hover);
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+}
+.btn-secondary:hover {
+    background: var(--surface-hover);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+
 /* ===== Modal & Overlay ===== */
 .modal, .drawer-overlay {
     position: fixed;
@@ -3021,6 +3038,43 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     transition: background 0.2s ease;
 }
 .analysis-nav-btn:hover { background: var(--surface-light); }
+
+.analysis-key-moments {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--surface-light);
+    border-radius: 10px;
+}
+.analysis-key-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 0.3rem;
+}
+.analysis-key-btn {
+    min-width: 28px;
+    height: 26px;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.analysis-key-btn:hover { transform: translateY(-1px); }
+.analysis-key-btn.best { background: #2ecc7122; color: #2ecc71; }
+.analysis-key-btn.good { background: #f1c40f22; color: #f1c40f; }
+.analysis-key-btn.inaccuracy { background: #e67e2222; color: #e67e22; }
+.analysis-key-btn.mistake { background: #e74c3c22; color: #e74c3c; }
+.analysis-key-btn.blunder { background: #c0392b22; color: #c0392b; }
 
 /* ===== Puzzle Rush ===== */
 .btn-rush {

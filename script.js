@@ -681,6 +681,7 @@
             'analysis-blunder-detail': { zh:'严重失误！这步棋大幅降低了胜率。', en:'Blunder — significantly lowers winning chances.', ja:'大ミスです！勝率を大幅に下げました。', ko:'심각한 실수입니다! 승률을 크게 낮췄습니다.', fr:'Gaffe — chances de victoire fortement réduites.', de:'Grober Fehler — Gewinnchancen deutlich gesenkt.', es:'Pifia — reduce significativamente las chances.', ru:'Грубая ошибка — сильно снижает шансы.', it:'Errore grave — riduce significativamente le chances.', pt:'Erro grave — reduz significativamente as chances.' },
             'analysis-prev': { zh:'上一步', en:'Prev', ja:'前', ko:'이전', fr:'Préc.', de:'Zurück', es:'Ant.', ru:'Назад', it:'Prec.', pt:'Ant.' },
             'analysis-next': { zh:'下一步', en:'Next', ja:'次', ko:'다음', fr:'Suiv.', de:'Weiter', es:'Sig.', ru:'Вперёд', it:'Succ.', pt:'Próx.' },
+            'analysis-key-moments': { zh:'关键转折点', en:'Key Moments', ja:'転換点', ko:'결정적 순간', fr:'Moments clés', de:'Wendepunkte', es:'Momentos clave', ru:'Ключевые моменты', it:'Momenti chiave', pt:'Momentos-chave' },
             'setting-timer': { zh:'对战计时器', en:'Battle Timer', ja:'対戦タイマー', ko:'대전 타이머', fr:'Chronomètre', de:'Zeituhr', es:'Cronómetro', ru:'Таймер', it:'Timer', pt:'Cronômetro' },
             'setting-timer-toggle': { zh:'启用计时', en:'Enable Timer', ja:'タイマー有効', ko:'타이머 활성화', fr:'Activer', de:'Aktivieren', es:'Activar', ru:'Включить', it:'Attiva', pt:'Ativar' },
             'setting-timer-duration': { zh:'每方时长', en:'Time per Player', ja:'双方の持ち時間', ko:'각자 시간', fr:'Temps par joueur', de:'Zeit pro Spieler', es:'Tiempo por jugador', ru:'Время на игрока', it:'Tempo a giocatore', pt:'Tempo por jogador' },
@@ -1815,6 +1816,7 @@
                     (dailyModal && dailyModal.classList.contains('show')) ? dailyModal :
                     (tacticsModal && tacticsModal.classList.contains('show')) ? tacticsModal :
                     (replayModal && replayModal.classList.contains('show')) ? replayModal :
+                    (analysisModal && analysisModal.classList.contains('show')) ? analysisModal :
                     (tacticsDrawer && tacticsDrawer.classList.contains('show')) ? tacticsDrawer :
                     (achievementsDrawer && achievementsDrawer.classList.contains('show')) ? achievementsDrawer :
                     (historyDrawer && historyDrawer.classList.contains('show')) ? historyDrawer :
@@ -3484,7 +3486,8 @@
             (tacticsModal && tacticsModal.classList.contains('show')) ||
             (dailyModal && dailyModal.classList.contains('show')) ||
             (editorModal && editorModal.classList.contains('show')) ||
-            (rushModal && rushModal.classList.contains('show'));
+            (rushModal && rushModal.classList.contains('show')) ||
+            (analysisModal && analysisModal.classList.contains('show'));
     }
 
     function getActiveBoardCells() {
@@ -4689,6 +4692,7 @@
             }
             showModal(icon, title, msg, eloChange);
         }
+        if (modalAnalysisBtn) modalAnalysisBtn.style.display = 'inline-block';
         updateUndoButton();
         updateHintButton();
     }
@@ -4995,6 +4999,7 @@
             }
             showModal(icon, title, msg, eloChange);
         }
+        if (modalAnalysisBtn) modalAnalysisBtn.style.display = 'inline-block';
         updateUndoButton();
         updateHintButton();
     }
@@ -5132,6 +5137,7 @@
     }
     function hideModal() {
         modal.classList.remove('show');
+        if (modalAnalysisBtn) modalAnalysisBtn.style.display = 'none';
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
     }
 
@@ -5408,7 +5414,7 @@
                 result = analyzeTTTMove(boardTTT, move, player, opponent, isMisere);
             } else if (mode === 'connect4') {
                 boardC4 = boardC4 || Array(C4_ROWS).fill(null).map(() => Array(C4_COLS).fill(''));
-                result = analyzeC4Move(boardC4, move, player, opponent);
+                result = analyzeC4Move(boardC4, move, player, opponent, isMisere);
             } else {
                 // gomoku or custom
                 boardGmk = boardGmk || (mode === 'custom' && record.customConfig
@@ -5417,7 +5423,7 @@
                 gmkCfg = gmkCfg || (mode === 'custom' && record.customConfig
                     ? { w: record.customConfig.w, h: record.customConfig.h, winLen: record.customConfig.winLen }
                     : { w: GMK_SIZE, h: GMK_SIZE, winLen: 5 });
-                result = analyzeGmkMove(boardGmk, gmkCfg, move, player, opponent);
+                result = analyzeGmkMove(boardGmk, gmkCfg, move, player, opponent, isMisere);
             }
 
             const diff = result.bestScore - result.actualScore;
@@ -5472,7 +5478,7 @@
         return { bestMove: bestIdx >= 0 ? { index: bestIdx } : null, bestScore, worstScore, actualScore, isBest: bestIdx === move.index };
     }
 
-    function analyzeC4Move(board, move, player, opponent) {
+    function analyzeC4Move(board, move, player, opponent, isMisere) {
         const saved = c4Board.map(r => [...r]);
         c4Board = board.map(r => [...r]);
         let bestScore = -Infinity, worstScore = Infinity, bestCol = -1;
@@ -5480,18 +5486,20 @@
             const r = getC4NextOpenRow(c);
             if (r === -1) continue;
             c4Board[r][c] = player;
-            const score = evaluateC4Board(player, opponent);
+            let score = evaluateC4Board(player, opponent);
+            if (isMisere) score = -score;
             c4Board[r][c] = '';
             if (score > bestScore) { bestScore = score; bestCol = c; }
             if (score < worstScore) worstScore = score;
         }
         c4Board[move.row][move.col] = player;
-        const actualScore = evaluateC4Board(player, opponent);
+        let actualScore = evaluateC4Board(player, opponent);
+        if (isMisere) actualScore = -actualScore;
         c4Board = saved;
         return { bestMove: bestCol >= 0 ? { row: move.row, col: bestCol } : null, bestScore, worstScore, actualScore, isBest: bestCol === move.col };
     }
 
-    function analyzeGmkMove(board, cfg, move, player, opponent) {
+    function analyzeGmkMove(board, cfg, move, player, opponent, isMisere) {
         let bestScore = -Infinity, worstScore = Infinity, bestR = -1, bestC = -1;
         const candidates = [];
         for (let r = 0; r < cfg.h; r++) {
@@ -5502,13 +5510,15 @@
         for (const m of candidates) {
             const testBoard = board.map(row => [...row]);
             testBoard[m.r][m.c] = player;
-            const score = evaluateGmkPosition(testBoard, cfg, player, opponent);
+            let score = evaluateGmkPosition(testBoard, cfg, player, opponent);
+            if (isMisere) score = -score;
             if (score > bestScore) { bestScore = score; bestR = m.r; bestC = m.c; }
             if (score < worstScore) worstScore = score;
         }
         const actualBoard = board.map(row => [...row]);
         actualBoard[move.row][move.col] = player;
-        const actualScore = evaluateGmkPosition(actualBoard, cfg, player, opponent);
+        let actualScore = evaluateGmkPosition(actualBoard, cfg, player, opponent);
+        if (isMisere) actualScore = -actualScore;
         return { bestMove: bestR >= 0 ? { row: bestR, col: bestC } : null, bestScore, worstScore, actualScore, isBest: bestR === move.row && bestC === move.col };
     }
 
@@ -5607,9 +5617,12 @@
         lastFocusedElement = document.activeElement;
         renderAnalysis(analysis);
         analysisModal.classList.add('show');
+        setTimeout(() => { if (analysisClose && analysisClose.offsetParent !== null) analysisClose.focus(); }, 50);
     }
     function closeAnalysis() {
         analysisModal.classList.remove('show');
+        currentAnalysis = null;
+        currentAnalysisMoveIndex = 0;
         if (lastFocusedElement && lastFocusedElement.offsetParent !== null) { lastFocusedElement.focus(); } lastFocusedElement = null;
         resumeTimerIfGameActive();
     }
@@ -5620,6 +5633,8 @@
     function renderAnalysis(analysis) {
         currentAnalysis = analysis;
         currentAnalysisMoveIndex = 0;
+        // Clean up old dynamic elements from previous render
+        document.querySelectorAll('.analysis-key-moments').forEach(el => el.remove());
         // Accuracy
         analysisAccuracy.innerHTML = '';
         const xCard = document.createElement('div');
@@ -5630,6 +5645,26 @@
         oCard.className = 'accuracy-card';
         oCard.innerHTML = `<span class="accuracy-label">${t('label-player-o')}</span><span class="accuracy-value" style="color:var(--o-color)">${analysis.accuracyO}%</span>`;
         analysisAccuracy.appendChild(oCard);
+        // Key moments
+        if (analysis.keyMoments && analysis.keyMoments.length > 0) {
+            const kmWrap = document.createElement('div');
+            kmWrap.className = 'analysis-key-moments';
+            const label = document.createElement('span');
+            label.className = 'analysis-key-label';
+            label.textContent = t('analysis-key-moments');
+            kmWrap.appendChild(label);
+            analysis.keyMoments.forEach(i => {
+                const m = analysis.moves[i];
+                const btn = document.createElement('button');
+                btn.className = 'analysis-key-btn ' + m.classification;
+                btn.textContent = i + 1;
+                btn.addEventListener('click', () => goToAnalysisMove(i));
+                kmWrap.appendChild(btn);
+            });
+            // Insert before chart if we had a dedicated container; since we rebuild DOM each time,
+            // prepend to analysis-body after accuracy
+            analysisAccuracy.after(kmWrap);
+        }
         // Chart
         renderAnalysisChart(analysis);
         // Board
@@ -5665,6 +5700,7 @@
             for (let i = 0; i <= moveIndex; i++) board[record.moves[i].index] = record.moves[i].player;
             const b = document.createElement('div');
             b.className = 'board';
+            b.style.display = 'grid';
             for (let i = 0; i < 9; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell' + (board[i] ? ' ' + board[i].toLowerCase() + ' disabled' : '');
@@ -5677,9 +5713,9 @@
             for (let i = 0; i <= moveIndex; i++) board[record.moves[i].row][record.moves[i].col] = record.moves[i].player;
             const b = document.createElement('div');
             b.className = 'connect4-board';
-            b.style.display = 'grid';
-            b.style.gridTemplateColumns = 'repeat(7, 1fr)';
-            b.style.gridTemplateRows = 'repeat(6, 1fr)';
+            b.style.display = 'block';
+            const cellsWrap = document.createElement('div');
+            cellsWrap.className = 'c4-cells';
             for (let r = 0; r < C4_ROWS; r++) {
                 for (let c = 0; c < C4_COLS; c++) {
                     const cell = document.createElement('div');
@@ -5689,9 +5725,10 @@
                         piece.className = 'c4-piece ' + (board[r][c] === PLAYER_X ? 'x-piece' : 'o-piece');
                         cell.appendChild(piece);
                     }
-                    b.appendChild(cell);
+                    cellsWrap.appendChild(cell);
                 }
             }
+            b.appendChild(cellsWrap);
             analysisBoardWrap.appendChild(b);
         } else {
             const cfg = record.customConfig || { w: GMK_SIZE, h: GMK_SIZE, winLen: 5 };
@@ -5699,9 +5736,11 @@
             for (let i = 0; i <= moveIndex; i++) board[record.moves[i].row][record.moves[i].col] = record.moves[i].player;
             const b = document.createElement('div');
             b.className = 'gomoku-board';
-            b.style.display = 'grid';
-            b.style.gridTemplateColumns = `repeat(${cfg.w}, 1fr)`;
-            b.style.gridTemplateRows = `repeat(${cfg.h}, 1fr)`;
+            b.style.display = 'block';
+            const cellsWrap = document.createElement('div');
+            cellsWrap.className = 'gomoku-cells';
+            cellsWrap.style.gridTemplateColumns = `repeat(${cfg.w}, 1fr)`;
+            cellsWrap.style.gridTemplateRows = `repeat(${cfg.h}, 1fr)`;
             for (let r = 0; r < cfg.h; r++) {
                 for (let c = 0; c < cfg.w; c++) {
                     const cell = document.createElement('div');
@@ -5711,9 +5750,10 @@
                         piece.className = 'gomoku-piece ' + (board[r][c] === PLAYER_X ? 'x-piece' : 'o-piece');
                         cell.appendChild(piece);
                     }
-                    b.appendChild(cell);
+                    cellsWrap.appendChild(cell);
                 }
             }
+            b.appendChild(cellsWrap);
             analysisBoardWrap.appendChild(b);
         }
     }
