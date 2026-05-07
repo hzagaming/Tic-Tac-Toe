@@ -2915,6 +2915,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     display: flex;
     justify-content: center;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 .accuracy-card {
     background: var(--surface-light);
