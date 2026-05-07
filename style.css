@@ -2966,7 +2966,6 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     content: '';
     position: absolute;
     inset: -8px -4px;
-    z-index: 1;
 }
 .analysis-board-wrap {
     display: flex;
@@ -2999,7 +2998,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     margin-right: 0.4rem;
 }
 .class-tag.best { background: #2ecc7133; color: #2ecc71; }
-.class-tag.good { background: #f1c40f33; color: #f1c40f; }
+.class-tag.good { background: #f1c40f33; color: #c9a000; }
 .class-tag.inaccuracy { background: #e67e2233; color: #e67e22; }
 .class-tag.mistake { background: #e74c3c33; color: #e74c3c; }
 .class-tag.blunder { background: #c0392b33; color: #c0392b; }
@@ -3014,8 +3013,8 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 32px;
-    height: 28px;
+    min-width: 40px;
+    height: 36px;
     border-radius: 6px;
     border: none;
     font-size: 0.75rem;
@@ -3032,7 +3031,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     outline-offset: 1px;
 }
 .analysis-move-btn.best { background: #2ecc7122; color: #2ecc71; }
-.analysis-move-btn.good { background: #f1c40f22; color: #f1c40f; }
+.analysis-move-btn.good { background: #f1c40f22; color: #c9a000; }
 .analysis-move-btn.inaccuracy { background: #e67e2222; color: #e67e22; }
 .analysis-move-btn.mistake { background: #e74c3c22; color: #e74c3c; }
 .analysis-move-btn.blunder { background: #c0392b22; color: #c0392b; }
@@ -3080,8 +3079,8 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     margin-right: 0.3rem;
 }
 .analysis-key-btn {
-    min-width: 28px;
-    height: 26px;
+    min-width: 36px;
+    height: 32px;
     border-radius: 6px;
     border: none;
     font-size: 0.7rem;
@@ -3094,7 +3093,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 .analysis-key-btn:hover { transform: translateY(-1px); }
 .analysis-key-btn.best { background: #2ecc7122; color: #2ecc71; }
-.analysis-key-btn.good { background: #f1c40f22; color: #f1c40f; }
+.analysis-key-btn.good { background: #f1c40f22; color: #c9a000; }
 .analysis-key-btn.inaccuracy { background: #e67e2222; color: #e67e22; }
 .analysis-key-btn.mistake { background: #e74c3c22; color: #e74c3c; }
 .analysis-key-btn.blunder { background: #c0392b22; color: #c0392b; }

@@ -1389,8 +1389,10 @@
         updateDailyBadge();
         if (analysisModal && analysisModal.classList.contains('show') && currentAnalysis) {
             const savedIndex = currentAnalysisMoveIndex;
+            const savedScrollLeft = analysisChart ? analysisChart.scrollLeft : 0;
             renderAnalysis(currentAnalysis);
             goToAnalysisMove(savedIndex);
+            if (analysisChart) analysisChart.scrollLeft = savedScrollLeft;
         }
     }
 
@@ -5029,6 +5031,7 @@
     }
 
     function resetGame() {
+        closeAnalysis(true);
         clearTimeout(aiTimer); aiTimer = null;
         clearTimeout(replayTimer); replayTimer = null;
         stopTimer();
@@ -5501,11 +5504,12 @@
             if (score > bestScore) { bestScore = score; bestCol = c; }
             if (score < worstScore) worstScore = score;
         }
+        const bestRow = bestCol >= 0 ? getC4NextOpenRow(bestCol) : -1;
         c4Board[move.row][move.col] = player;
         let actualScore = evaluateC4Board(player, opponent);
         if (isMisere) actualScore = -actualScore;
         c4Board = saved;
-        return { bestMove: bestCol >= 0 ? { row: move.row, col: bestCol } : null, bestScore, worstScore, actualScore, isBest: bestCol === move.col };
+        return { bestMove: bestCol >= 0 ? { row: bestRow, col: bestCol } : null, bestScore, worstScore, actualScore, isBest: bestCol === move.col };
     }
 
     function analyzeGmkMove(board, cfg, move, player, opponent, isMisere) {
@@ -5548,7 +5552,6 @@
             else if (m.classification === 'good') score += 0.75;
             else if (m.classification === 'inaccuracy') score += 0.5;
             else if (m.classification === 'mistake') score += 0.25;
-            else score += 0;
         }
         return Math.round((score / playerMoves.length) * 100);
     }
@@ -5670,6 +5673,7 @@
                 const btn = document.createElement('button');
                 btn.className = 'analysis-key-btn ' + m.classification;
                 btn.textContent = i + 1;
+                btn.setAttribute('aria-label', t('analysis-move-aria').replace('{num}', i + 1).replace('{player}', m.player));
                 btn.addEventListener('click', () => goToAnalysisMove(i));
                 kmWrap.appendChild(btn);
             });
@@ -5725,7 +5729,7 @@
             b.style.display = 'grid';
             for (let i = 0; i < 9; i++) {
                 const cell = document.createElement('div');
-                cell.className = 'cell' + (board[i] ? ' ' + board[i].toLowerCase() + ' disabled' : '');
+                cell.className = 'cell' + (board[i] ? ' ' + board[i].toLowerCase() : '');
                 if (board[i]) cell.appendChild(createMarkSvg(board[i]));
                 b.appendChild(cell);
             }
@@ -5741,7 +5745,7 @@
             for (let r = 0; r < C4_ROWS; r++) {
                 for (let c = 0; c < C4_COLS; c++) {
                     const cell = document.createElement('div');
-                    cell.className = 'c4-cell' + (board[r][c] ? ' disabled' : '');
+                    cell.className = 'c4-cell';
                     if (board[r][c]) {
                         const piece = document.createElement('div');
                         piece.className = 'c4-piece ' + (board[r][c] === PLAYER_X ? 'x-piece' : 'o-piece');
@@ -5766,7 +5770,7 @@
             for (let r = 0; r < cfg.h; r++) {
                 for (let c = 0; c < cfg.w; c++) {
                     const cell = document.createElement('div');
-                    cell.className = 'gomoku-cell' + (board[r][c] ? ' disabled' : '');
+                    cell.className = 'gomoku-cell';
                     if (board[r][c]) {
                         const piece = document.createElement('div');
                         piece.className = 'gomoku-piece ' + (board[r][c] === PLAYER_X ? 'x-piece' : 'o-piece');
@@ -5818,6 +5822,7 @@
             const btn = document.createElement('button');
             btn.className = 'analysis-move-btn ' + m.classification + (i === currentAnalysisMoveIndex ? ' active' : '');
             btn.textContent = (i + 1);
+            btn.setAttribute('aria-label', t('analysis-move-aria').replace('{num}', i + 1).replace('{player}', m.player));
             btn.addEventListener('click', () => goToAnalysisMove(i));
             btnsWrap.appendChild(btn);
         });
@@ -6697,7 +6702,7 @@
 
     function openAchievements() {
         stopTimer();
-        closeAnalysis(true); closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
+        closeAnalysis(true); closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeHotkeyModal();
         if (modal) modal.classList.remove('show');
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
