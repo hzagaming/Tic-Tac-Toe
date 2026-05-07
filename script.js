@@ -1387,6 +1387,11 @@
             }
         }
         updateDailyBadge();
+        if (analysisModal && analysisModal.classList.contains('show') && currentAnalysis) {
+            const savedIndex = currentAnalysisMoveIndex;
+            renderAnalysis(currentAnalysis);
+            goToAnalysisMove(savedIndex);
+        }
     }
 
     /* ===== Settings UI Builders ===== */
@@ -5554,7 +5559,7 @@
         for (let i = 0; i < analysis.length; i++) {
             const a = analysis[i];
             const swing = Math.abs(a.relativeDiff - prevDiff);
-            if (a.classification === 'blunder' || swing > 0.5) moments.push(i);
+            if (a.classification === 'blunder' || (i > 0 && swing > 0.5)) moments.push(i);
             prevDiff = a.relativeDiff;
         }
         return moments;
@@ -5615,7 +5620,10 @@
         if (!analysis) return;
         stopTimer();
         closeDrawer(); closeChangelog(); closeHistory(); closeReplay(); closeEditor(); closeRush(); closeDaily(); closeAchievements(); closeHotkeyModal();
-        if (modal) modal.classList.remove('show');
+        if (modal) {
+            modal.classList.remove('show');
+            if (modalAnalysisBtn) modalAnalysisBtn.style.display = 'none';
+        }
         if (tacticsModal) { tacticsModal.classList.remove('show'); resetTacticModalState(); }
         if (tacticsDrawer) { closeTactics(); }
         lastFocusedElement = document.activeElement;

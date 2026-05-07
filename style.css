@@ -2946,6 +2946,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     background: var(--surface-light);
     border-radius: 10px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     min-width: 0;
 }
 .analysis-bar {
@@ -2958,7 +2959,15 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 .analysis-bar[data-player="X"] { background: var(--x-color); opacity: 0.6; }
 .analysis-bar[data-player="O"] { background: var(--o-color); opacity: 0.6; }
-.analysis-bar.active { opacity: 1; box-shadow: 0 0 6px currentColor; }
+.analysis-bar.active { opacity: 1; }
+.analysis-bar.active[data-player="X"] { box-shadow: 0 0 6px var(--x-color); }
+.analysis-bar.active[data-player="O"] { box-shadow: 0 0 6px var(--o-color); }
+.analysis-bar::after {
+    content: '';
+    position: absolute;
+    inset: -8px -4px;
+    z-index: 1;
+}
 .analysis-board-wrap {
     display: flex;
     justify-content: center;
