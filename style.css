@@ -75,6 +75,13 @@ body {
     overflow-y: auto;
     position: relative;
     transition: background 0.35s ease, color 0.35s ease;
+}
+
+.game-wrapper {
+    filter: contrast(var(--contrast));
+}
+
+.bg-glow {
     filter: contrast(var(--contrast));
 }
 
@@ -357,7 +364,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 .timer.danger {
     color: #ff4757 !important;
     text-shadow: 0 0 10px rgba(255, 71, 87, 0.5) !important;
-    animation: timer-danger calc(0.6s * var(--anim-scale)) ease-in-out infinite !important;
+    animation: timer-danger calc(0.6s * var(--anim-scale)) ease-in-out infinite;
 }
 
 .timer.paused {
@@ -1519,6 +1526,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     .battle-btn { font-size: 0.58rem; padding: 0.4rem 0.05rem; }
     .gomoku-piece { width: 60%; height: 60%; }
     .gomoku-board { max-width: 300px; }
+    .eval-bar-wrap { max-width: 300px; }
 }
 
 /* ===== History Button ===== */
@@ -3922,6 +3930,15 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     flex-direction: column;
     gap: 0.35rem;
     padding: 0 0.5rem;
+    transform: scaleY(1);
+    opacity: 1;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform-origin: top center;
+}
+.eval-bar-wrap.is-hidden {
+    transform: scaleY(0);
+    opacity: 0;
+    pointer-events: none;
 }
 .eval-bar-track {
     position: relative;
@@ -3965,6 +3982,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     font-size: 0.7rem;
     color: var(--text-muted);
     user-select: none;
+    white-space: nowrap;
 }
 .eval-bar-label {
     font-weight: 600;

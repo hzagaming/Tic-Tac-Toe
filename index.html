@@ -64,10 +64,10 @@
         </div>
 
         <!-- Live Evaluation Bar -->
-        <div class="eval-bar-wrap" id="eval-bar-wrap" style="display:none;" aria-hidden="true">
-            <div class="eval-bar-track">
+        <div class="eval-bar-wrap is-hidden" id="eval-bar-wrap" aria-hidden="true">
+            <div class="eval-bar-track" role="progressbar" aria-label="Position evaluation" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0" id="eval-bar-track">
                 <div class="eval-bar-fill" id="eval-bar-fill"></div>
-                <div class="eval-bar-center"></div>
+                <div class="eval-bar-center" aria-hidden="true"></div>
             </div>
             <div class="eval-bar-labels">
                 <span class="eval-bar-label eval-x" data-i18n="label-player-x">玩家 (X)</span>

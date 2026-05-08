@@ -902,6 +902,38 @@
     /* ===== Changelog Data ===== */
     const changelogData = [
         {
+            version: '0.18.1',
+            date: { zh:'2026-05-08', en:'May 8, 2026', ja:'2026年5月8日', ko:'2026년 5월 8일', fr:'8 mai 2026', de:'8. Mai 2026', es:'8 may. 2026', ru:'8 мая 2026', it:'8 mag. 2026', pt:'8 de mai. de 2026' },
+            items: {
+                zh: ['修复 contrast filter 破坏 fixed/absolute 定位导致模态框随页面滚动的问题', '修复计时器超时、AI 无路可走等边缘场景下 eval bar 不隐藏的问题', '修复编辑器在非 TTT 模式下加载时 eval bar 评估错误棋盘的 bug', '修复普通 PvE 输棋时错误播放赢棋音效的问题', '修复 eval bar 显示/隐藏时的布局跳动，改用平滑缩放过渡', '修复 eval bar 在小屏幕上未适配响应式、标签可能换行的问题', '为 eval bar 补充 ARIA progressbar 属性与无障碍支持', '修复计时器危险状态脉冲动画无法被减弱动画设置抑制的问题', '优化 C4/Gomoku 评估分数归一化算法，使用 atan 软限制避免过早饱和', '修复战术训练/每日挑战/谜题冲刺棋盘格子缺少 aria-label 的问题', '修复语言切换后 eval bar 标签不刷新的问题', '修复编辑器中编辑棋盘时播放游戏音效的问题'],
+                en: ['Fixed contrast filter breaking fixed/absolute positioning causing modals to scroll with page', 'Fixed eval bar not hiding in edge cases: timer timeout, AI no valid move', 'Fixed eval bar evaluating wrong board when editor is opened in non-TTT mode', 'Fixed win sound playing on normal PvE loss instead of loss sound', 'Fixed eval bar layout shift on show/hide, replaced with smooth scale transition', 'Fixed eval bar responsive sizing and label wrapping on small screens', 'Added ARIA progressbar attributes and accessibility support to eval bar', 'Fixed timer danger pulse animation ignoring reduced-motion settings', 'Optimized C4/Gomoku eval score normalization using atan soft-clamp instead of linear hard-clamp', 'Fixed missing aria-labels on Tactics/Daily/Rush board cells', 'Fixed eval bar labels not refreshing after language switch', 'Fixed game move sound playing while editing in Board Editor'],
+                ja: ['contrast filter が fixed/absolute 定位を破壊しモーダルがスクロールする問題を修正','タイマー timeout・AI 有効手なし等の際に eval bar が非表示にならない問題を修正','非 TTT モードでエディタを開いた際に eval bar が誤った盤面を評価するバグを修正','通常 PvE 敗北時に勝利音が誤って再生される問題を修正','eval bar の表示/非表示時のレイアウトシフトを修正、スムーズなスケール遷移に変更','eval bar の小画面レスポンシブ対応とラベル折り返しを修正','eval bar に ARIA progressbar 属性とアクセシビリティ対応を追加','タイマー危険状態のパルスアニメーションが軽減動画設定を無視する問題を修正','C4/Gomoku の評価スコア正規化を atan ソフトクランプに最適化','戦術/デイリー/ラッシュのセルに aria-label が欠落していた問題を修正','言語切り替え後に eval bar ラベルが更新されない問題を修正','エディタ編集中にゲーム着手音が再生される問題を修正'],
+                ko: ['contrast filter 가 fixed/absolute 위치를 파괴하여 모달이 스크롤되는 문제 수정','타이머 timeout, AI 유효 수 없음 등에서 eval bar 가 숨겨지지 않는 문제 수정','비 TTT 모드에서 에디터를 열 때 eval bar 가 잘못된 보드를 평가하는 버그 수정','일반 PvE 패배 시 승리 음향이 잘못 재생되는 문제 수정','eval bar 표시/숨김 시 레이아웃 시프트 수정, 부드러운 스케일 전환으로 변경','eval bar 소형 화면 반응형 및 라벨 줄바꿈 수정','eval bar 에 ARIA progressbar 속성과 접근성 지원 추가','타이머 위험 상태 펄스 애니메이션이 감소 동영상 설정을 무시하는 문제 수정','C4/Gomoku 평가 점수 정규화를 atan 소프트 클램프로 최적화','전술/데일리/러시 셀에 aria-label 누락 문제 수정','언어 전환 후 eval bar 라벨이 새로고침되지 않는 문제 수정','에디터 편집 중 게임 이동 음향이 재생되는 문제 수정'],
+                fr: ['Correction du filtre contrast cassant le positionnement fixed/absolute','Correction eval bar non masquée en cas de timeout timer ou coup AI invalide','Correction eval bar évaluant mauvais plateau en mode non-TTT','Correction son victoire joué lors d\'une défaite PvE normale','Correction saut de layout eval bar, transition scale fluide','Correction responsive eval bar et retour à la ligne étiquettes','Ajout attributs ARIA progressbar à eval bar','Correction animation danger timer ignorant reduced-motion','Optimisation normalisation score C4/Gomoku par atan soft-clamp','Correction aria-labels manquantes sur cellules Tactiques/Daily/Rush','Correction labels eval bar non rafraîchis après changement langue','Correction son jeu lors de l\'édition dans l\'éditeur'],
+                de: ['Korrigiert: contrast filter zerstört fixed/absolute Positionierung','Korrigiert: eval bar nicht verborgen bei Timer-Timeout/ungültigem AI-Zug','Korrigiert: eval bar bewertet falsches Brett im Nicht-TTT-Modus','Korrigiert: Gewinnsound bei normaler PvE-Niederlage','Korrigiert: Layout-Sprung eval bar, sanfter Scale-Übergang','Korrigiert: Responsive eval bar und Label-Umbruch','ARIA progressbar-Attribute für eval bar hinzugefügt','Korrigiert: Danger-Timer-Animation ignoriert reduced-motion','Optimierung C4/Gomoku-Bewertung mit atan soft-clamp','Korrigiert: Fehlende aria-labels bei Taktik/Daily/Rush-Zellen','Korrigiert: eval bar Labels nicht aktualisiert nach Sprachwechsel','Korrigiert: Spielzug-Sound beim Editieren im Editor'],
+                es: ['Corregido filtro contrast rompiendo posicionamiento fixed/absolute','Corregido eval bar no oculto en timeout de timer o movimiento AI inválido','Corregido eval bar evaluando tablero incorrecto en modo no-TTT','Corregido sonido victoria en derrota PvE normal','Corregido salto de layout eval bar, transición scale suave','Corregido responsive eval bar y ajuste de etiquetas','Añadidos atributos ARIA progressbar a eval bar','Corregida animación danger timer ignorando reduced-motion','Optimización normalización puntuación C4/Gomoku con atan soft-clamp','Corregidas aria-labels faltantes en celdas Tácticas/Daily/Rush','Corregidas etiquetas eval bar no actualizadas tras cambio de idioma','Corregido sonido de juego al editar en el Editor'],
+                ru: ['Исправлено: фильтр contrast ломает fixed/absolute позиционирование','Исправлено: eval bar не скрывается при таймауте/недопустимом ходе ИИ','Исправлено: eval bar оценивает не ту доску вне режима TTT','Исправлено: звук победы при обычном поражении в PvE','Исправлено: сдвиг layout eval bar, плавный scale-переход','Исправлено: адаптивность eval bar и перенос меток','Добавлены ARIA progressbar атрибуты для eval bar','Исправлено: анимация опасности таймера игнорирует reduced-motion','Оптимизация нормализации оценки C4/Gomoku через atan soft-clamp','Исправлены отсутствующие aria-labels на ячейках Tactics/Daily/Rush','Исправлено: метки eval bar не обновляются после смены языка','Исправлено: звук хода при редактировании в редакторе'],
+                it: ['Corretto: filtro contrast rompe posizionamento fixed/absolute','Corretto: eval bar non nascosto in timeout timer o mossa AI non valida','Corretto: eval bar valuta scacchiera sbagliata in modalità non-TTT','Corretto: suono vittoria in sconfitta PvE normale','Corretto: salto layout eval bar, transizione scale fluida','Corretto: responsive eval bar e a capo etichette','Aggiunti attributi ARIA progressbar a eval bar','Corretto: animazione danger timer ignora reduced-motion','Ottimizzazione normalizzazione punteggio C4/Gomoku con atan soft-clamp','Corrette aria-labels mancanti su celle Tattiche/Daily/Rush','Corretto: etichette eval bar non aggiornate dopo cambio lingua','Corretto: suono mossa durante modifica nell\'Editor'],
+                pt: ['Corrigido: filtro contrast quebrando posicionamento fixed/absolute','Corrigido: eval bar não oculto em timeout do timer ou movimento AI inválido','Corrigido: eval bar avaliando tabuleiro errado em modo não-TTT','Corrigido som vitória em derrota PvE normal','Corrigido salto de layout eval bar, transição scale suave','Corrigido responsive eval bar e quebra de rótulos','Adicionados atributos ARIA progressbar ao eval bar','Corrigida animação danger timer ignorando reduced-motion','Otimização normalização pontuação C4/Gomoku com atan soft-clamp','Corrigidas aria-labels faltantes em células Táticas/Daily/Rush','Corrigidos rótulos eval bar não atualizados após mudança de idioma','Corrigido som de jogada ao editar no Editor'],
+            }
+        },
+        {
+            version: '0.18.0',
+            date: { zh:'2026-05-08', en:'May 8, 2026', ja:'2026年5月8日', ko:'2026년 5월 8일', fr:'8 mai 2026', de:'8. Mai 2026', es:'8 may. 2026', ru:'8 мая 2026', it:'8 mag. 2026', pt:'8 de mai. de 2026' },
+            items: {
+                zh: ['新增实时局势评估条（Live Evaluation Bar）：在 status-bar 与棋盘之间实时显示当前局面对玩家（X）的优势程度', '支持井字棋（minimax 完整搜索）、四子棋、五子棋/自定义（静态评估）三种模式', 'Misère 反向规则模式下评分自动反转，PvP/AIvsAI 模式下自动隐藏', '设置面板新增开关，支持 10 语言 i18n，平滑动画过渡与无障碍属性'],
+                en: ['Added Live Evaluation Bar: real-time display of position advantage for Player (X) between status bar and board', 'Supports Tic-Tac-Toe (minimax), Connect Four, and Gomoku/Custom (static eval)', 'Auto-inverts scores in Misère mode, auto-hides in PvP/AIvsAI modes', 'Settings toggle with 10-language i18n, smooth animated transitions, and accessibility attributes'],
+                ja: ['リアルタイム評価バー追加：ステータスバーと盤面の間にプレイヤー（X）の優位性をリアルタイム表示','三目並べ（minimax）、四目、五目/カスタム（静的評価）に対応','ミゼールモードでスコア自動反転、PvP/AIvsAI で自動非表示','設定パネルにスイッチ追加、10言語i18n、スムーズアニメーション、アクセシビリティ対応'],
+                ko: ['실시간 평가 바 추가: 상태 표시줄과 보드 사이에 플레이어(X)의 우위를 실시간 표시','틱택토(minimax), 사목, 오목/사용자 지정(정적 평가) 지원','미제르 모드에서 점수 자동 반전, PvP/AIvsAI에서 자동 숨김','설정 패널에 스위치 추가, 10개 언어 i18n, 부드러운 애니메이션, 접근성 지원'],
+                fr: ['Barre d\'évaluation en direct ajoutée : affiche l\'avantage de position entre la barre d\'état et le plateau','Supporte Morpion (minimax), Puissance 4, Gomoku/Perso (éval statique)','Inversion auto des scores en Misère, masquage auto en PvP/IA vs IA','Interrupteur dans les paramètres, i18n 10 langues, transitions animées, accessibilité'],
+                de: ['Live-Bewertungsleiste hinzugefügt: zeigt Positionsvorteil zwischen Statusleiste und Brett','Unterstützt TTT (minimax), Vier gewinnt, Gomoku/Benutzerdef. (statische Bewertung)','Automatische Umkehrung in Misère-Modus, automatisches Ausblenden in PvP/KI vs KI','Schalter in Einstellungen, i18n 10 Sprachen, sanfte Animationen, Barrierefreiheit'],
+                es: ['Barra de evaluación en vivo añadida: muestra ventaja de posición entre barra de estado y tablero','Soporta Tres en raya (minimax), Conecta 4, Gomoku/Personalizado (eval estática)','Inversión automática en Misère, ocultamiento automático en PvP/IA vs IA','Interruptor en ajustes, i18n 10 idiomas, transiciones suaves, accesibilidad'],
+                ru: ['Добавлена панель оценки в реальном времени: показывает преимущество позиции','Поддерживает Крестики-нолики (minimax), 4 в ряд, Гомоку/Свой (стат. оценка)','Автоинверсия в Мизер, автоскрытие в PvP/ИИ vs ИИ','Переключатель в настройках, i18n 10 языков, плавные анимации, доступность'],
+                it: ['Barra valutazione live aggiunta: mostra vantaggio posizione tra barra stato e tabella','Supporta Tris (minimax), Forza 4, Gomoku/Personalizzato (valutazione statica)','Inversione automatica in Misère, nascondimento auto in PvP/AI vs AI','Interruttore in impostazioni, i18n 10 lingue, transizioni fluide, accessibilità'],
+                pt: ['Barra de avaliação ao vivo adicionada: exibe vantagem de posição entre barra de status e tabuleiro','Suporta Jogo da velha (minimax), Ligue 4, Gomoku/Personalizado (avaliação estática)','Inversão automática em Misère, ocultamento automático em PvP/IA vs IA','Interruptor em configurações, i18n 10 idiomas, transições suaves, acessibilidade'],
+            }
+        },
+        {
             version: '0.14.0',
             date: { zh:'2026-04-29', en:'Apr 29, 2026', ja:'2026年4月29日', ko:'2026년 4월 29일', fr:'29 avr. 2026', de:'29. Apr. 2026', es:'29 abr. 2026', ru:'29 апр. 2026', it:'29 apr. 2026', pt:'29 de abr. de 2026' },
             items: {
@@ -2029,6 +2061,7 @@
         updateUndoButton();
         updateEloBadge();
         updateMisereIndicator();
+        updateEvalBar();
     }
 
     function setTheme(theme) {
@@ -2570,6 +2603,7 @@
                 cell.appendChild(createMarkSvg(mark));
                 cell.classList.add('disabled');
                 cell.setAttribute('tabindex', '-1');
+                cell.setAttribute('aria-label', mark === 'X' ? t('cell-x') : t('cell-o'));
             }
         });
     }
@@ -2761,6 +2795,7 @@
                 cell.appendChild(createMarkSvg(mark));
                 cell.classList.add('disabled');
                 cell.setAttribute('tabindex', '-1');
+                cell.setAttribute('aria-label', mark === 'X' ? t('cell-x') : t('cell-o'));
             }
         });
     }
@@ -2980,6 +3015,7 @@
                 cell.appendChild(createMarkSvg(mark));
                 cell.classList.add('disabled');
                 cell.setAttribute('tabindex', '-1');
+                cell.setAttribute('aria-label', mark === 'X' ? t('cell-x') : t('cell-o'));
             }
         });
     }
@@ -3156,7 +3192,7 @@
         } else {
             cell.setAttribute('aria-label', t('aria-editor-cell'));
         }
-        if (settings.sound) playMoveSound(next || PLAYER_X);
+        if (settings.sound && !editorGame) playMoveSound(next || PLAYER_X);
     }
     function clearEditorBoard() {
         editorBoardState = Array(9).fill('');
@@ -3345,6 +3381,7 @@
                 if (isC4Mode()) endC4Game(false, PLAYER_O);
                 else if (isGmkMode()) endGmkGame(false, PLAYER_O);
                 else endGame(false, PLAYER_O);
+                updateEvalBar();
                 timerTimeoutFlag = false;
             }
         } else {
@@ -3354,6 +3391,7 @@
                 if (isC4Mode()) endC4Game(false, PLAYER_O);
                 else if (isGmkMode()) endGmkGame(false, PLAYER_O);
                 else endGame(false, PLAYER_O);
+                updateEvalBar();
                 timerTimeoutFlag = false;
             } else if (timerState.activePlayer === PLAYER_O && timerState.O <= 0) {
                 playTimeoutSound();
@@ -3361,6 +3399,7 @@
                 if (isC4Mode()) endC4Game(false, PLAYER_X);
                 else if (isGmkMode()) endGmkGame(false, PLAYER_X);
                 else endGame(false, PLAYER_X);
+                updateEvalBar();
                 timerTimeoutFlag = false;
             }
         }
@@ -3484,19 +3523,19 @@
     function updateEvalBar() {
         if (!evalBarWrap || !evalBarFill || !evalBarScore) return;
         if (!settings.showEvalBar || !gameActive) {
-            evalBarWrap.style.display = 'none';
+            evalBarWrap.classList.add('is-hidden');
             evalBarWrap.setAttribute('aria-hidden', 'true');
             return;
         }
         // Only show in PvE mode (player = X, AI = O)
         const bm = getEffectiveBattleMode();
         if (bm !== 'pve') {
-            evalBarWrap.style.display = 'none';
+            evalBarWrap.classList.add('is-hidden');
             evalBarWrap.setAttribute('aria-hidden', 'true');
             return;
         }
         let score = 0;
-        if (currentMode === 'ttt') {
+        if (editorGame || currentMode === 'ttt') {
             if (misereMode) {
                 score = minimaxMisere([...gameBoard], 0, true, PLAYER_X, PLAYER_O);
             } else {
@@ -3511,9 +3550,14 @@
             score = evaluateGmkPosition(board, cfg, PLAYER_X, PLAYER_O);
             if (misereMode) score = -score;
         }
-        // Normalize to [-1, 1] using linear mapping with hard clamp
-        const maxScore = currentMode === 'ttt' ? 10 : isC4Mode() ? 500 : 2000;
-        let normalized = Math.max(-1, Math.min(1, score / maxScore));
+        // Normalize to [-1, 1] — TTT uses linear (fixed range), C4/Gmk use atan soft-clamp
+        let normalized;
+        if (currentMode === 'ttt') {
+            normalized = Math.max(-1, Math.min(1, score / 10));
+        } else {
+            const scale = isC4Mode() ? 500 : 50000;
+            normalized = Math.max(-1, Math.min(1, Math.atan(score / scale) / (Math.PI / 2)));
+        }
         // Update fill position and width
         const percentage = normalized * 50; // -50% to +50%
         if (normalized >= 0) {
@@ -3527,12 +3571,15 @@
         // Format score display: avoid '-0.0'; align threshold with color class
         const displayVal = Math.abs(normalized) < 0.05 ? 0 : normalized;
         evalBarScore.textContent = (displayVal > 0 ? '+' : '') + displayVal.toFixed(1);
+        // Update ARIA value for screen readers
+        const track = document.getElementById('eval-bar-track');
+        if (track) track.setAttribute('aria-valuenow', Math.round(normalized * 100));
         // Update player labels based on battle mode (PvE always shows Player / AI)
         const labelX = evalBarWrap.querySelector('.eval-bar-label.eval-x');
         const labelO = evalBarWrap.querySelector('.eval-bar-label.eval-o');
         if (labelX) labelX.textContent = t('label-player-x');
         if (labelO) labelO.textContent = t('label-player-o');
-        evalBarWrap.style.display = 'flex';
+        evalBarWrap.classList.remove('is-hidden');
         evalBarWrap.setAttribute('aria-hidden', 'false');
     }
     function updateMisereIndicator() {
@@ -4247,7 +4294,7 @@
             aiTimer = setTimeout(() => {
                 if (!gameActive) return;
                 const aiMove = getAiMove(gameBoard, PLAYER_O);
-                if (aiMove < 0 || aiMove > 8) { endGame(true); return; }
+                if (aiMove < 0 || aiMove > 8) { endGame(true); updateEvalBar(); return; }
                 makeMove(aiMove, PLAYER_O);
                 if (gameActive) lockBoard(false);
             }, delay);
@@ -4307,7 +4354,7 @@
             aiTimer = setTimeout(() => {
                 if (!gameActive) return;
                 const aiCol = getC4AiMove(PLAYER_O);
-                if (aiCol === -1) { endC4Game(true); return; }
+                if (aiCol === -1) { endC4Game(true); updateEvalBar(); return; }
                 const aiRow = getC4NextOpenRow(aiCol);
                 makeC4Move(aiRow, aiCol, PLAYER_O);
                 if (gameActive) lockC4Board(false);
@@ -4400,7 +4447,8 @@
             animateScore(winner === PLAYER_X ? scoreXEl : scoreOEl);
             drawC4WinLine(winCells, winner);
             if (!timerTimeoutFlag) {
-                if (misereMode && getEffectiveBattleMode() === 'pve' && winner === PLAYER_O) playLossSound(); else playWinSound();
+                const isPveLoss = getEffectiveBattleMode() === 'pve' && winner === PLAYER_O;
+                if (isPveLoss) playLossSound(); else playWinSound();
             }
             let icon = '🎉', title, msg;
             if (timerTimeoutFlag) {
@@ -4651,7 +4699,7 @@
             aiTimer = setTimeout(() => {
                 if (!gameActive) return;
                 const aiMove = getGmkAiMove(PLAYER_O);
-                if (!aiMove) { endGmkGame(true); return; }
+                if (!aiMove) { endGmkGame(true); updateEvalBar(); return; }
                 makeGmkMove(aiMove.r, aiMove.c, PLAYER_O);
                 if (gameActive) lockGmkBoard(false);
             }, delay);
@@ -4754,7 +4802,8 @@
             animateScore(winner === PLAYER_X ? scoreXEl : scoreOEl);
             drawGmkWinLine(winCells, winner);
             if (!timerTimeoutFlag) {
-                if (misereMode && getEffectiveBattleMode() === 'pve' && winner === PLAYER_O) playLossSound(); else playWinSound();
+                const isPveLoss = getEffectiveBattleMode() === 'pve' && winner === PLAYER_O;
+                if (isPveLoss) playLossSound(); else playWinSound();
             }
             let icon = '🎉', title, msg;
             if (timerTimeoutFlag) {
@@ -5056,7 +5105,8 @@
             animateScore(winner === PLAYER_X ? scoreXEl : scoreOEl);
             drawWinLine(winner);
             if (!timerTimeoutFlag) {
-                if (misereMode && getEffectiveBattleMode() === 'pve' && winner === PLAYER_O) playLossSound(); else playWinSound();
+                const isPveLoss = getEffectiveBattleMode() === 'pve' && winner === PLAYER_O;
+                if (isPveLoss) playLossSound(); else playWinSound();
             }
 
             let icon, title, msg;
@@ -5345,7 +5395,7 @@
         aiTimer = setTimeout(() => {
             if (!gameActive || battleMode !== 'aivsai') return;
             const move = getAiMove(gameBoard, currentPlayer);
-            if (move < 0 || move > 8) { endGame(true); return; }
+            if (move < 0 || move > 8) { endGame(true); updateEvalBar(); return; }
             makeMove(move, currentPlayer);
             if (gameActive) {
                 startAiVsAi();
@@ -5372,6 +5422,7 @@
                 makeC4Move(aiRow, aiCol, currentPlayer);
             } else if (gameActive) {
                 endC4Game(true);
+                updateEvalBar();
                 return;
             }
             if (gameActive) {
@@ -5398,6 +5449,7 @@
                 makeGmkMove(aiMove.r, aiMove.c, currentPlayer);
             } else if (gameActive) {
                 endGmkGame(true);
+                updateEvalBar();
                 return;
             }
             if (gameActive) {
