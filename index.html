@@ -63,6 +63,19 @@
             <span id="status-text" data-i18n="status-your-turn">你的回合</span>
         </div>
 
+        <!-- Live Evaluation Bar -->
+        <div class="eval-bar-wrap" id="eval-bar-wrap" style="display:none;" aria-hidden="true">
+            <div class="eval-bar-track">
+                <div class="eval-bar-fill" id="eval-bar-fill"></div>
+                <div class="eval-bar-center"></div>
+            </div>
+            <div class="eval-bar-labels">
+                <span class="eval-bar-label eval-x" data-i18n="label-player-x">玩家 (X)</span>
+                <span class="eval-bar-score" id="eval-bar-score">0.0</span>
+                <span class="eval-bar-label eval-o" data-i18n="label-player-o">AI (O)</span>
+            </div>
+        </div>
+
         <!-- Tic Tac Toe Board -->
         <div class="board" id="board">
             <div class="cell" data-index="0" tabindex="0" role="button"></div>
@@ -402,6 +415,19 @@
                     <button class="seg-btn" data-diff="medium" data-i18n="diff-medium">中等</button>
                     <button class="seg-btn active" data-diff="hard" data-i18n="diff-hard">困难</button>
                 </div>
+            </div>
+
+            <!-- Live Evaluation Bar -->
+            <div class="setting-group" id="eval-bar-settings-group">
+                <span class="setting-label" data-i18n="setting-eval-bar">实时评估</span>
+                <div class="setting-row">
+                    <span class="setting-label sub" id="label-toggle-eval-bar" data-i18n="setting-eval-bar-toggle">显示局势评估条</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-eval-bar" aria-labelledby="label-toggle-eval-bar">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <p class="setting-desc" data-i18n="setting-eval-bar-desc">实时显示当前局面对玩家（X）的优势程度，仅在人机对战中生效。</p>
             </div>
 
             <!-- ELO Rating -->

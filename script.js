@@ -64,6 +64,10 @@
     const toggleRipple = document.getElementById('toggle-ripple');
     const toggleElo = document.getElementById('toggle-elo');
     const toggleMisere = document.getElementById('toggle-misere');
+    const toggleEvalBar = document.getElementById('toggle-eval-bar');
+    const evalBarWrap = document.getElementById('eval-bar-wrap');
+    const evalBarFill = document.getElementById('eval-bar-fill');
+    const evalBarScore = document.getElementById('eval-bar-score');
     const contrastSlider = document.getElementById('contrast-slider');
     const contrastValue = document.getElementById('contrast-value');
     const customColorInput = document.getElementById('custom-color-input');
@@ -361,7 +365,8 @@
         rippleEnabled: true,
         boardTheme: 'classic',
         eloEnabled: true,
-        misereMode: false
+        misereMode: false,
+        showEvalBar: false
     };
 
     const langMap = {
@@ -656,6 +661,9 @@
             'ach-misere-all-modes-desc': { zh:'在所有模式的反向规则下各赢一场', en:'Win a Misère match in all 4 modes', ja:'全モードのミゼールで勝利', ko:'모든 모드의 미제르에서 승리', fr:'Gagnez en Misère dans les 4 modes', de:'Gewinne in allen 4 Modi Misère', es:'Gana en Misère en los 4 modos', ru:'Победите в Мизер во всех 4 режимах', it:'Vinci in Misère in tutte e 4 le modalità', pt:'Vença em Misère em todos os 4 modos' },
             'ach-misere-hard': { zh:'反向地狱', en:'Misère Hell', ja:'ミゼール地獄', ko:'미제르 지옥', fr:'Enfer Misère', de:'Misère-Hölle', es:'Infierno Misère', ru:'Ад Мизер', it:'Inferno Misère', pt:'Inferno Misère' },
             'ach-misere-hard-desc': { zh:'在困难难度的反向规则下获胜', en:'Win a Hard Misère match', ja:'難易度「難しい」のミゼールで勝利', ko:'어려움 난이도 미제르에서 승리', fr:'Gagnez en Misère Difficile', de:'Gewinne Misère auf Schwer', es:'Gana en Misère Difícil', ru:'Победите в Мизер на Сложно', it:'Vinci in Misère Difficile', pt:'Vença em Misère no Difícil' },
+            'setting-eval-bar': { zh:'实时评估', en:'Live Evaluation', ja:'リアルタイム評価', ko:'실시간 평가', fr:'Évaluation en direct', de:'Live-Bewertung', es:'Evaluación en vivo', ru:'Оценка в реальном времени', it:'Valutazione live', pt:'Avaliação ao vivo' },
+            'setting-eval-bar-toggle': { zh:'显示局势评估条', en:'Show Position Bar', ja:'評価バーを表示', ko:'평가 바 표시', fr:'Barre d\'évaluation', de:'Bewertungsleiste', es:'Barra de evaluación', ru:'Панель оценки', it:'Barra valutazione', pt:'Barra de avaliação' },
+            'setting-eval-bar-desc': { zh:'实时显示当前局面对玩家（X）的优势程度，仅在人机对战中生效。', en:'Real-time display of position advantage for Player (X), only active in PvE.', ja:'プレイヤー（X）の優位性をリアルタイム表示、PvEのみ有効。', ko:'플레이어(X)의 우위를 실시간 표시, PvE에서만 활성화.', fr:'Affiche l\'avantage de la position en temps réel, actif uniquement en PvE.', de:'Echtzeit-Anzeige der Positionsvorteile, nur im PvE aktiv.', es:'Muestra la ventaja de posición en tiempo real, solo activo en PvE.', ru:'Отображает преимущество позиции в реальном времени, только в PvE.', it:'Mostra il vantaggio di posizione in tempo reale, attivo solo in PvE.', pt:'Exibe a vantagem de posição em tempo real, ativo apenas em PvE.' },
             'setting-elo': { zh:'ELO 等级分', en:'ELO Rating', ja:'ELO レーティング', ko:'ELO 레이팅', fr:'Classement ELO', de:'ELO-Wertung', es:'Clasificación ELO', ru:'Рейтинг ELO', it:'Classifica ELO', pt:'Classificação ELO' },
             'setting-elo-toggle': { zh:'显示 ELO', en:'Show ELO', ja:'ELO を表示', ko:'ELO 표시', fr:'Afficher ELO', de:'ELO anzeigen', es:'Mostrar ELO', ru:'Показать ELO', it:'Mostra ELO', pt:'Mostrar ELO' },
             'setting-elo-desc': { zh:'基于对局结果动态调整的等级分系统，仅在人机对战中生效。', en:'Dynamic rating system based on match results, only active in PvE.', ja:'対戦結果に基づく動的レーティングシステム、PvEのみ有効。', ko:'대전 결과 기반 동적 레이팅 시스템, PvE에서만 활성화.', fr:'Système de classement dynamique basé sur les résultats, actif uniquement en PvE.', de:'Dynamisches Bewertungssystem basierend auf Spielergebnissen, nur im PvE aktiv.', es:'Sistema de clasificación dinámico basado en resultados, solo activo en PvE.', ru:'Динамическая система рейтинга на основе результатов, только в PvE.', it:'Sistema di rating dinamico basato sui risultati, attivo solo in PvE.', pt:'Sistema de classificação dinâmico baseado em resultados, ativo apenas em PvE.' },
@@ -1452,6 +1460,7 @@
                 if (typeof s.rippleEnabled === 'boolean') settings.rippleEnabled = s.rippleEnabled;
                 if (typeof s.eloEnabled === 'boolean') settings.eloEnabled = s.eloEnabled;
                 if (typeof s.misereMode === 'boolean') settings.misereMode = s.misereMode;
+                if (typeof s.showEvalBar === 'boolean') settings.showEvalBar = s.showEvalBar;
                 const validBoardThemes = ['classic','neon','nature','minimal','space'];
                 if (validBoardThemes.includes(s.boardTheme)) settings.boardTheme = s.boardTheme;
             }
@@ -1697,6 +1706,7 @@
         timerToggle.addEventListener('change', e => { setTimerEnabled(e.target.checked); });
         if (toggleElo) toggleElo.addEventListener('change', e => { setEloEnabled(e.target.checked); });
         if (toggleMisere) toggleMisere.addEventListener('change', e => { setMisereMode(e.target.checked); });
+        if (toggleEvalBar) toggleEvalBar.addEventListener('change', e => { setEvalBarEnabled(e.target.checked); });
         document.querySelectorAll('#timer-segmented .seg-btn').forEach(btn =>
             btn.addEventListener('click', () => setTimerDuration(parseInt(btn.dataset.timer, 10))));
 
@@ -2285,6 +2295,8 @@
         if (toggleRipple) toggleRipple.checked = settings.rippleEnabled;
         if (toggleElo) toggleElo.checked = settings.eloEnabled !== false;
         if (toggleMisere) toggleMisere.checked = settings.misereMode === true;
+        if (toggleEvalBar) toggleEvalBar.checked = settings.showEvalBar === true;
+        updateEvalBar();
     }
 
     let activeRipples = 0;
@@ -3207,6 +3219,7 @@
         closeEditor();
         updateUndoButton();
         updateHintButton();
+        updateEvalBar();
     }
     function checkEditorAchievements() {
         checkSingleAchievement('editor_first');
@@ -3461,6 +3474,66 @@
         updateMisereIndicator();
         saveSettings();
         resetGame();
+    }
+    function setEvalBarEnabled(val) {
+        if (settings.showEvalBar === val) return;
+        settings.showEvalBar = val;
+        saveSettings();
+        updateEvalBar();
+    }
+    function updateEvalBar() {
+        if (!evalBarWrap || !evalBarFill || !evalBarScore) return;
+        if (!settings.showEvalBar || !gameActive) {
+            evalBarWrap.style.display = 'none';
+            evalBarWrap.setAttribute('aria-hidden', 'true');
+            return;
+        }
+        // Only show in PvE mode (player = X, AI = O)
+        const bm = getEffectiveBattleMode();
+        if (bm !== 'pve') {
+            evalBarWrap.style.display = 'none';
+            evalBarWrap.setAttribute('aria-hidden', 'true');
+            return;
+        }
+        let score = 0;
+        if (currentMode === 'ttt') {
+            if (misereMode) {
+                score = minimaxMisere([...gameBoard], 0, true, PLAYER_X, PLAYER_O);
+            } else {
+                score = minimaxGeneric([...gameBoard], 0, true, PLAYER_X, PLAYER_O);
+            }
+        } else if (isC4Mode()) {
+            score = evaluateC4Board(PLAYER_X, PLAYER_O);
+            if (misereMode) score = -score;
+        } else if (isGmkMode()) {
+            const cfg = getActiveGmkConfig();
+            const board = getActiveGmkBoard();
+            score = evaluateGmkPosition(board, cfg, PLAYER_X, PLAYER_O);
+            if (misereMode) score = -score;
+        }
+        // Normalize to [-1, 1] using linear mapping with hard clamp
+        const maxScore = currentMode === 'ttt' ? 10 : isC4Mode() ? 500 : 2000;
+        let normalized = Math.max(-1, Math.min(1, score / maxScore));
+        // Update fill position and width
+        const percentage = normalized * 50; // -50% to +50%
+        if (normalized >= 0) {
+            evalBarFill.style.left = '50%';
+            evalBarFill.style.width = percentage + '%';
+        } else {
+            evalBarFill.style.left = (50 + percentage) + '%';
+            evalBarFill.style.width = Math.abs(percentage) + '%';
+        }
+        evalBarFill.className = 'eval-bar-fill' + (normalized > 0.05 ? ' advantage-x' : normalized < -0.05 ? ' advantage-o' : '');
+        // Format score display: avoid '-0.0'; align threshold with color class
+        const displayVal = Math.abs(normalized) < 0.05 ? 0 : normalized;
+        evalBarScore.textContent = (displayVal > 0 ? '+' : '') + displayVal.toFixed(1);
+        // Update player labels based on battle mode (PvE always shows Player / AI)
+        const labelX = evalBarWrap.querySelector('.eval-bar-label.eval-x');
+        const labelO = evalBarWrap.querySelector('.eval-bar-label.eval-o');
+        if (labelX) labelX.textContent = t('label-player-x');
+        if (labelO) labelO.textContent = t('label-player-o');
+        evalBarWrap.style.display = 'flex';
+        evalBarWrap.setAttribute('aria-hidden', 'false');
     }
     function updateMisereIndicator() {
         const indicator = document.getElementById('misere-indicator');
@@ -4210,6 +4283,7 @@
         }
         updateUndoButton();
         updateHintButton();
+        updateEvalBar();
     }
 
     /* ===== Connect Four ===== */
@@ -4278,6 +4352,7 @@
         }
         updateUndoButton();
         updateHintButton();
+        updateEvalBar();
     }
 
     function checkWinC4(row, col, player) {
@@ -4621,6 +4696,7 @@
         }
         updateUndoButton();
         updateHintButton();
+        updateEvalBar();
     }
 
     function getActiveGmkConfig() {
@@ -5116,6 +5192,7 @@
         updateCellAriaLabels();
         updateUndoButton();
         updateHintButton();
+        updateEvalBar();
     }
 
     function isC4Mode() {
@@ -6288,6 +6365,7 @@
         updateCellAriaLabels();
         updateUndoButton();
         updateHintButton();
+        updateEvalBar();
         playUndoSound();
     }
 

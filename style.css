@@ -3913,6 +3913,74 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     opacity: 0.7;
 }
 
+/* ===== Live Evaluation Bar ===== */
+.eval-bar-wrap {
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0 0.5rem;
+}
+.eval-bar-track {
+    position: relative;
+    height: 8px;
+    background: var(--surface-light);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.eval-bar-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 0%;
+    background: var(--text-muted);
+    border-radius: 4px;
+    transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1), width 0.45s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease;
+    will-change: left, width;
+}
+.eval-bar-fill.advantage-x {
+    background: var(--x-color);
+}
+.eval-bar-fill.advantage-o {
+    background: var(--o-color);
+}
+.eval-bar-center {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: var(--text);
+    opacity: 0.18;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+.eval-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    user-select: none;
+}
+.eval-bar-label {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+.eval-bar-label.eval-x { color: var(--x-color); }
+.eval-bar-label.eval-o { color: var(--o-color); }
+.eval-bar-score {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--text);
+    min-width: 3ch;
+    text-align: center;
+}
+
 /* ===== Responsive Achievements ===== */
 @media (max-width: 400px) {
     .timer { font-size: 0.72rem; }
