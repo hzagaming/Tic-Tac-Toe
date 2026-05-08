@@ -96,6 +96,7 @@ body.animations-off *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
 }
 body.animations-off .win-line,
 body.animations-off .c4-win-line,
@@ -106,6 +107,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        transition-delay: 0ms !important;
     }
 }
 
@@ -362,8 +364,8 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 
 .timer.danger {
-    color: #ff4757 !important;
-    text-shadow: 0 0 10px rgba(255, 71, 87, 0.5) !important;
+    color: #ff4757;
+    text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
     animation: timer-danger calc(0.6s * var(--anim-scale)) ease-in-out infinite;
 }
 
@@ -2126,7 +2128,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     background: var(--hint-line);
     opacity: 0.35;
     transform: scale(1);
-    animation: hint-glow-anim 0.6s ease-in-out 3;
+    animation: hint-glow-anim calc(0.6s * var(--anim-scale)) ease-in-out 3;
     pointer-events: none;
     z-index: 1;
     will-change: transform, opacity;
@@ -2596,12 +2598,12 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     pointer-events: none;
 }
 .tactics-board .cell.hint-correct {
-    animation: tactics-correct-pulse 0.6s ease;
+    animation: tactics-correct-pulse calc(0.6s * var(--anim-scale)) ease;
     background: color-mix(in srgb, var(--o-color), transparent 75%);
     border-radius: 16px;
 }
 .tactics-board .cell.hint-wrong {
-    animation: tactics-wrong-shake 0.5s ease;
+    animation: tactics-wrong-shake calc(0.5s * var(--anim-scale)) ease;
     background: color-mix(in srgb, var(--x-color), transparent 80%);
     border-radius: 16px;
 }
@@ -2746,7 +2748,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     transition: transform 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 .daily-badge.pulse {
-    animation: daily-badge-pulse 0.6s ease;
+    animation: daily-badge-pulse calc(0.6s * var(--anim-scale)) ease;
 }
 @keyframes daily-badge-pulse {
     0%, 100% { transform: scale(1); }
@@ -2846,11 +2848,11 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     transform: none;
 }
 .daily-board .cell.hint-correct {
-    animation: tactics-correct-pulse 0.6s ease;
+    animation: tactics-correct-pulse calc(0.6s * var(--anim-scale)) ease;
     background: color-mix(in srgb, var(--o-color), transparent 75%);
 }
 .daily-board .cell.hint-wrong {
-    animation: tactics-wrong-shake 0.5s ease;
+    animation: tactics-wrong-shake calc(0.5s * var(--anim-scale)) ease;
     background: color-mix(in srgb, var(--x-color), transparent 80%);
 }
 .daily-board .cell:focus-visible {
@@ -3184,7 +3186,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 #rush-timer.warning {
     color: var(--x-color);
-    animation: rush-timer-pulse 1s ease infinite;
+    animation: rush-timer-pulse calc(1s * var(--anim-scale)) ease infinite;
 }
 @keyframes rush-timer-pulse {
     0%, 100% { opacity: 1; }
@@ -3289,11 +3291,11 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     transform: none;
 }
 .rush-board .cell.hint-correct {
-    animation: tactics-correct-pulse 0.6s ease;
+    animation: tactics-correct-pulse calc(0.6s * var(--anim-scale)) ease;
     background: color-mix(in srgb, var(--o-color), transparent 75%);
 }
 .rush-board .cell.hint-wrong {
-    animation: tactics-wrong-shake 0.5s ease;
+    animation: tactics-wrong-shake calc(0.5s * var(--anim-scale)) ease;
     background: color-mix(in srgb, var(--x-color), transparent 80%);
 }
 .rush-board .cell:focus-visible {
@@ -3343,7 +3345,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     text-align: center;
     gap: 0.6rem;
     padding: 1rem 0 0.5rem;
-    animation: rush-result-in 0.4s ease;
+    animation: rush-result-in calc(0.4s * var(--anim-scale)) ease;
 }
 @keyframes rush-result-in {
     from { opacity: 0; transform: translateY(12px); }
@@ -3956,7 +3958,6 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     background: var(--text-muted);
     border-radius: 4px;
     transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1), width 0.45s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease;
-    will-change: left, width;
 }
 .eval-bar-fill.advantage-x {
     background: var(--x-color);
@@ -3997,6 +3998,16 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
     color: var(--text);
     min-width: 3ch;
     text-align: center;
+}
+
+/* ===== Touch Device: Suppress Sticky Hover Transforms ===== */
+@media (hover: none) {
+    .cell:hover, .c4-cell:hover, .gomoku-cell:hover,
+    .score-card:hover, .elo-badge:hover, .btn-settings:hover,
+    .tactics-board .cell:hover, .daily-board .cell:hover,
+    .rush-board .cell:hover, .editor-board .cell:hover {
+        transform: none !important;
+    }
 }
 
 /* ===== Responsive Achievements ===== */

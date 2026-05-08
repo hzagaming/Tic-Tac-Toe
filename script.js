@@ -68,6 +68,7 @@
     const evalBarWrap = document.getElementById('eval-bar-wrap');
     const evalBarFill = document.getElementById('eval-bar-fill');
     const evalBarScore = document.getElementById('eval-bar-score');
+    const evalBarTrack = document.getElementById('eval-bar-track');
     const contrastSlider = document.getElementById('contrast-slider');
     const contrastValue = document.getElementById('contrast-value');
     const customColorInput = document.getElementById('custom-color-input');
@@ -902,6 +903,22 @@
     /* ===== Changelog Data ===== */
     const changelogData = [
         {
+            version: '0.18.2',
+            date: { zh:'2026-05-08', en:'May 8, 2026', ja:'2026年5月8日', ko:'2026년 5월 8일', fr:'8 mai 2026', de:'8. Mai 2026', es:'8 may. 2026', ru:'8 мая 2026', it:'8 mag. 2026', pt:'8 de mai. de 2026' },
+            items: {
+                zh: ['修复键盘方向键可导航到已禁用/已下棋格子的严重无障碍问题', '修复编辑器重新打开后无音效且状态栏显示 "undefined" 的问题', '修复编辑器 PvE 模式下不遵守回合奇偶性、总是强制 X 先走的 bug', '修复切换游戏/对战模式后焦点丢失、屏幕阅读器用户被抛到页面顶部的问题', '将所有 alert() 弹窗替换为无障碍友好的 a11yAnnouncer 播报，避免困住屏幕阅读器', '修复 animations-off 模式下 transition-delay 未被抑制导致动画延迟残留的问题', '修复 6 处动画硬编码时长、不遵守全局动画速度设置的问题', '修复触摸设备上 hover 状态粘住导致按钮/卡片保持悬浮/旋转的问题', '修复 C4 数字键 8/9 未阻止默认行为的不一致问题', '移除 eval bar fill 上导致布局抖动的 will-change 属性，缓存 eval-bar-track 元素', '修复编辑器玩家切换按钮缺少状态播报的问题', '优化自定义模式评估条 scale 根据 winLen 动态计算'],
+                en: ['Fixed critical keyboard navigation landing on disabled/played cells', 'Fixed editor re-open having no sound and status bar showing "undefined"', 'Fixed editor PvE mode ignoring turn parity, always forcing X to move first', 'Fixed focus lost on game/battle mode switch, dumping screen reader users to page top', 'Replaced all alert() dialogs with accessible a11yAnnouncer announcements', 'Fixed transition-delay not being suppressed in animations-off mode', 'Fixed 6 animations using hardcoded durations, now respecting global animation speed', 'Fixed sticky hover transforms on touch devices (buttons/cards staying lifted/rotated)', 'Fixed C4 number keys 8/9 not calling e.preventDefault()', 'Removed layout-thrashing will-change on eval bar fill, cached eval-bar-track element', 'Fixed editor player toggle missing state announcement', 'Optimized custom mode eval bar scale dynamically based on winLen'],
+                ja: ['キーボード方向キーが無効/着手済みセルに移動する重大なアクセシビリティ問題を修正','エディタ再オープン時の無音とステータスバー「undefined」表示を修正','エディタ PvE モードで手番の偶奇性を無視し常に X 先手にするバグを修正','ゲーム/対戦モード切り替え後のフォーカス喪失を修正','全 alert() をアクセシブルな a11yAnnouncer に置き換え','animations-off 時の transition-delay 抑制不足を修正','6 箇所の硬直アニメーション時間を修正、グローバル速度設定に準拠','タッチデバイスで hover が粘着する問題を修正','C4 数字キー 8/9 の e.preventDefault() 漏れを修正','eval bar fill の will-change を削除、eval-bar-track をキャッシュ','エディタプレイヤー切り替えの状態告知不足を修正','カスタムモードの eval bar scale を winLen に応じて動的計算'],
+                ko: ['키보드 방향키가 비활성/이미 둔 칸으로 이동하는 심각한 접근성 문제 수정','에디터 재오픈 시 무음 및 상태 표시줄 "undefined" 문제 수정','에디터 PvE 모드에서 턴 패리티 무시하고 항상 X 선수 버그 수정','게임/대전 모드 전환 후 포커스 상실 수정','모든 alert() 를 접근 가능한 a11yAnnouncer 로 대체','animations-off 시 transition-delay 미억제 수정','6곳의 고정 애니메이션 시간 수정, 전역 속도 설정 준수','터치 기기에서 hover 가 점착되는 문제 수정','C4 숫자 키 8/9 의 e.preventDefault() 누락 수정','eval bar fill 의 will-change 제거, eval-bar-track 캐싱','에디터 플레이어 전환 상태 알림 부족 수정','커스텀 모드 eval bar scale 을 winLen 에 따라 동적 계산'],
+                fr: ['Correction navigation clavier atterrissant sur cellules désactivées','Correction éditeur réouvert sans son et barre d\'état affichant "undefined"','Correction éditeur PvE ignorant la parité des tours','Correction perte de focus lors du changement de mode','Remplacement de tous les alert() par des annonces a11yAnnouncer accessibles','Correction transition-delay non supprimé en animations-off','Correction de 6 animations à durée codée en dur','Correction hover collant sur appareils tactiles','Correction touches 8/9 C4 sans e.preventDefault()','Suppression will-change sur eval bar fill, mise en cache eval-bar-track','Correction toggle joueur éditeur sans annonce d\'état','Optimisation scale eval bar mode personnalisé basé sur winLen'],
+                de: ['Korrigiert: Tastaturnavigation landet auf deaktivierten Zellen','Korrigiert: Editor-Reopen ohne Ton und Statusleiste zeigt "undefined"','Korrigiert: Editor-PvE ignoriert Zugparität','Korrigiert: Fokusverlust beim Moduswechsel','Ersetzt alle alert() durch barrierefreie a11yAnnouncer','Korrigiert: transition-delay nicht unterdrückt in animations-off','Korrigiert 6 Animationen mit hartcodierten Dauern','Korrigiert haftendes Hover auf Touch-Geräten','Korrigiert C4-Tasten 8/9 ohne e.preventDefault()','Entfernt will-change auf eval bar fill, eval-bar-track gecacht','Korrigiert Editor-Spielerwechsel ohne Statusansage','Optimiert benutzerdef. Modus eval bar scale dynamisch nach winLen'],
+                es: ['Corregida navegación teclado aterrizando en celdas desactivadas','Corregido editor reabierto sin sonido y barra de estado mostrando "undefined"','Corregido editor PvE ignorando paridad de turnos','Corregida pérdida de foco al cambiar modo','Reemplazados todos los alert() por anuncios a11yAnnouncer accesibles','Corregido transition-delay no suprimido en animations-off','Corregidas 6 animaciones con duración codificada','Corregido hover pegajoso en dispositivos táctiles','Corregidas teclas 8/9 C4 sin e.preventDefault()','Eliminado will-change en eval bar fill, eval-bar-track en caché','Corregido toggle jugador editor sin anuncio de estado','Optimizada escala eval bar modo personalizado basada en winLen'],
+                ru: ['Исправлена навигация клавиатурой на отключённые ячейки','Исправлено: редактор при повторном открытии без звука','Исправлено: редактор PvE игнорирует чётность ходов','Исправлена потеря фокуса при смене режима','Заменены все alert() на доступные объявления a11yAnnouncer','Исправлено: transition-delay не подавляется в animations-off','Исправлены 6 анимаций с жёстко заданной длительностью','Исправлено прилипание hover на сенсорных устройствах','Исправлены клавиши 8/9 C4 без e.preventDefault()','Удалён will-change на eval bar fill, eval-bar-track кэширован','Исправлено переключение игрока редактора без объявления состояния','Оптимизирована шкала eval bar пользовательского режима по winLen'],
+                it: ['Corretta navigazione tastiera su celle disabilitate','Corretto editor riaperto senza suono e barra stato "undefined"','Corretto editor PvE che ignora la parità dei turni','Corretta perdita focus al cambio modalità','Sostituiti tutti gli alert() con annunci a11yAnnouncer accessibili','Corretto transition-delay non soppresso in animations-off','Corrette 6 animazioni con durata hardcoded','Corretto hover appiccicoso su dispositivi touch','Corrette tasti 8/9 C4 senza e.preventDefault()','Rimosso will-change su eval bar fill, eval-bar-track in cache','Corretto toggle giocatore editor senza annuncio stato','Ottimizzata scala eval bar modalità personalizzata su winLen'],
+                pt: ['Corrigida navegação teclado aterrando em células desativadas','Corrigido editor reaberto sem som e barra de status "undefined"','Corrigido editor PvE ignorando paridade de turnos','Corrigida perda de foco ao trocar modo','Substituídos todos os alert() por anúncios a11yAnnouncer acessíveis','Corrigido transition-delay não suprimido em animations-off','Corrigidas 6 animações com duração codificada','Corrigido hover grudento em dispositivos touch','Corrigidas teclas 8/9 C4 sem e.preventDefault()','Removido will-change no eval bar fill, eval-bar-track em cache','Corrigido toggle jogador editor sem anúncio de estado','Otimizada escala eval bar modo personalizado baseada em winLen'],
+            }
+        },
+        {
             version: '0.18.1',
             date: { zh:'2026-05-08', en:'May 8, 2026', ja:'2026年5月8日', ko:'2026년 5월 8일', fr:'8 mai 2026', de:'8. Mai 2026', es:'8 may. 2026', ru:'8 мая 2026', it:'8 mag. 2026', pt:'8 de mai. de 2026' },
             items: {
@@ -1624,23 +1641,23 @@
         if (!dataImportArea) return;
         const raw = dataImportArea.value.trim();
         if (!raw) return;
-        if (raw.length > 2_000_000) { alert(t('data-import-too-large')); return; }
+        if (raw.length > 2_000_000) { showAccessibleAlert(t('data-import-too-large')); return; }
         let payload;
         try {
             payload = JSON.parse(raw);
-        } catch (e) { alert(t('data-import-invalid')); return; }
-        if (!payload || typeof payload !== 'object') { alert(t('data-import-invalid')); return; }
-        if (payload.version !== 'ttt-backup-v1') { alert(t('data-import-invalid')); return; }
+        } catch (e) { showAccessibleAlert(t('data-import-invalid')); return; }
+        if (!payload || typeof payload !== 'object') { showAccessibleAlert(t('data-import-invalid')); return; }
+        if (payload.version !== 'ttt-backup-v1') { showAccessibleAlert(t('data-import-invalid')); return; }
         if (!confirm(t('data-import-confirm-msg'))) return;
         const validString = v => typeof v === 'string' && v.length > 0;
-        if (payload.settings && !validString(payload.settings)) { alert(t('data-import-invalid')); return; }
-        if (payload.history && !validString(payload.history)) { alert(t('data-import-invalid')); return; }
-        if (payload.achievements && !validString(payload.achievements)) { alert(t('data-import-invalid')); return; }
-        if (payload.achievementStats && !validString(payload.achievementStats)) { alert(t('data-import-invalid')); return; }
-        if (payload.stats && !validString(payload.stats)) { alert(t('data-import-invalid')); return; }
-        if (payload.tactics && !validString(payload.tactics)) { alert(t('data-import-invalid')); return; }
-        if (payload.daily && !validString(payload.daily)) { alert(t('data-import-invalid')); return; }
-        if (payload.elo && !validString(payload.elo)) { alert(t('data-import-invalid')); return; }
+        if (payload.settings && !validString(payload.settings)) { showAccessibleAlert(t('data-import-invalid')); return; }
+        if (payload.history && !validString(payload.history)) { showAccessibleAlert(t('data-import-invalid')); return; }
+        if (payload.achievements && !validString(payload.achievements)) { showAccessibleAlert(t('data-import-invalid')); return; }
+        if (payload.achievementStats && !validString(payload.achievementStats)) { showAccessibleAlert(t('data-import-invalid')); return; }
+        if (payload.stats && !validString(payload.stats)) { showAccessibleAlert(t('data-import-invalid')); return; }
+        if (payload.tactics && !validString(payload.tactics)) { showAccessibleAlert(t('data-import-invalid')); return; }
+        if (payload.daily && !validString(payload.daily)) { showAccessibleAlert(t('data-import-invalid')); return; }
+        if (payload.elo && !validString(payload.elo)) { showAccessibleAlert(t('data-import-invalid')); return; }
         try {
             if (payload.settings) localStorage.setItem(SETTINGS_KEY, payload.settings);
             if (payload.history) localStorage.setItem(HISTORY_KEY, payload.history);
@@ -1650,9 +1667,9 @@
             if (payload.tactics) localStorage.setItem(TACTICS_KEY, payload.tactics);
             if (payload.daily) localStorage.setItem(DAILY_KEY, payload.daily);
             if (payload.elo) localStorage.setItem(ELO_KEY, payload.elo);
-            alert(t('data-import-success'));
+            showAccessibleAlert(t('data-import-success'));
             window.location.reload();
-        } catch (e) { alert(t('data-import-fail')); }
+        } catch (e) { showAccessibleAlert(t('data-import-fail')); }
     }
 
     function init() {
@@ -1849,6 +1866,21 @@
 
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
+                const anyOpen = (editorModal && editorModal.classList.contains('show')) ||
+                    (rushModal && rushModal.classList.contains('show')) ||
+                    (dailyModal && dailyModal.classList.contains('show')) ||
+                    (tacticsModal && tacticsModal.classList.contains('show')) ||
+                    (analysisModal && analysisModal.classList.contains('show')) ||
+                    (hotkeyModal && hotkeyModal.classList.contains('show')) ||
+                    (replayModal && replayModal.classList.contains('show')) ||
+                    (tacticsDrawer && tacticsDrawer.classList.contains('show')) ||
+                    (achievementsDrawer && achievementsDrawer.classList.contains('show')) ||
+                    (historyDrawer && historyDrawer.classList.contains('show')) ||
+                    (drawer && drawer.classList.contains('show')) ||
+                    (changelogModal && changelogModal.classList.contains('show')) ||
+                    (modal && modal.classList.contains('show'));
+                if (!anyOpen) return;
+                e.preventDefault();
                 if (editorModal && editorModal.classList.contains('show')) { closeEditor(); }
                 else if (rushModal && rushModal.classList.contains('show')) { closeRush(); }
                 else if (dailyModal && dailyModal.classList.contains('show')) { closeDaily(); }
@@ -3147,9 +3179,11 @@
         if (tacticsDrawer) { closeTactics(); }
         clearTimeout(aiTimer); aiTimer = null;
         stopTimer();
+        editorGame = false;
         lastFocusedElement = document.activeElement;
         renderEditorBoard();
         updateEditorPlayerDisplay();
+        if (editorPlayerToggle) editorPlayerToggle.setAttribute('aria-label', t('aria-editor-toggle') + ' (' + editorPlayer + ')');
         editorModal.classList.add('show');
         setTimeout(() => {
             const first = editorCells.find(c => c.offsetParent !== null);
@@ -3202,6 +3236,7 @@
     function toggleEditorPlayer() {
         editorPlayer = editorPlayer === 'X' ? 'O' : 'X';
         updateEditorPlayerDisplay();
+        if (editorPlayerToggle) editorPlayerToggle.setAttribute('aria-label', t('aria-editor-toggle') + ' (' + editorPlayer + ')');
     }
     function updateEditorPlayerDisplay() {
         if (editorPlayerMark) {
@@ -3217,19 +3252,24 @@
         const oWin = getWinningConditionTTT(editorBoardState, 'O');
         if (xWin || oWin) {
             if (settings.sound) playErrorSound();
-            alert(t('editor-invalid'));
+            showAccessibleAlert(t('editor-invalid'));
             return;
         }
         // Validate turn order: X must be equal or one more than O
         if (xCount < oCount || xCount > oCount + 1) {
             if (settings.sound) playErrorSound();
-            alert(t('editor-invalid'));
+            showAccessibleAlert(t('editor-invalid'));
             return;
         }
         // Set up game state
         editorGame = true;
         gameBoard = editorBoardState.slice();
-        currentPlayer = getEffectiveBattleMode() === 'pve' ? PLAYER_X : editorPlayer;
+        const bm = getEffectiveBattleMode();
+        if (bm === 'pve') {
+            currentPlayer = (xCount === oCount) ? PLAYER_X : PLAYER_O;
+        } else {
+            currentPlayer = editorPlayer;
+        }
         gameActive = true;
         moveHistory = [];
         boardSnapshots = [];
@@ -3250,12 +3290,15 @@
                 cell.classList.add(gameBoard[i].toLowerCase());
             }
         });
-        updateStatus();
+        updateStatus(getTurnText(), currentPlayer === PLAYER_X ? 'x' : 'o');
         checkEditorAchievements();
         closeEditor();
         updateUndoButton();
         updateHintButton();
         updateEvalBar();
+    }
+    function showAccessibleAlert(msg) {
+        if (a11yAnnouncer) { a11yAnnouncer.textContent = msg; setTimeout(() => { if (a11yAnnouncer) a11yAnnouncer.textContent = ''; }, 3000); }
     }
     function checkEditorAchievements() {
         checkSingleAchievement('editor_first');
@@ -3555,7 +3598,7 @@
         if (currentMode === 'ttt') {
             normalized = Math.max(-1, Math.min(1, score / 10));
         } else {
-            const scale = isC4Mode() ? 500 : 50000;
+            const scale = isC4Mode() ? 500 : Math.pow(5, Math.min(cfg.winLen - 1, 6)) * 15;
             normalized = Math.max(-1, Math.min(1, Math.atan(score / scale) / (Math.PI / 2)));
         }
         // Update fill position and width
@@ -3572,8 +3615,7 @@
         const displayVal = Math.abs(normalized) < 0.05 ? 0 : normalized;
         evalBarScore.textContent = (displayVal > 0 ? '+' : '') + displayVal.toFixed(1);
         // Update ARIA value for screen readers
-        const track = document.getElementById('eval-bar-track');
-        if (track) track.setAttribute('aria-valuenow', Math.round(normalized * 100));
+        if (evalBarTrack) evalBarTrack.setAttribute('aria-valuenow', Math.round(normalized * 100));
         // Update player labels based on battle mode (PvE always shows Player / AI)
         const labelX = evalBarWrap.querySelector('.eval-bar-label.eval-x');
         const labelO = evalBarWrap.querySelector('.eval-bar-label.eval-o');
@@ -3679,7 +3721,7 @@
         } else {
             targetCell = allCells[targetR * 3 + targetC];
         }
-        if (targetCell) targetCell.focus();
+        if (targetCell && !targetCell.classList.contains('disabled')) targetCell.focus();
     }
 
     function navigateRushBoard(direction) {
@@ -3726,7 +3768,7 @@
         }
         const targetIdx = targetR * cols + targetC;
         const targetCell = cells[targetIdx];
-        if (targetCell) targetCell.focus();
+        if (targetCell && !targetCell.classList.contains('disabled')) targetCell.focus();
     }
 
     function handleNumberKey(num, e) {
@@ -3752,7 +3794,7 @@
         if (isAnyModalOpen()) return;
         if (isC4Mode()) {
             const col = num - 1;
-            if (col < 0 || col >= C4_COLS) return;
+            if (col < 0 || col >= C4_COLS) { e.preventDefault(); return; }
             const cell = document.querySelector(`.c4-cell[data-row="0"][data-col="${col}"]`);
             if (cell && !cell.classList.contains('disabled')) {
                 cell.focus();
@@ -4222,6 +4264,11 @@
         resetScores();
         updateScoreLabels();
         resetGame();
+        setTimeout(() => {
+            const allCells = getActiveBoardCells();
+            const first = allCells.find(c => !c.classList.contains('disabled'));
+            if (first) first.focus();
+        }, 50);
     }
 
     function setBattleMode(mode) {
@@ -4239,6 +4286,11 @@
         updateScoreLabels();
         updateEloBadge();
         resetGame();
+        setTimeout(() => {
+            const allCells = getActiveBoardCells();
+            const first = allCells.find(c => !c.classList.contains('disabled'));
+            if (first) first.focus();
+        }, 50);
     }
 
     function updateScoreLabels() {
