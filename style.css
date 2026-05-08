@@ -2952,7 +2952,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 }
 .analysis-bar {
     flex: 1;
-    min-width: 3px;
+    min-width: 6px;
     border-radius: 2px 2px 0 0;
     transition: height 0.3s ease;
     position: relative;
@@ -2966,7 +2966,7 @@ body.animations-off .gomoku-win-line { opacity: 1 !important; }
 .analysis-bar::after {
     content: '';
     position: absolute;
-    inset: -8px -4px;
+    inset: -8px 0;
 }
 .analysis-board-wrap {
     display: flex;
