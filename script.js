@@ -914,6 +914,22 @@
     /* ===== Changelog Data ===== */
     const changelogData = [
         {
+            version: '0.18.4',
+            date: { zh:'2026-05-12', en:'May 12, 2026', ja:'2026年5月12日', ko:'2026년 5월 12일', fr:'12 mai 2026', de:'12. Mai 2026', es:'12 may. 2026', ru:'12 мая 2026', it:'12 mag. 2026', pt:'12 de mai. de 2026' },
+            items: {
+                zh: ['修复 `playChiptune`/`playBell`/`playCrystal` 在音量为 0 时提前创建 AudioNode 导致孤儿节点的内存泄漏', '修复所有 SFX 和 BGM 函数未处理 `audioCtx.state === "closed"` 时 `createOscillator()` 抛出 InvalidStateError 的崩溃风险', '修复 BGM 启动时 `resume()` 异步竞争导致首个和弦被跳过的问题，改为 Promise 回调中播放', '修复 `bgmAutoplayUnlock` 在 BGM 已正常播放时不必要地 stop/start 造成和弦中断', '修复所有 SFX 节点播放结束后从不调用 `disconnect()` 的内存泄漏', '修复 `playPiano` 在音量为 0 时仍调度两个无用 `setTimeout` 回调的低效问题', '修复 `playChiptune` 内部 `setTimeout` 回调在 AudioContext 再次 suspended 时不尝试 resume', '修复 `bgmNodes` 溢出清理时仅 `disconnect()` 而未 `stop()` 旧振荡器的问题'],
+                en: ['Fixed `playChiptune`/`playBell`/`playCrystal` creating orphan AudioNodes before volume guard when volume is 0', 'Fixed `InvalidStateError` crash risk in all SFX/BGM functions when `audioCtx.state === "closed"`', 'Fixed BGM first chord skipped due to async `resume()` race; now plays inside Promise callback', 'Fixed `bgmAutoplayUnlock` unnecessarily stop/restarting BGM when already playing', 'Fixed memory leak: all SFX nodes never called `disconnect()` after playback', 'Fixed `playPiano` scheduling two useless `setTimeout` callbacks when volume is 0', 'Fixed `playChiptune` inner `setTimeout` callbacks not attempting resume on suspended context', 'Fixed `bgmNodes` overflow cleanup only calling `disconnect()` without `stop()` on old oscillators'],
+                ja: ['音量 0 時に `playChiptune`/`playBell`/`playCrystal` がボリュームガード前に AudioNode を作成し孤儿ノードになるメモリリークを修正','全 SFX/BGM 関数で `audioCtx.state === "closed"` 時の `createOscillator()` InvalidStateError クラッシュリスクを修正','BGM 開始時の async `resume()` 競合による最初の和弦スキップを修正、Promise コールバック内で再生','BGM 既に再生中の場合に `bgmAutoplayUnlock` が不要に stop/start する問題を修正','全 SFX ノードが再生後に `disconnect()` を呼ばないメモリリークを修正','音量 0 時に `playPiano` が無駄な `setTimeout` をスケジュールする問題を修正','`playChiptune` 内部 `setTimeout` が suspended コンテキストで resume を試行しない問題を修正','`bgmNodes` オーバーフロー時の古いオシレーターに `stop()` せず `disconnect()` のみの問題を修正'],
+                ko: ['볼륨 0 시 `playChiptune`/`playBell`/`playCrystal` 이 볼륨 가드 전에 AudioNode 를 생성하여 고아 노드가 되는 메모리 누수 수정','모든 SFX/BGM 함수에서 `audioCtx.state === "closed"` 시 `createOscillator()` InvalidStateError 크래시 위험 수정','BGM 시작 시 async `resume()` 경쟁으로 첫 화성이 스킵되는 문제 수정, Promise 콜백 내에서 재생','BGM 이미 재생 중일 때 `bgmAutoplayUnlock` 이 불필요하게 stop/start 하는 문제 수정','모든 SFX 노드가 재생 후 `disconnect()` 를 호출하지 않는 메모리 누수 수정','볼륨 0 시 `playPiano` 이 쓸모없는 `setTimeout` 을 스케줄링하는 문제 수정','`playChiptune` 낶部 `setTimeout` 이 suspended 컨텍스트에서 resume 을 시도하지 않는 문제 수정','`bgmNodes` 오버플로 시 오래된 오실레이터에 `stop()` 없이 `disconnect()` 만 하는 문제 수정'],
+                fr: ['Correction fuite mémoire: `playChiptune`/`playBell`/`playCrystal` créaient des AudioNodes orphelins avant le guard de volume à volume 0','Correction risque crash `InvalidStateError` dans toutes les fonctions SFX/BGM quand `audioCtx.state === "closed"`','Correction premier accord BGM sauté par race async `resume()`; joue maintenant dans callback Promise','Correction `bgmAutoplayUnlock` arrêtant/redémarrant inutilement BGM déjà en lecture','Correction fuite mémoire: tous les nœuds SFX ne jamais appeler `disconnect()`','Correction `playPiano` planifiant deux `setTimeout` inutiles à volume 0','Correction callbacks `setTimeout` internes `playChiptune` ne tentant pas resume sur contexte suspended','Correction nettoyage overflow `bgmNodes` appelant `disconnect()` sans `stop()`'],
+                de: ['Korrigiert Memory Leak: `playChiptune`/`playBell`/`playCrystal` erstellten AudioNodes vor Volumenguard bei Lautstärke 0','Korrigiert Crash-Risiko `InvalidStateError` in allen SFX/BGM-Funktionen bei `audioCtx.state === "closed"`','Korrigiert übersprungener erster BGM-Akkord durch async `resume()`-Race; spielt jetzt im Promise-Callback','Korrigiert `bgmAutoplayUnlock` stoppt/startet BGM unnötig, wenn bereits abgespielt','Korrigiert Memory Leak: alle SFX-Knoten nie `disconnect()` nach Wiedergabe','Korrigiert `playPiano` plant zwei nutzlose `setTimeout` bei Lautstärke 0','Korrigiert innere `setTimeout`-Callbacks von `playChiptune` versuchen kein Resume bei suspended Context','Korrigiert `bgmNodes`-Overflow-Bereinigung ruft `disconnect()` ohne `stop()` auf'],
+                es: ['Corregida fuga memoria: `playChiptune`/`playBell`/`playCrystal` creaban AudioNodes huérfanos antes del guard de volumen con volumen 0','Corregido riesgo crash `InvalidStateError` en todas las funciones SFX/BGM cuando `audioCtx.state === "closed"`','Corregido primer acorde BGM saltado por carrera async `resume()`; ahora reproduce dentro de callback Promise','Corregido `bgmAutoplayUnlock` deteniendo/reiniciando innecesariamente BGM ya en reproducción','Corregida fuga memoria: todos los nodos SFX nunca llaman `disconnect()`','Corregido `playPiano` programando dos `setTimeout` inútiles con volumen 0','Corregidos callbacks `setTimeout` internos de `playChiptune` no intentando resume en contexto suspended','Corregida limpieza overflow `bgmNodes` llamando `disconnect()` sin `stop()`'],
+                ru: ['Исправлена утечка памяти: `playChiptune`/`playBell`/`playCrystal` создавали осиротевшие AudioNodes до volume guard при нулевой громкости','Исправлен риск краша `InvalidStateError` во всех SFX/BGM-функциях при `audioCtx.state === "closed"`','Исправлен пропуск первого аккорда BGM из-за async `resume()`; теперь воспроизводится в Promise-callback','Исправлено `bgmAutoplayUnlock` останавливающий/перезапускающий BGM без необходимости','Исправлена утечка памяти: все SFX-узлы никогда не вызывали `disconnect()`','Исправлено `playPiano` планирующий два бесполезных `setTimeout` при нулевой громкости','Исправлены внутренние `setTimeout` `playChiptune` не пытающиеся resume при suspended','Исправлена очистка overflow `bgmNodes` с вызовом `disconnect()` без `stop()`'],
+                it: ['Corretta perdita memoria: `playChiptune`/`playBell`/`playCrystal` creavano AudioNodes orfani prima del volume guard a volume 0','Corretto rischio crash `InvalidStateError` in tutte le funzioni SFX/BGM quando `audioCtx.state === "closed"`','Corretto primo accordo BGM saltato per race async `resume()`; ora riproduce nel callback Promise','Corretto `bgmAutoplayUnlock` che arrestava/riavviava inutilmente BGM già in riproduzione','Corretta perdita memoria: tutti i nodi SFX non chiamavano mai `disconnect()`','Corretto `playPiano` che pianificava due `setTimeout` inutili a volume 0','Corretti callback `setTimeout` interni di `playChiptune` che non tentavano resume su contexto suspended','Corretta pulizia overflow `bgmNodes` chiamando `disconnect()` senza `stop()`'],
+                pt: ['Corrigido vazamento memória: `playChiptune`/`playBell`/`playCrystal` criavam AudioNodes órfãos antes do volume guard com volume 0','Corrigido risco crash `InvalidStateError` em todas as funções SFX/BGM quando `audioCtx.state === "closed"`','Corrigido primeiro acorde BGM pulado por corrida async `resume()`; agora reproduz no callback Promise','Corrigido `bgmAutoplayUnlock` parando/reiniciando BGM desnecessariamente já em reprodução','Corrigido vazamento memória: todos os nós SFX nunca chamavam `disconnect()`','Corrigido `playPiano` agendando dois `setTimeout` inúteis com volume 0','Corrigidos callbacks `setTimeout` internos de `playChiptune` não tentando resume em contexto suspended','Corrigida limpeza overflow `bgmNodes` chamando `disconnect()` sem `stop()`']
+            }
+        },
+        {
             version: '0.18.3',
             date: { zh:'2026-05-12', en:'May 12, 2026', ja:'2026年5月12日', ko:'2026년 5월 12일', fr:'12 mai 2026', de:'12. Mai 2026', es:'12 may. 2026', ru:'12 мая 2026', it:'12 mag. 2026', pt:'12 de mai. de 2026' },
             items: {
@@ -2018,7 +2034,10 @@
         if (settings.bgmEnabled) {
             startBgm();
             const bgmAutoplayUnlock = () => {
-                if (settings.bgmEnabled) { stopBgm(); startBgm(); }
+                if (settings.bgmEnabled && audioCtx && audioCtx.state === 'suspended') {
+                    stopBgm();
+                    startBgm();
+                }
                 document.removeEventListener('click', bgmAutoplayUnlock);
                 document.removeEventListener('keydown', bgmAutoplayUnlock);
                 document.removeEventListener('touchstart', bgmAutoplayUnlock);
@@ -3937,7 +3956,7 @@
     }
 
     function playOsc(freq, type, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         const effectiveVol = vol * volMul();
         if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
@@ -3951,10 +3970,12 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration));
+        const stopMs = durMul(duration) * 1000 + 100;
+        setTimeout(() => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
     }
 
     function playFiltered(freq, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         const effectiveVol = vol * volMul();
         if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
@@ -3973,10 +3994,12 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration));
+        const stopMs = durMul(duration) * 1000 + 100;
+        setTimeout(() => { try { osc.disconnect(); filter.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
     }
 
     function playRetro(freq, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         const effectiveVol = vol * volMul();
         if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
@@ -3990,10 +4013,12 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration));
+        const stopMs = durMul(duration) * 1000 + 100;
+        setTimeout(() => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
     }
 
     function playWoodTone(freq, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         const effectiveVol = vol * volMul();
         if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
@@ -4007,10 +4032,12 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration));
+        const stopMs = durMul(duration) * 1000 + 100;
+        setTimeout(() => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
     }
 
     function playBell(freq, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         const effectiveVol = vol * volMul();
         if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
@@ -4024,10 +4051,12 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration));
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
+        const stopMs = durMul(duration) * 1000 + 100;
+        setTimeout(() => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
         const effectiveVol2 = effectiveVol * 0.3;
         if (effectiveVol2 > 0) {
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
             osc2.type = 'sine';
             osc2.frequency.setValueAtTime(freqShift(freq * 2), audioCtx.currentTime);
             gain2.gain.setValueAtTime(effectiveVol2, audioCtx.currentTime);
@@ -4036,11 +4065,12 @@
             gain2.connect(audioCtx.destination);
             osc2.start();
             osc2.stop(audioCtx.currentTime + durMul(duration));
+            setTimeout(() => { try { osc2.disconnect(); gain2.disconnect(); } catch (e) {} }, stopMs);
         }
     }
 
     function playSpace(freq, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         const effectiveVol = vol * volMul() * 0.5;
         if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
@@ -4059,10 +4089,12 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration));
+        const stopMs = durMul(duration) * 1000 + 100;
+        setTimeout(() => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
     }
 
     function playDrum(freq, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         const effectiveVol = vol * volMul();
         if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
@@ -4077,10 +4109,14 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration));
+        const stopMs = durMul(duration) * 1000 + 100;
+        setTimeout(() => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
     }
 
     function playPiano(freq, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
+        const effectiveVol = vol * volMul();
+        if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         playOsc(freq, 'sine', duration, vol * 0.6);
         setTimeout(() => playOsc(freq * 2, 'sine', duration * 0.5, vol * 0.2), 10);
@@ -4088,7 +4124,7 @@
     }
 
     function playSynth(freq, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         const effectiveVol = vol * volMul() * 0.4;
         if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
@@ -4111,21 +4147,24 @@
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration));
         lfo.stop(audioCtx.currentTime + durMul(duration));
+        const stopMs = durMul(duration) * 1000 + 100;
+        setTimeout(() => { try { lfo.disconnect(); lfoGain.disconnect(); osc.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
     }
 
     function playChiptune(freq, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const notes = [freq, freq * 1.25, freq * 1.5, freq * 2];
         notes.forEach((f, i) => {
             setTimeout(() => {
                 if (!settings.sound || !audioCtx) return;
+                const chipVol = vol * volMul() * 0.12;
+                if (chipVol <= 0) return;
+                if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'square';
                 osc.frequency.setValueAtTime(freqShift(f), audioCtx.currentTime);
-                const chipVol = vol * volMul() * 0.12;
-                if (chipVol <= 0) return;
                 gain.gain.setValueAtTime(chipVol, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.15);
                 osc.connect(gain);
@@ -4137,7 +4176,7 @@
     }
 
     function playPluck(freq, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         const effectiveVol = vol * volMul() * 0.5;
         if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
@@ -4151,10 +4190,12 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration) * 0.3);
+        const stopMs = durMul(duration) * 300 + 100;
+        setTimeout(() => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
     }
 
     function playCrystal(freq, duration, vol) {
-        if (!settings.sound || !audioCtx) return;
+        if (!settings.sound || !audioCtx || audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         const effectiveVol = vol * volMul();
         if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
@@ -4168,10 +4209,12 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration) * 1.2);
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
+        const stopMs = durMul(duration) * 1200 + 100;
+        setTimeout(() => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
         const effectiveVol2 = effectiveVol * 0.1;
         if (effectiveVol2 > 0) {
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
             osc2.type = 'triangle';
             osc2.frequency.setValueAtTime(freqShift(freq * 3), audioCtx.currentTime + 0.05);
             gain2.gain.setValueAtTime(0.0001, audioCtx.currentTime);
@@ -4181,6 +4224,7 @@
             gain2.connect(audioCtx.destination);
             osc2.start(audioCtx.currentTime + 0.05);
             osc2.stop(audioCtx.currentTime + durMul(duration) * 0.8);
+            setTimeout(() => { try { osc2.disconnect(); gain2.disconnect(); } catch (e) {} }, durMul(duration) * 800 + 100);
         }
     }
 
@@ -4197,8 +4241,8 @@
         if (bgmInterval) { clearInterval(bgmInterval); bgmInterval = null; }
         bgmNodes.forEach(n => {
             try {
-                const now = audioCtx ? audioCtx.currentTime : 0;
-                if (n.gain && audioCtx) {
+                const now = audioCtx && audioCtx.state !== 'closed' ? audioCtx.currentTime : 0;
+                if (n.gain && audioCtx && audioCtx.state !== 'closed') {
                     n.gain.gain.cancelScheduledValues(now);
                     const currentVal = n.gain.gain.value;
                     n.gain.gain.setValueAtTime(currentVal > 0 ? currentVal : 0.0001, now);
@@ -4219,10 +4263,16 @@
         if (!settings.bgmEnabled) return;
         if (!audioCtx) initAudio();
         if (!audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+        if (audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         stopBgm();
         bgmActive = true;
-        playBgmChord(0);
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume().then(() => {
+                if (bgmActive && settings.bgmEnabled) playBgmChord(0);
+            }).catch(() => {});
+        } else {
+            playBgmChord(0);
+        }
         let chordIndex = 1;
         bgmInterval = setInterval(() => {
             if (!settings.bgmEnabled || !bgmActive) { stopBgm(); return; }
@@ -4232,6 +4282,7 @@
     }
     function playBgmChord(chordIdx) {
         if (!audioCtx || !settings.bgmEnabled || !bgmActive) return;
+        if (audioCtx.state === 'closed') { audioCtx = null; initAudio(); if (!audioCtx) return; }
         if (audioCtx.state === 'suspended') return;
         const freqs = BGM_CHORDS[chordIdx % BGM_CHORDS.length];
         const baseVol = (settings.bgmVolume / 100) * 0.03;
@@ -4255,7 +4306,14 @@
         });
         if (bgmNodes.length > 24) {
             const old = bgmNodes.splice(0, bgmNodes.length - 24);
-            old.forEach(n => { try { n.osc.disconnect(); n.gain.disconnect(); } catch (e) {} });
+            old.forEach(n => {
+                try {
+                    const now = audioCtx ? audioCtx.currentTime : 0;
+                    n.osc.stop(now + 0.1);
+                    n.osc.disconnect();
+                    n.gain.disconnect();
+                } catch (e) {}
+            });
         }
     }
     function setBgmEnabled(val) {
