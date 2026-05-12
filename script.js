@@ -202,6 +202,7 @@
     let scores = { X: 0, O: 0, draw: 0 };
     let aiTimer = null;
     let audioCtx = null;
+    const pageLoadStart = Date.now();
     let bgmNodes = [];
     let bgmInterval = null;
     let bgmActive = false;
@@ -450,6 +451,9 @@
 
     function buildI18n() {
         const c = {
+            'splash-brand': { zh:'Hanazar Products', en:'Hanazar Products', ja:'Hanazar Products', ko:'Hanazar Products', fr:'Hanazar Products', de:'Hanazar Products', es:'Hanazar Products', ru:'Hanazar Products', it:'Hanazar Products', pt:'Hanazar Products' },
+            'splash-title': { zh:'Tic Tac Toe', en:'Tic Tac Toe', ja:'三目並べ', ko:'틱택토', fr:'Morpion', de:'Tic-Tac-Toe', es:'Tres en raya', ru:'Крестики-нолики', it:'Tris', pt:'Jogo da velha' },
+            'splash-subtitle': { zh:'连珠棋子游戏', en:'Strategic Board Game', ja:'戦略ボードゲーム', ko:'전략 보드 게임', fr:'Jeu de stratégie', de:'Strategiespiel', es:'Juego de estrategia', ru:'Стратегическая игра', it:'Gioco di strategia', pt:'Jogo de estratégia' },
             'subtitle-pve': { zh:'不可战胜的 AI 对手', en:'Unbeatable AI Opponent', ja:'無敵の AI 対戦相手', ko:'무적의 AI 상대', fr:'Adversaire IA imbattable', de:'Unbesiegbarer Gegner', es:'Oponente IA invencible', ru:'Непобедимый ИИ', it:'Avversario AI imbattibile', pt:'Oponente IA invencível' },
             'subtitle-pvp': { zh:'好友本地对战', en:'Local Two-Player Battle', ja:'ローカル対戦', ko:'로컬 2인 대전', fr:'Duel local', de:'Lokaler Zweikampf', es:'Batalla local', ru:'Локальная игра', it:'Sfida locale', pt:'Batalha local' },
             'subtitle-aivsai': { zh:'最强 AI 巅峰对决', en:'Ultimate AI Showdown', ja:'AI 頂上決戦', ko:'최강 AI 대결', fr:'Duel ultime IA', de:'Ultimativer Showdown', es:'Enfrentamiento IA', ru:'Битва ИИ', it:'Scontro finale AI', pt:'Confronto IA supremo' },
@@ -2045,6 +2049,17 @@
             document.addEventListener('click', bgmAutoplayUnlock);
             document.addEventListener('keydown', bgmAutoplayUnlock);
             document.addEventListener('touchstart', bgmAutoplayUnlock);
+        }
+        // Splash screen fade-out after animations complete
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+            const splashMinDisplay = 2200;
+            const elapsed = Date.now() - pageLoadStart;
+            const remaining = Math.max(0, splashMinDisplay - elapsed);
+            setTimeout(() => {
+                splash.classList.add('fade-out');
+                setTimeout(() => { splash.remove(); }, 650);
+            }, remaining);
         }
     }
 
