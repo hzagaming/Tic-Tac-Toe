@@ -333,6 +333,20 @@
                     <span class="slider"></span>
                 </label>
             </div>
+            <div class="setting-row">
+                <span class="setting-label sub" id="label-toggle-bgm" data-i18n="setting-bgm">背景音乐</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle-bgm" aria-labelledby="label-toggle-bgm">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-group" id="bgm-volume-group" style="display:none;">
+                <div class="slider-header">
+                    <label class="setting-label sub" for="bgm-volume-slider" data-i18n="bgm-volume">BGM 音量</label>
+                    <span class="slider-value" id="bgm-volume-value">30%</span>
+                </div>
+                <input type="range" class="range-slider" id="bgm-volume-slider" min="0" max="100" value="30">
+            </div>
 
             <!-- Sound Style -->
             <div class="setting-group">

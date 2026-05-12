@@ -9,11 +9,11 @@
     const statusText = document.getElementById('status-text');
     const statusBar = document.querySelector('.status-bar');
     const winLine = document.getElementById('win-line');
-    const winLineSvg = winLine.querySelector('line');
+    const winLineSvg = winLine ? winLine.querySelector('line') : null;
     const c4WinLine = document.getElementById('c4-win-line');
-    const c4WinLineSvg = c4WinLine.querySelector('line');
+    const c4WinLineSvg = c4WinLine ? c4WinLine.querySelector('line') : null;
     const gomokuWinLine = document.getElementById('gomoku-win-line');
-    const gomokuWinLineSvg = gomokuWinLine.querySelector('line');
+    const gomokuWinLineSvg = gomokuWinLine ? gomokuWinLine.querySelector('line') : null;
     const restartBtn = document.getElementById('restart-btn');
     const settingsBtn = document.getElementById('settings-btn');
     const drawer = document.getElementById('settings-drawer');
@@ -79,6 +79,10 @@
     const volumeSlider = document.getElementById('volume-slider');
     const volumeValue = document.getElementById('volume-value');
     const testSoundBtn = document.getElementById('test-sound-btn');
+    const toggleBgm = document.getElementById('toggle-bgm');
+    const bgmVolumeSlider = document.getElementById('bgm-volume-slider');
+    const bgmVolumeValue = document.getElementById('bgm-volume-value');
+    const bgmVolumeGroup = document.getElementById('bgm-volume-group');
 
     const customWinLenInput = document.getElementById('custom-win-len');
     const customBoardWInput = document.getElementById('custom-board-w');
@@ -198,6 +202,9 @@
     let scores = { X: 0, O: 0, draw: 0 };
     let aiTimer = null;
     let audioCtx = null;
+    let bgmNodes = [];
+    let bgmInterval = null;
+    let bgmActive = false;
     let lastFocusedElement = null;
     let lastTacticCard = null;
     let lastWinData = null;
@@ -359,6 +366,8 @@
         soundPitch: 0,
         soundDuration: 100,
         soundVolume: 80,
+        bgmEnabled: false,
+        bgmVolume: 30,
         difficulty: 'hard',
         customBoardSize: 'custom',
         timerEnabled: false,
@@ -532,6 +541,8 @@
             'sound-duration': { zh:'音长', en:'Duration', ja:'音長', ko:'지속', fr:'Durée', de:'Dauer', es:'Duración', ru:'Длительность', it:'Durata', pt:'Duração' },
             'sound-volume': { zh:'音量', en:'Volume', ja:'音量', ko:'볼륨', fr:'Volume', de:'Lautstärke', es:'Volumen', ru:'Громкость', it:'Volume', pt:'Volume' },
             'sound-test': { zh:'试听', en:'Test', ja:'試聴', ko:'시청', fr:'Tester', de:'Testen', es:'Probar', ru:'Тест', it:'Prova', pt:'Testar' },
+            'setting-bgm': { zh:'背景音乐', en:'BGM', ja:'BGM', ko:'배경음악', fr:'Musique', de:'Musik', es:'Música', ru:'Музыка', it:'Musica', pt:'Música' },
+            'bgm-volume': { zh:'BGM 音量', en:'BGM Volume', ja:'BGM 音量', ko:'BGM 볼륨', fr:'Volume musique', de:'Musiklautstärke', es:'Volumen música', ru:'Громкость музыки', it:'Volume musica', pt:'Volume música' },
             'diff-easy': { zh:'简单', en:'Easy', ja:'簡単', ko:'쉬움', fr:'Facile', de:'Einfach', es:'Fácil', ru:'Легко', it:'Facile', pt:'Fácil' },
             'diff-medium': { zh:'中等', en:'Medium', ja:'普通', ko:'보통', fr:'Moyen', de:'Mittel', es:'Medio', ru:'Средне', it:'Medio', pt:'Médio' },
             'diff-hard': { zh:'困难', en:'Hard', ja:'難しい', ko:'어려움', fr:'Difficile', de:'Schwer', es:'Difícil', ru:'Сложно', it:'Difficile', pt:'Difícil' },
@@ -902,6 +913,22 @@
 
     /* ===== Changelog Data ===== */
     const changelogData = [
+        {
+            version: '0.18.3',
+            date: { zh:'2026-05-12', en:'May 12, 2026', ja:'2026年5月12日', ko:'2026년 5월 12일', fr:'12 mai 2026', de:'12. Mai 2026', es:'12 may. 2026', ru:'12 мая 2026', it:'12 mag. 2026', pt:'12 de mai. de 2026' },
+            items: {
+                zh: ['修复 eval bar 在 editor 非 TTT 模式下因 cfg 未定义导致的 ReferenceError 崩溃', '修复所有 SFX 函数在音量为 0 时 exponentialRampToValueAtTime 从 0 开始抛出 InvalidStateError 的 Web Audio API 崩溃', '修复 winLineSvg/c4WinLineSvg/gomokuWinLineSvg 初始化缺少 null 保护可能导致的启动崩溃', '修复 updateStatus 和 subtitle 多处直接操作 DOM 缺少 null 检查的问题', '修复从 Board Editor 启动游戏后未切换显示 TTT 棋盘的问题', '修复 createRipple 中 e instanceof MouseEvent 在某些环境（如跨 iframe）下不可靠的问题', '新增背景音乐（BGM）功能：柔和的环境和弦循环，支持开关和独立音量控制', 'BGM 遵循浏览器自动播放策略，首次用户交互后自动启动'],
+                en: ['Fixed eval bar ReferenceError crash when editor starts in non-TTT mode due to undefined cfg', 'Fixed InvalidStateError crash in all SFX functions when volume is 0 (exponentialRampToValueAtTime from 0)', 'Fixed missing null guards on winLineSvg/c4WinLineSvg/gomokuWinLineSvg initialization', 'Fixed updateStatus and subtitle lacking null checks when manipulating DOM', 'Fixed Board Editor not switching to TTT board display after starting game', 'Fixed createRipple relying on e instanceof MouseEvent which fails in some environments', 'Added Background Music (BGM): soft ambient chord loop with toggle and independent volume control', 'BGM respects browser autoplay policy and auto-starts after first user interaction'],
+                ja: ['エディタ非 TTT モードで eval bar が cfg 未定義により ReferenceError クラッシュする問題を修正','音量 0 時の exponentialRampToValueAtTime による InvalidStateError クラッシュを修正','winLineSvg 等の初期化時 null ガード不足を修正','updateStatus と subtitle の DOM 操作時 null チェック漏れを修正','エディタ開始後の TTT ボード表示切り替え漏れを修正','createRipple の e instanceof MouseEvent の環境依存問題を修正','BGM（背景音楽）を追加：やわらかなアンビエント和弦ループ、ON/OFF・音量調整対応','BGM は自動再生ポリシーに準拠し、初回ユーザー操作後に自動開始'],
+                ko: ['에디터 비 TTT 모드에서 eval bar 의 cfg 미정의 ReferenceError 크래시 수정','볼륨 0 시 exponentialRampToValueAtTime InvalidStateError 크래시 수정','winLineSvg 등 초기화 시 null 가드 누락 수정','updateStatus 와 subtitle DOM 조작 시 null 체크 누락 수정','에디터 게임 시작 후 TTT 보드 전환 누락 수정','createRipple 의 e instanceof MouseEvent 환경 의존 문제 수정','BGM(배경음악) 추가: 부드러운 앰비언트 화성 루프, ON/OFF 및 별도 볼륨 조절','BGM 은 자동재생 정책 준수, 첫 사용자 상호작용 후 자동 시작'],
+                fr: ['Correction crash eval bar ReferenceError en mode non-TTT éditeur (cfg indéfini)','Correction crash InvalidStateError volume 0 dans toutes les fonctions SFX','Correction null guards manquants sur winLineSvg et al.','Correction updateStatus/subtitle sans vérification null','Correction affichage plateau TTT après démarrage depuis éditeur','Correction createRipple dépendant de instanceof MouseEvent','Ajout musique de fond (BGM) : boucle ambient douce avec contrôle volume','BGM respecte la politique autoplay du navigateur'],
+                de: ['Korrigiert eval bar ReferenceError im Nicht-TTT-Editor-Modus','Korrigiert InvalidStateError bei Lautstärke 0 in allen SFX-Funktionen','Korrigiert fehlende null-Prüfungen bei winLineSvg etc.','Korrigiert updateStatus/subtitle ohne null-Prüfung','Korrigiert TTT-Brett-Anzeige nach Editor-Start','Korrigiert createRipple Abhängigkeit von instanceof MouseEvent','Hintergrundmusik (BGM) hinzugefügt: sanfte Ambient-Schleife mit Lautstärkeregler','BGM beachtet Browser-Autoplay-Richtlinie'],
+                es: ['Corregido crash eval bar ReferenceError en modo no-TTT del editor','Corregido InvalidStateError con volumen 0 en todas las funciones SFX','Corregida falta de guards null en winLineSvg etc.','Corregido updateStatus/subtitle sin verificación null','Corregida visualización tablero TTT tras iniciar desde editor','Corregido createRipple dependiendo de instanceof MouseEvent','Añadida música de fondo (BGM): bucle ambient suave con control de volumen','BGM respeta política autoplay del navegador'],
+                ru: ['Исправлена ошибка eval bar ReferenceError в редакторе вне режима TTT','Исправлена ошибка InvalidStateError при нулевой громкости во всех SFX-функциях','Исправлены отсутствующие проверки null для winLineSvg и др.','Исправлены updateStatus/subtitle без проверки null','Исправлено отображение доски TTT после запуска из редактора','Исправлена зависимость createRipple от instanceof MouseEvent','Добавлено фоновое музыкальное сопровождение (BGM): мягкий ambient-цикл с регулятором громкости','BGM соблюдает политику автовоспроизведения браузера'],
+                it: ['Corretto crash eval bar ReferenceError in modalità non-TTT dell\'editor','Corretto InvalidStateError a volume 0 in tutte le funzioni SFX','Corrette mancanti verifiche null su winLineSvg etc.','Corretto updateStatus/subtitle senza verifica null','Corretta visualizzazione scacchiera TTT dopo avvio da editor','Corretto createRipple dipendente da instanceof MouseEvent','Aggiunta musica di sottofondo (BGM): loop ambient morbido con controllo volume','BGM rispetta la politica autoplay del browser'],
+                pt: ['Corrigido crash eval bar ReferenceError no editor em modo não-TTT','Corrigido InvalidStateError com volume 0 em todas as funções SFX','Corrigidas verificações null ausentes em winLineSvg etc.','Corrigido updateStatus/subtitle sem verificação null','Corrigida exibição tabuleiro TTT após iniciar do editor','Corrigido createRipple dependendo de instanceof MouseEvent','Adicionada música de fundo (BGM): loop ambient suave com controle de volume','BGM respeita a política de autoplay do navegador']
+            }
+        },
         {
             version: '0.18.2',
             date: { zh:'2026-05-08', en:'May 8, 2026', ja:'2026年5月8日', ko:'2026년 5월 8일', fr:'8 mai 2026', de:'8. Mai 2026', es:'8 may. 2026', ru:'8 мая 2026', it:'8 mag. 2026', pt:'8 de mai. de 2026' },
@@ -1420,10 +1447,10 @@
         updateScoreLabels();
         updateStatus(getTurnText(), currentPlayer === PLAYER_X ? 'x' : 'o');
         const bm = getEffectiveBattleMode();
-        if (currentMode === 'ttt') subtitle.textContent = bm === 'pvp' ? t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-aivsai') : t('subtitle-pve');
-        else if (currentMode === 'connect4') subtitle.textContent = bm === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
-        else if (currentMode === 'gomoku') subtitle.textContent = bm === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
-        else subtitle.textContent = bm === 'pvp' ? getCustomSubtitle() + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? getCustomSubtitle() + ' — ' + t('subtitle-aivsai') : getCustomSubtitle();
+        if (currentMode === 'ttt') if (subtitle) subtitle.textContent = bm === 'pvp' ? t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-aivsai') : t('subtitle-pve');
+        else if (currentMode === 'connect4') if (subtitle) subtitle.textContent = bm === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
+        else if (currentMode === 'gomoku') if (subtitle) subtitle.textContent = bm === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
+        else if (subtitle) subtitle.textContent = bm === 'pvp' ? getCustomSubtitle() + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? getCustomSubtitle() + ' — ' + t('subtitle-aivsai') : getCustomSubtitle();
         renderChangelog();
         if (tacticsDrawer && tacticsDrawer.classList.contains('show')) renderTacticsList();
         if (historyDrawer && historyDrawer.classList.contains('show')) renderHistory();
@@ -1502,6 +1529,8 @@
                 if (typeof s.soundPitch === 'number' && s.soundPitch >= -12 && s.soundPitch <= 12) settings.soundPitch = s.soundPitch;
                 if (typeof s.soundDuration === 'number' && s.soundDuration >= 50 && s.soundDuration <= 200) settings.soundDuration = s.soundDuration;
                 if (typeof s.soundVolume === 'number' && s.soundVolume >= 0 && s.soundVolume <= 100) settings.soundVolume = s.soundVolume;
+                if (typeof s.bgmEnabled === 'boolean') settings.bgmEnabled = s.bgmEnabled;
+                if (typeof s.bgmVolume === 'number' && s.bgmVolume >= 0 && s.bgmVolume <= 100) settings.bgmVolume = s.bgmVolume;
                 if (['easy','medium','hard'].includes(s.difficulty)) settings.difficulty = s.difficulty;
                 if (['3','5','7','10','15','custom'].includes(s.customBoardSize)) settings.customBoardSize = s.customBoardSize;
                 if (typeof s.timerEnabled === 'boolean') settings.timerEnabled = s.timerEnabled;
@@ -1748,14 +1777,16 @@
                 customWinLenInput.value = minDim;
             }
         }
-        customWinLenInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.winLen = clamp(isNaN(v) ? 5 : v, 3, 20); validateCustomConfig(); saveSettings(); if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); } });
-        customBoardWInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.w = clamp(isNaN(v) ? 15 : v, 3, 20); validateCustomConfig(); customBoardWInput.value = customConfig.w; saveSettings(); if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); } });
-        customBoardHInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.h = clamp(isNaN(v) ? 15 : v, 3, 20); validateCustomConfig(); customBoardHInput.value = customConfig.h; saveSettings(); if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); } });
+        customWinLenInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.winLen = clamp(isNaN(v) ? 5 : v, 3, 20); validateCustomConfig(); saveSettings(); if (currentMode === 'custom') { if (subtitle) subtitle.textContent = getCustomSubtitle(); resetGame(); } });
+        customBoardWInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.w = clamp(isNaN(v) ? 15 : v, 3, 20); validateCustomConfig(); customBoardWInput.value = customConfig.w; saveSettings(); if (currentMode === 'custom') { if (subtitle) subtitle.textContent = getCustomSubtitle(); resetGame(); } });
+        customBoardHInput.addEventListener('change', e => { const v = parseInt(e.target.value, 10); customConfig.h = clamp(isNaN(v) ? 15 : v, 3, 20); validateCustomConfig(); customBoardHInput.value = customConfig.h; saveSettings(); if (currentMode === 'custom') { if (subtitle) subtitle.textContent = getCustomSubtitle(); resetGame(); } });
 
         timerToggle.addEventListener('change', e => { setTimerEnabled(e.target.checked); });
         if (toggleElo) toggleElo.addEventListener('change', e => { setEloEnabled(e.target.checked); });
         if (toggleMisere) toggleMisere.addEventListener('change', e => { setMisereMode(e.target.checked); });
         if (toggleEvalBar) toggleEvalBar.addEventListener('change', e => { setEvalBarEnabled(e.target.checked); });
+        if (toggleBgm) toggleBgm.addEventListener('change', e => { setBgmEnabled(e.target.checked); });
+        if (bgmVolumeSlider) bgmVolumeSlider.addEventListener('input', e => { setBgmVolume(parseInt(e.target.value, 10)); if (bgmVolumeValue) bgmVolumeValue.textContent = settings.bgmVolume + '%'; });
         document.querySelectorAll('#timer-segmented .seg-btn').forEach(btn =>
             btn.addEventListener('click', () => setTimerDuration(parseInt(btn.dataset.timer, 10))));
 
@@ -1983,6 +2014,19 @@
         checkDailyAchievements();
         loadRushProgress();
         updateRushBestDisplay();
+        // Attempt to start BGM; browser autoplay policy may defer until first user gesture
+        if (settings.bgmEnabled) {
+            startBgm();
+            const bgmAutoplayUnlock = () => {
+                if (settings.bgmEnabled) { stopBgm(); startBgm(); }
+                document.removeEventListener('click', bgmAutoplayUnlock);
+                document.removeEventListener('keydown', bgmAutoplayUnlock);
+                document.removeEventListener('touchstart', bgmAutoplayUnlock);
+            };
+            document.addEventListener('click', bgmAutoplayUnlock);
+            document.addEventListener('keydown', bgmAutoplayUnlock);
+            document.addEventListener('touchstart', bgmAutoplayUnlock);
+        }
     }
 
     function buildC4Cells() {
@@ -2297,7 +2341,7 @@
         customBoardWInput.value = customConfig.w;
         customBoardHInput.value = customConfig.h;
         saveSettings();
-        if (currentMode === 'custom') { subtitle.textContent = getCustomSubtitle(); resetGame(); }
+        if (currentMode === 'custom') { if (subtitle) subtitle.textContent = getCustomSubtitle(); resetGame(); }
     }
     function setBoardTheme(theme) {
         if (settings.boardTheme === theme) return;
@@ -2361,6 +2405,10 @@
         if (toggleElo) toggleElo.checked = settings.eloEnabled !== false;
         if (toggleMisere) toggleMisere.checked = settings.misereMode === true;
         if (toggleEvalBar) toggleEvalBar.checked = settings.showEvalBar === true;
+        if (toggleBgm) toggleBgm.checked = settings.bgmEnabled === true;
+        if (bgmVolumeGroup) bgmVolumeGroup.style.display = settings.bgmEnabled ? 'block' : 'none';
+        if (bgmVolumeSlider) bgmVolumeSlider.value = settings.bgmVolume;
+        if (bgmVolumeValue) bgmVolumeValue.textContent = settings.bgmVolume + '%';
         updateEvalBar();
     }
 
@@ -2371,7 +2419,7 @@
         const cell = e.currentTarget;
         if (!cell) return;
         const cellRect = cell.getBoundingClientRect();
-        const hasRealCoords = e instanceof MouseEvent && e.clientX > 0 && e.clientY > 0;
+        const hasRealCoords = typeof e.clientX === 'number' && typeof e.clientY === 'number' && e.clientX > 0 && e.clientY > 0;
         const x = hasRealCoords ? e.clientX : cellRect.left + cellRect.width / 2;
         const y = hasRealCoords ? e.clientY : cellRect.top + cellRect.height / 2;
         if (activeRipples >= MAX_RIPPLES) return;
@@ -3280,6 +3328,10 @@
         winLine.classList.remove('show');
         if (modal) modal.classList.remove('show');
         initTimers();
+        // Ensure TTT board is visible since editor only supports TTT boards
+        boardEl.style.display = 'grid';
+        connect4Board.style.display = 'none';
+        gomokuBoard.style.display = 'none';
         // Re-render main board
         cells.forEach((cell, i) => {
             cell.innerHTML = '';
@@ -3578,6 +3630,7 @@
             return;
         }
         let score = 0;
+        let cfg = null;
         if (editorGame || currentMode === 'ttt') {
             if (misereMode) {
                 score = minimaxMisere([...gameBoard], 0, true, PLAYER_X, PLAYER_O);
@@ -3588,17 +3641,17 @@
             score = evaluateC4Board(PLAYER_X, PLAYER_O);
             if (misereMode) score = -score;
         } else if (isGmkMode()) {
-            const cfg = getActiveGmkConfig();
+            cfg = getActiveGmkConfig();
             const board = getActiveGmkBoard();
             score = evaluateGmkPosition(board, cfg, PLAYER_X, PLAYER_O);
             if (misereMode) score = -score;
         }
         // Normalize to [-1, 1] — TTT uses linear (fixed range), C4/Gmk use atan soft-clamp
         let normalized;
-        if (currentMode === 'ttt') {
+        if (editorGame || currentMode === 'ttt') {
             normalized = Math.max(-1, Math.min(1, score / 10));
         } else {
-            const scale = isC4Mode() ? 500 : Math.pow(5, Math.min(cfg.winLen - 1, 6)) * 15;
+            const scale = isC4Mode() ? 500 : Math.pow(5, Math.min((cfg ? cfg.winLen : 5) - 1, 6)) * 15;
             normalized = Math.max(-1, Math.min(1, Math.atan(score / scale) / (Math.PI / 2)));
         }
         // Update fill position and width
@@ -3885,12 +3938,14 @@
 
     function playOsc(freq, type, duration, vol) {
         if (!settings.sound || !audioCtx) return;
+        const effectiveVol = vol * volMul();
+        if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freqShift(freq), audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol * volMul(), audioCtx.currentTime);
+        gain.gain.setValueAtTime(effectiveVol, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration));
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -3900,6 +3955,8 @@
 
     function playFiltered(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
+        const effectiveVol = vol * volMul();
+        if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -3909,7 +3966,7 @@
         filter.type = 'lowpass';
         filter.frequency.setValueAtTime(800, audioCtx.currentTime);
         filter.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + durMul(duration));
-        gain.gain.setValueAtTime(vol * volMul(), audioCtx.currentTime);
+        gain.gain.setValueAtTime(effectiveVol, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration));
         osc.connect(filter);
         filter.connect(gain);
@@ -3920,12 +3977,14 @@
 
     function playRetro(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
+        const effectiveVol = vol * volMul();
+        if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'square';
         osc.frequency.setValueAtTime(freqShift(freq), audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol * volMul(), audioCtx.currentTime);
+        gain.gain.setValueAtTime(effectiveVol, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.6);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -3935,12 +3994,14 @@
 
     function playWoodTone(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
+        const effectiveVol = vol * volMul();
+        if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freqShift(freq), audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol * volMul(), audioCtx.currentTime);
+        gain.gain.setValueAtTime(effectiveVol, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.4);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -3950,12 +4011,14 @@
 
     function playBell(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
+        const effectiveVol = vol * volMul();
+        if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freqShift(freq), audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol * volMul(), audioCtx.currentTime);
+        gain.gain.setValueAtTime(effectiveVol, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.8);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -3963,18 +4026,23 @@
         osc.stop(audioCtx.currentTime + durMul(duration));
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(freqShift(freq * 2), audioCtx.currentTime);
-        gain2.gain.setValueAtTime(vol * volMul() * 0.3, audioCtx.currentTime);
-        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.5);
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.start();
-        osc2.stop(audioCtx.currentTime + durMul(duration));
+        const effectiveVol2 = effectiveVol * 0.3;
+        if (effectiveVol2 > 0) {
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(freqShift(freq * 2), audioCtx.currentTime);
+            gain2.gain.setValueAtTime(effectiveVol2, audioCtx.currentTime);
+            gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.5);
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.start();
+            osc2.stop(audioCtx.currentTime + durMul(duration));
+        }
     }
 
     function playSpace(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
+        const effectiveVol = vol * volMul() * 0.5;
+        if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -3984,7 +4052,7 @@
         filter.type = 'bandpass';
         filter.frequency.setValueAtTime(freqShift(freq), audioCtx.currentTime);
         filter.Q.setValueAtTime(10, audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol * volMul() * 0.5, audioCtx.currentTime);
+        gain.gain.setValueAtTime(effectiveVol, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration));
         osc.connect(filter);
         filter.connect(gain);
@@ -3995,13 +4063,15 @@
 
     function playDrum(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
+        const effectiveVol = vol * volMul();
+        if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freqShift(freq * 0.5), audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + durMul(duration) * 0.3);
-        gain.gain.setValueAtTime(vol * volMul(), audioCtx.currentTime);
+        gain.gain.setValueAtTime(effectiveVol, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.4);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -4019,6 +4089,8 @@
 
     function playSynth(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
+        const effectiveVol = vol * volMul() * 0.4;
+        if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -4031,7 +4103,7 @@
         lfoGain.gain.setValueAtTime(30, audioCtx.currentTime);
         lfo.connect(lfoGain);
         lfoGain.connect(osc.frequency);
-        gain.gain.setValueAtTime(vol * volMul() * 0.4, audioCtx.currentTime);
+        gain.gain.setValueAtTime(effectiveVol, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration));
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -4052,7 +4124,9 @@
                 const gain = audioCtx.createGain();
                 osc.type = 'square';
                 osc.frequency.setValueAtTime(freqShift(f), audioCtx.currentTime);
-                gain.gain.setValueAtTime(vol * volMul() * 0.12, audioCtx.currentTime);
+                const chipVol = vol * volMul() * 0.12;
+                if (chipVol <= 0) return;
+                gain.gain.setValueAtTime(chipVol, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.15);
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
@@ -4064,12 +4138,14 @@
 
     function playPluck(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
+        const effectiveVol = vol * volMul() * 0.5;
+        if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freqShift(freq), audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol * volMul() * 0.5, audioCtx.currentTime);
+        gain.gain.setValueAtTime(effectiveVol, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.25);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -4079,12 +4155,14 @@
 
     function playCrystal(freq, duration, vol) {
         if (!settings.sound || !audioCtx) return;
+        const effectiveVol = vol * volMul();
+        if (effectiveVol <= 0) return;
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freqShift(freq * 2), audioCtx.currentTime);
-        gain.gain.setValueAtTime(vol * volMul() * 0.2, audioCtx.currentTime);
+        gain.gain.setValueAtTime(effectiveVol * 0.2, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 1.2);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -4092,15 +4170,104 @@
         osc.stop(audioCtx.currentTime + durMul(duration) * 1.2);
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
-        osc2.type = 'triangle';
-        osc2.frequency.setValueAtTime(freqShift(freq * 3), audioCtx.currentTime + 0.05);
-        gain2.gain.setValueAtTime(0, audioCtx.currentTime);
-        gain2.gain.linearRampToValueAtTime(vol * volMul() * 0.1, audioCtx.currentTime + 0.08);
-        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.8);
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.start(audioCtx.currentTime + 0.05);
-        osc2.stop(audioCtx.currentTime + durMul(duration) * 0.8);
+        const effectiveVol2 = effectiveVol * 0.1;
+        if (effectiveVol2 > 0) {
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(freqShift(freq * 3), audioCtx.currentTime + 0.05);
+            gain2.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            gain2.gain.linearRampToValueAtTime(effectiveVol2, audioCtx.currentTime + 0.08);
+            gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durMul(duration) * 0.8);
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.start(audioCtx.currentTime + 0.05);
+            osc2.stop(audioCtx.currentTime + durMul(duration) * 0.8);
+        }
+    }
+
+    /* ===== Background Music ===== */
+    const BGM_CHORDS = [
+        [261.63, 329.63, 392.00],
+        [220.00, 261.63, 329.63],
+        [196.00, 246.94, 293.66],
+        [174.61, 220.00, 261.63],
+        [233.08, 293.66, 349.23],
+        [246.94, 311.13, 369.99],
+    ];
+    function stopBgm() {
+        if (bgmInterval) { clearInterval(bgmInterval); bgmInterval = null; }
+        bgmNodes.forEach(n => {
+            try {
+                const now = audioCtx ? audioCtx.currentTime : 0;
+                if (n.gain && audioCtx) {
+                    n.gain.gain.cancelScheduledValues(now);
+                    const currentVal = n.gain.gain.value;
+                    n.gain.gain.setValueAtTime(currentVal > 0 ? currentVal : 0.0001, now);
+                    n.gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+                }
+                if (n.osc) {
+                    n.osc.stop(now + 1.6);
+                    setTimeout(() => { try { n.osc.disconnect(); } catch (e) {} }, 1700);
+                }
+                if (n.gain) { setTimeout(() => { try { n.gain.disconnect(); } catch (e) {} }, 1700); }
+            } catch (e) {}
+        });
+        bgmNodes = [];
+        bgmActive = false;
+    }
+    function startBgm() {
+        if (bgmActive) return;
+        if (!settings.bgmEnabled) return;
+        if (!audioCtx) initAudio();
+        if (!audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+        stopBgm();
+        bgmActive = true;
+        playBgmChord(0);
+        let chordIndex = 1;
+        bgmInterval = setInterval(() => {
+            if (!settings.bgmEnabled || !bgmActive) { stopBgm(); return; }
+            playBgmChord(chordIndex);
+            chordIndex = (chordIndex + 1) % BGM_CHORDS.length;
+        }, 8000);
+    }
+    function playBgmChord(chordIdx) {
+        if (!audioCtx || !settings.bgmEnabled || !bgmActive) return;
+        if (audioCtx.state === 'suspended') return;
+        const freqs = BGM_CHORDS[chordIdx % BGM_CHORDS.length];
+        const baseVol = (settings.bgmVolume / 100) * 0.03;
+        if (baseVol <= 0) return;
+        const now = audioCtx.currentTime;
+        freqs.forEach((f, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, now);
+            const vol = baseVol * (i === 0 ? 1 : 0.6);
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(vol, now + 2);
+            gain.gain.setValueAtTime(vol, now + 6);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 8.5);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 9);
+            bgmNodes.push({ osc, gain });
+        });
+        if (bgmNodes.length > 24) {
+            const old = bgmNodes.splice(0, bgmNodes.length - 24);
+            old.forEach(n => { try { n.osc.disconnect(); n.gain.disconnect(); } catch (e) {} });
+        }
+    }
+    function setBgmEnabled(val) {
+        settings.bgmEnabled = val;
+        applySettingsUI();
+        saveSettings();
+        if (val) { startBgm(); } else { stopBgm(); }
+    }
+    function setBgmVolume(val) {
+        settings.bgmVolume = val;
+        applySettingsUI();
+        saveSettings();
     }
 
     function playMoveSound(player) {
@@ -4254,10 +4421,10 @@
         currentMode = mode;
         modeBtns.forEach(btn => { btn.classList.toggle('active', btn.dataset.mode === mode); btn.setAttribute('aria-pressed', btn.dataset.mode === mode); });
         const bm2 = getEffectiveBattleMode();
-        if (currentMode === 'ttt') subtitle.textContent = bm2 === 'pvp' ? t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-aivsai') : t('subtitle-pve');
-        else if (currentMode === 'connect4') subtitle.textContent = bm2 === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
-        else if (currentMode === 'gomoku') subtitle.textContent = bm2 === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
-        else subtitle.textContent = bm2 === 'pvp' ? getCustomSubtitle() + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? getCustomSubtitle() + ' — ' + t('subtitle-aivsai') : getCustomSubtitle();
+        if (currentMode === 'ttt') if (subtitle) subtitle.textContent = bm2 === 'pvp' ? t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-aivsai') : t('subtitle-pve');
+        else if (currentMode === 'connect4') if (subtitle) subtitle.textContent = bm2 === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
+        else if (currentMode === 'gomoku') if (subtitle) subtitle.textContent = bm2 === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
+        else if (subtitle) subtitle.textContent = bm2 === 'pvp' ? getCustomSubtitle() + ' — ' + t('subtitle-pvp') : bm2 === 'aivsai' ? getCustomSubtitle() + ' — ' + t('subtitle-aivsai') : getCustomSubtitle();
 
         aiDifficultyGroup.style.display = getEffectiveBattleMode() !== 'pvp' ? 'flex' : 'none';
         customGameGroup.style.display = currentMode === 'custom' ? 'flex' : 'none';
@@ -4277,10 +4444,10 @@
         battleMode = mode;
         battleBtns.forEach(btn => { btn.classList.toggle('active', btn.dataset.battle === mode); btn.setAttribute('aria-pressed', btn.dataset.battle === mode); });
         const bm = getEffectiveBattleMode();
-        if (currentMode === 'ttt') subtitle.textContent = bm === 'pvp' ? t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-aivsai') : t('subtitle-pve');
-        else if (currentMode === 'connect4') subtitle.textContent = bm === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
-        else if (currentMode === 'gomoku') subtitle.textContent = bm === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
-        else if (currentMode === 'custom') subtitle.textContent = bm === 'pvp' ? getCustomSubtitle() + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? getCustomSubtitle() + ' — ' + t('subtitle-aivsai') : getCustomSubtitle();
+        if (currentMode === 'ttt') if (subtitle) subtitle.textContent = bm === 'pvp' ? t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-aivsai') : t('subtitle-pve');
+        else if (currentMode === 'connect4') if (subtitle) subtitle.textContent = bm === 'pvp' ? t('subtitle-connect4') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-connect4') + ' — ' + t('subtitle-aivsai') : t('subtitle-connect4');
+        else if (currentMode === 'gomoku') if (subtitle) subtitle.textContent = bm === 'pvp' ? t('subtitle-gomoku') + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? t('subtitle-gomoku') + ' — ' + t('subtitle-aivsai') : t('subtitle-gomoku');
+        else if (currentMode === 'custom') if (subtitle) subtitle.textContent = bm === 'pvp' ? getCustomSubtitle() + ' — ' + t('subtitle-pvp') : bm === 'aivsai' ? getCustomSubtitle() + ' — ' + t('subtitle-aivsai') : getCustomSubtitle();
         aiDifficultyGroup.style.display = getEffectiveBattleMode() !== 'pvp' ? 'flex' : 'none';
         resetScores();
         updateScoreLabels();
@@ -4564,11 +4731,13 @@
         const scaleX = 700 / innerW;
         const scaleY = 600 / innerH;
 
-        c4WinLineSvg.setAttribute('x1', (rect1.left + rect1.width / 2 - boardRect.left - padding) * scaleX);
-        c4WinLineSvg.setAttribute('y1', (rect1.top + rect1.height / 2 - boardRect.top - padding) * scaleY);
-        c4WinLineSvg.setAttribute('x2', (rect2.left + rect2.width / 2 - boardRect.left - padding) * scaleX);
-        c4WinLineSvg.setAttribute('y2', (rect2.top + rect2.height / 2 - boardRect.top - padding) * scaleY);
-        c4WinLineSvg.setAttribute('stroke', winner === PLAYER_X ? 'var(--x-color)' : 'var(--o-color)');
+        if (c4WinLineSvg) {
+            c4WinLineSvg.setAttribute('x1', (rect1.left + rect1.width / 2 - boardRect.left - padding) * scaleX);
+            c4WinLineSvg.setAttribute('y1', (rect1.top + rect1.height / 2 - boardRect.top - padding) * scaleY);
+            c4WinLineSvg.setAttribute('x2', (rect2.left + rect2.width / 2 - boardRect.left - padding) * scaleX);
+            c4WinLineSvg.setAttribute('y2', (rect2.top + rect2.height / 2 - boardRect.top - padding) * scaleY);
+            c4WinLineSvg.setAttribute('stroke', winner === PLAYER_X ? 'var(--x-color)' : 'var(--o-color)');
+        }
         c4WinLine.classList.add('show');
     }
 
@@ -4902,11 +5071,13 @@
         const scaleX = 1500 / innerW;
         const scaleY = 1500 / innerH;
 
-        gomokuWinLineSvg.setAttribute('x1', (rect1.left + rect1.width / 2 - boardRect.left - padding) * scaleX);
-        gomokuWinLineSvg.setAttribute('y1', (rect1.top + rect1.height / 2 - boardRect.top - padding) * scaleY);
-        gomokuWinLineSvg.setAttribute('x2', (rect2.left + rect2.width / 2 - boardRect.left - padding) * scaleX);
-        gomokuWinLineSvg.setAttribute('y2', (rect2.top + rect2.height / 2 - boardRect.top - padding) * scaleY);
-        gomokuWinLineSvg.setAttribute('stroke', winner === PLAYER_X ? 'var(--x-color)' : 'var(--o-color)');
+        if (gomokuWinLineSvg) {
+            gomokuWinLineSvg.setAttribute('x1', (rect1.left + rect1.width / 2 - boardRect.left - padding) * scaleX);
+            gomokuWinLineSvg.setAttribute('y1', (rect1.top + rect1.height / 2 - boardRect.top - padding) * scaleY);
+            gomokuWinLineSvg.setAttribute('x2', (rect2.left + rect2.width / 2 - boardRect.left - padding) * scaleX);
+            gomokuWinLineSvg.setAttribute('y2', (rect2.top + rect2.height / 2 - boardRect.top - padding) * scaleY);
+            gomokuWinLineSvg.setAttribute('stroke', winner === PLAYER_X ? 'var(--x-color)' : 'var(--o-color)');
+        }
         gomokuWinLine.classList.add('show');
     }
 
@@ -5130,9 +5301,11 @@
     }
 
     function updateStatus(text, activeClass) {
-        statusText.textContent = text;
-        statusBar.classList.remove('active-x', 'active-o');
-        if (activeClass) statusBar.classList.add(`active-${activeClass}`);
+        if (statusText) statusText.textContent = text;
+        if (statusBar) {
+            statusBar.classList.remove('active-x', 'active-o');
+            if (activeClass) statusBar.classList.add(`active-${activeClass}`);
+        }
     }
 
     function endGame(draw, winner) {
@@ -5346,11 +5519,13 @@
         const innerH = rect.height - padding * 2;
         const scaleX = 300 / innerW;
         const scaleY = 300 / innerH;
-        winLineSvg.setAttribute('x1', (posA.x - rect.left - padding) * scaleX);
-        winLineSvg.setAttribute('y1', (posA.y - rect.top - padding) * scaleY);
-        winLineSvg.setAttribute('x2', (posB.x - rect.left - padding) * scaleX);
-        winLineSvg.setAttribute('y2', (posB.y - rect.top - padding) * scaleY);
-        winLineSvg.setAttribute('stroke', winner === PLAYER_X ? 'var(--x-color)' : 'var(--o-color)');
+        if (winLineSvg) {
+            winLineSvg.setAttribute('x1', (posA.x - rect.left - padding) * scaleX);
+            winLineSvg.setAttribute('y1', (posA.y - rect.top - padding) * scaleY);
+            winLineSvg.setAttribute('x2', (posB.x - rect.left - padding) * scaleX);
+            winLineSvg.setAttribute('y2', (posB.y - rect.top - padding) * scaleY);
+            winLineSvg.setAttribute('stroke', winner === PLAYER_X ? 'var(--x-color)' : 'var(--o-color)');
+        }
         winLine.classList.add('show');
     }
     function hideWinLine() { winLine.classList.remove('show'); }
