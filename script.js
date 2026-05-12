@@ -918,6 +918,22 @@
     /* ===== Changelog Data ===== */
     const changelogData = [
         {
+            version: '0.18.5',
+            date: { zh:'2026-05-12', en:'May 12, 2026', ja:'2026年5月12日', ko:'2026년 5월 12일', fr:'12 mai 2026', de:'12. Mai 2026', es:'12 may. 2026', ru:'12 мая 2026', it:'12 mag. 2026', pt:'12 de mai. de 2026' },
+            items: {
+                zh: ['修复 `playChiptune` 内部 setTimeout 回调创建 AudioNode 后未调用 `disconnect()` 的内存泄漏', '修复 `playSpace` 的 setTimeout 清理回调中遗漏 `filter.disconnect()` 导致 BiquadFilter 节点泄漏', '验证 splash screen 中 Hanazar Products 品牌文案在所有 10 种语言下均正确显示'],
+                en: ['Fixed memory leak in `playChiptune`: inner setTimeout callbacks created AudioNodes without calling `disconnect()`', 'Fixed `playSpace` setTimeout cleanup missing `filter.disconnect()`, leaking BiquadFilter nodes', 'Verified Hanazar Products branding displays correctly in all 10 languages on splash screen'],
+                ja: ['`playChiptune` 内部 setTimeout が AudioNode 作成後に `disconnect()` を呼ばないメモリリークを修正','`playSpace` の setTimeout クリーンアップで `filter.disconnect()` が漏れていた問題を修正','スプラッシュ画面の Hanazar Products ブランド表示が全10言語で正しいことを確認'],
+                ko: ['`playChiptune` 낶부 setTimeout 이 AudioNode 생성 후 `disconnect()` 를 호출하지 않는 메모리 누수 수정','`playSpace` 의 setTimeout 정리에서 `filter.disconnect()` 누락으로 BiquadFilter 노드 누수 수정','스플래시 화면의 Hanazar Products 브랜드 표시가 10개 언어 모두에서 정상임을 확인'],
+                fr: ['Correction fuite mémoire `playChiptune` : callbacks setTimeout internes ne appelaient pas `disconnect()`','Correction `playSpace` : setTimeout de nettoyage manquait `filter.disconnect()`, fuite BiquadFilter','Vérifié : marque Hanazar Products s\'affiche correctement dans les 10 langues sur l\'écran de démarrage'],
+                de: ['Korrigiert Memory Leak in `playChiptune`: innere setTimeout-Callbacks riefen `disconnect()` nicht auf','Korrigiert `playSpace`-setTimeout-Bereinigung fehlte `filter.disconnect()`, BiquadFilter-Leck','Überprüft: Hanazar Products-Markenzeichen wird auf dem Startbildschirm in allen 10 Sprachen korrekt angezeigt'],
+                es: ['Corregida fuga memoria en `playChiptune`: callbacks setTimeout internos no llamaban `disconnect()`','Corregido `playSpace`: setTimeout de limpieza faltaba `filter.disconnect()`, filtrando nodos BiquadFilter','Verificado: marca Hanazar Products se muestra correctamente en los 10 idiomas en la pantalla de inicio'],
+                ru: ['Исправлена утечка памяти в `playChiptune`: внутренние setTimeout не вызывали `disconnect()`','Исправлено `playSpace`: в setTimeout очистки отсутствовал `filter.disconnect()`, утечка BiquadFilter','Проверено: брендинг Hanazar Products корректно отображается на экране загрузки на всех 10 языках'],
+                it: ['Corretta perdita memoria in `playChiptune`: callback setTimeout interni non chiamavano `disconnect()`','Corretto `playSpace`: setTimeout di pulizia mancava `filter.disconnect()`, perdita nodi BiquadFilter','Verificato: branding Hanazar Products visualizzato correttamente in tutte le 10 lingue sulla schermata iniziale'],
+                pt: ['Corrigido vazamento memória em `playChiptune`: callbacks setTimeout internos não chamavam `disconnect()`','Corrigido `playSpace`: setTimeout de limpeza faltava `filter.disconnect()`, vazando nós BiquadFilter','Verificado: marca Hanazar Products exibida corretamente em todos os 10 idiomas na tela de inicialização']
+            }
+        },
+        {
             version: '0.18.4',
             date: { zh:'2026-05-12', en:'May 12, 2026', ja:'2026年5月12日', ko:'2026년 5월 12일', fr:'12 mai 2026', de:'12. Mai 2026', es:'12 may. 2026', ru:'12 мая 2026', it:'12 mag. 2026', pt:'12 de mai. de 2026' },
             items: {
@@ -3986,7 +4002,7 @@
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration));
         const stopMs = durMul(duration) * 1000 + 100;
-        setTimeout(() => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
+        setTimeout(() => { try { osc.disconnect(); filter.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
     }
 
     function playFiltered(freq, duration, vol) {
@@ -4105,7 +4121,7 @@
         osc.start();
         osc.stop(audioCtx.currentTime + durMul(duration));
         const stopMs = durMul(duration) * 1000 + 100;
-        setTimeout(() => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
+        setTimeout(() => { try { osc.disconnect(); filter.disconnect(); gain.disconnect(); } catch (e) {} }, stopMs);
     }
 
     function playDrum(freq, duration, vol) {
@@ -4185,7 +4201,10 @@
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.start();
-                osc.stop(audioCtx.currentTime + durMul(duration) * 0.15);
+                const chipDur = durMul(duration) * 0.15;
+                osc.stop(audioCtx.currentTime + chipDur);
+                const chipStopMs = chipDur * 1000 + 50;
+                setTimeout(() => { try { osc.disconnect(); gain.disconnect(); } catch (e) {} }, chipStopMs);
             }, i * 40);
         });
     }
